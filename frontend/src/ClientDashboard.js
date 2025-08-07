@@ -52,35 +52,155 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+    if (currentTab === 'jobs') {
+      fetchMyJobs();
+    } else if (currentTab === 'freelancers') {
+      fetchFreelancers();
+    }
+  }, [currentTab]);
+
+  const apiCall = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers,
+        ...options
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Request failed');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      setLoading(true);
       
       // Fetch posted jobs
-      const jobsResponse = await fetch(`${API_BASE}/api/jobs/my`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const jobsData = await apiCall('/api/jobs/my');
+      setRecentJobs(jobsData.slice(0, 5));
       
-      if (jobsResponse.ok) {
-        const jobsData = await jobsResponse.json();
-        setRecentJobs(jobsData.slice(0, 5));
-        
-        const activeJobs = jobsData.filter(job => job.status === 'open').length;
-        const totalApplications = jobsData.reduce((sum, job) => sum + job.applications_count, 0);
-        
-        setStats(prev => ({
-          ...prev,
-          activeJobs,
-          totalApplications
-        }));
-      }
+      const activeJobs = jobsData.filter(job => job.status === 'open').length;
+      const totalApplications = jobsData.reduce((sum, job) => sum + job.applications_count, 0);
+      
+      setStats(prev => ({
+        ...prev,
+        activeJobs,
+        totalApplications
+      }));
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMyJobs = async () => {
+    try {
+      setJobsLoading(true);
+      const jobsData = await apiCall('/api/jobs/my');
+      setMyJobs(jobsData);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const fetchFreelancers = async () => {
+    try {
+      setJobsLoading(true);
+      // For now, we'll simulate freelancer data since we need to get verified users
+      // In a real implementation, this would be an admin endpoint to get freelancers
+      const mockFreelancers = [
+        {
+          id: '1',
+          full_name: 'Thabo Mthembu',
+          email: 'thabo@freelance.co.za',
+          profile: {
+            skills: ['React', 'Node.js', 'MongoDB'],
+            experience: 'expert',
+            hourly_rate: 850,
+            bio: 'Full-stack developer with 6 years of experience in modern web technologies.'
+          },
+          rating: 4.9,
+          completedJobs: 45,
+          isVerified: true
+        },
+        {
+          id: '2', 
+          full_name: 'Nomsa Dlamini',
+          email: 'nomsa@design.co.za',
+          profile: {
+            skills: ['UI/UX Design', 'Figma', 'Adobe Creative Suite'],
+            experience: 'intermediate',
+            hourly_rate: 650,
+            bio: 'Creative UI/UX designer passionate about creating beautiful, user-friendly interfaces.'
+          },
+          rating: 4.8,
+          completedJobs: 32,
+          isVerified: true
+        }
+      ];
+      setFreelancers(mockFreelancers);
+    } catch (error) {
+      console.error('Error fetching freelancers:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const fetchJobApplications = async (jobId) => {
+    try {
+      const applications = await apiCall(`/api/jobs/${jobId}/applications`);
+      setJobApplications(applications);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
+
+  const createJob = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const jobData = {
+        ...jobForm,
+        budget: parseFloat(jobForm.budget),
+        requirements: jobForm.requirements.split(',').map(req => req.trim()).filter(req => req)
+      };
+
+      await apiCall('/api/jobs', {
+        method: 'POST',
+        body: JSON.stringify(jobData)
+      });
+
+      alert('Job posted successfully!');
+      setJobForm({
+        title: '',
+        description: '',
+        category: '',
+        budget: '',
+        budget_type: 'fixed',
+        requirements: ''
+      });
+      fetchDashboardData();
+      fetchMyJobs();
+    } catch (error) {
+      alert(error.message);
     } finally {
       setLoading(false);
     }
