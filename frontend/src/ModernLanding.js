@@ -143,10 +143,11 @@ const ModernLanding = ({
       <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
-              <span className="text-black font-bold text-xl">A</span>
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/n2pyrvrg_4.png" 
+              alt="Afrilance" 
+              className="h-10 w-auto"
+            />
           </div>
           <div className="flex items-center space-x-4">
             <Button
