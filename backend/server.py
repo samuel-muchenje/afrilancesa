@@ -680,6 +680,87 @@ async def get_contract_stats(current_user = Depends(verify_token)):
     
     return result
 
+@app.get("/api/contracts/{contract_id}")
+async def get_contract(contract_id: str, current_user = Depends(verify_token)):
+    contract = db.contracts.find_one({"id": contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Check access permissions
+    if current_user["role"] not in ["admin"] and current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Convert ObjectId to string for JSON serialization
+    contract["_id"] = str(contract["_id"])
+    
+    # Enrich contract with additional data
+    job = db.jobs.find_one({"id": contract["job_id"]})
+    if job:
+        job["_id"] = str(job["_id"])  # Convert ObjectId to string
+        contract["job_details"] = job
+    
+    freelancer = db.users.find_one({"id": contract["freelancer_id"]})
+    if freelancer:
+        contract["freelancer_details"] = {
+            "full_name": freelancer["full_name"],
+            "email": freelancer["email"],
+            "profile": freelancer.get("profile", {}),
+            "is_verified": freelancer.get("is_verified", False)
+        }
+    
+    client = db.users.find_one({"id": contract["client_id"]})
+    if client:
+        contract["client_details"] = {
+            "full_name": client["full_name"],
+            "email": client["email"]
+        }
+    
+    return contract
+
+@app.patch("/api/contracts/{contract_id}/status")
+async def update_contract_status(contract_id: str, status_data: dict, current_user = Depends(verify_token)):
+    new_status = status_data.get("status")
+    if new_status not in ["In Progress", "Completed", "Cancelled"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    contract = db.contracts.find_one({"id": contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Check permissions - only client or freelancer involved in contract can update
+    if current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Update contract status
+    db.contracts.update_one(
+        {"id": contract_id},
+        {"$set": {
+            "status": new_status,
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user["user_id"]
+        }}
+    )
+    
+    # If completed, also update job status
+    if new_status == "Completed":
+        db.jobs.update_one(
+            {"id": contract["job_id"]},
+            {"$set": {
+                "status": "completed",
+                "completed_at": datetime.utcnow()
+            }}
+        )
+    elif new_status == "Cancelled":
+        db.jobs.update_one(
+            {"id": contract["job_id"]},
+            {"$set": {
+                "status": "cancelled",
+                "cancelled_at": datetime.utcnow()
+            }}
+        )
+    
+    return {"message": f"Contract status updated to {new_status}"}
+
 @app.post("/api/upload-id-document")
 async def upload_id_document(
     file: UploadFile = File(...),
