@@ -1282,29 +1282,28 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
         )}
       </div>
 
-      {/* Job Application Dialog */}
-      <Dialog open={selectedJob !== null} onOpenChange={() => setSelectedJob(null)}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">
-              Apply for: {selectedJob?.title}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedJob && (
-            <form onSubmit={applyToJob} className="space-y-6">
+      {/* Job Application Modal */}
+      {selectedJob && (
+        <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+          <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-white">Apply to: {selectedJob.title}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={applyToJob} className="space-y-4">
               <div className="bg-gray-800 p-4 rounded-lg">
-                <h3 className="font-semibold text-white mb-2">Job Details</h3>
+                <h4 className="font-medium text-white mb-2">Job Details:</h4>
                 <p className="text-gray-300 text-sm mb-3">{selectedJob.description}</p>
-                <div className="flex items-center space-x-4 text-sm text-gray-400">
-                  <span className="flex items-center">
-                    <DollarSign className="w-4 h-4 mr-1" />
-                    R{selectedJob.budget?.toLocaleString()} ({selectedJob.budget_type})
-                  </span>
-                  <span className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    {selectedJob.applications_count} proposals
-                  </span>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-400">Budget:</span>
+                    <p className="text-white font-medium">
+                      R{selectedJob.budget?.toLocaleString()} ({selectedJob.budget_type})
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Applications:</span>
+                    <p className="text-white font-medium">{selectedJob.applications_count} proposals</p>
+                  </div>
                 </div>
               </div>
 
@@ -1313,9 +1312,9 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                   Your Proposal *
                 </label>
                 <Textarea
+                  placeholder="Explain why you're the perfect fit for this project. Highlight your relevant experience and how you'll approach the work..."
                   value={applicationForm.proposal}
                   onChange={(e) => setApplicationForm(prev => ({ ...prev, proposal: e.target.value }))}
-                  placeholder="Describe your approach, relevant experience, and why you're the best fit for this project..."
                   rows={6}
                   className="bg-gray-800 border-gray-600 text-white resize-none"
                   required
@@ -1328,18 +1327,18 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                 </label>
                 <Input
                   type="number"
+                  placeholder="Enter your bid amount"
                   value={applicationForm.bid_amount}
                   onChange={(e) => setApplicationForm(prev => ({ ...prev, bid_amount: e.target.value }))}
-                  placeholder="Enter your bid amount"
                   className="bg-gray-800 border-gray-600 text-white"
                   required
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  Client's budget: R{selectedJob.budget?.toLocaleString()}
+                <p className="text-gray-400 text-xs mt-1">
+                  Recommended: R{Math.round(selectedJob.budget * 0.8)?.toLocaleString()} - R{selectedJob.budget?.toLocaleString()}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex justify-end space-x-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1351,15 +1350,25 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                 <Button
                   type="submit"
                   className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
-                  disabled={!applicationForm.proposal || !applicationForm.bid_amount}
+                  disabled={loading}
                 >
-                  Submit Application
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
+                      Submitting...
+                    </div>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Submit Application
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
-          )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
