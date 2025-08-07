@@ -57,6 +57,8 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
       fetchMyJobs();
     } else if (currentTab === 'freelancers') {
       fetchFreelancers();
+    } else if (currentTab === 'contracts') {
+      fetchContracts();
     }
   }, [currentTab]);
 
