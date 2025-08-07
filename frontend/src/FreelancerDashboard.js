@@ -605,6 +605,10 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </>
+        )}
+
         {/* Jobs Tab - Browse Available Jobs */}
         {currentTab === 'jobs' && (
           <div className="space-y-6">
