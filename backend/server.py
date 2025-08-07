@@ -193,7 +193,8 @@ async def register_user(user: UserRegister):
             "phone": user_data["phone"],
             "is_verified": user_data["is_verified"],
             "profile_completed": user_data["profile_completed"],
-            "verification_required": user_data.get("verification_required", False)
+            "verification_required": user_data.get("verification_required", False),
+            "can_bid": user_data.get("can_bid", True)
         }
     }
 
