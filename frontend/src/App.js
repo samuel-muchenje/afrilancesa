@@ -412,7 +412,7 @@ function App() {
   if (currentPage === 'landing') {
     return (
       <ModernLanding 
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={handleLandingNavigation}
         setAuthMode={setAuthMode}
         setAuthForm={setAuthForm}
         submitSupport={submitSupport}
