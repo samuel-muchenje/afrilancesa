@@ -316,225 +316,298 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
       </nav>
 
       <div className="container mx-auto px-6 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, {user?.full_name?.split(' ')[0]}! 👋
-          </h1>
-          <p className="text-gray-400">
-            {user.is_verified 
-              ? "You're all set to apply for jobs and grow your freelance business." 
-              : "Complete your verification to start applying for premium jobs."
-            }
-          </p>
-        </div>
+        {/* Tab Navigation */}
+        <TabNavigation />
 
-        {/* Verification Alert */}
-        {!user.is_verified && (
-          <Card className="dashboard-card mb-6 border-yellow-500/20 bg-yellow-500/5">
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-400 mt-1" />
-                <div>
-                  <h3 className="text-white font-semibold">Verification Required</h3>
-                  <p className="text-gray-300 text-sm mt-1">
-                    Upload your ID document to get verified and access premium job opportunities.
-                  </p>
-                  <Button 
-                    className="mt-3 bg-yellow-400 hover:bg-yellow-500 text-black"
-                    size="sm"
-                    onClick={() => onNavigate('profile')}
-                  >
-                    Complete Verification
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Active Applications</p>
-                  <p className="text-2xl font-bold text-white">{stats.activeApplications}</p>
-                </div>
-                <Briefcase className="w-8 h-8 text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Completed Jobs</p>
-                  <p className="text-2xl font-bold text-white">{stats.completedJobs}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Total Earnings</p>
-                  <p className="text-2xl font-bold text-white">R{stats.totalEarnings.toLocaleString()}</p>
-                </div>
-                <DollarSign className="w-8 h-8 text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Rating</p>
-                  <p className="text-2xl font-bold text-white flex items-center">
-                    {stats.rating}
-                    <Star className="w-4 h-4 text-yellow-400 ml-1 fill-current" />
-                  </p>
-                </div>
-                <Award className="w-8 h-8 text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Profile Views</p>
-                  <p className="text-2xl font-bold text-white">{stats.profileViews}</p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Recent Job Applications */}
-          <div className="lg:col-span-2">
-            <Card className="dashboard-card">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Recent Job Applications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-3">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="animate-pulse bg-gray-700 h-16 rounded"></div>
-                    ))}
+        {/* Dashboard Tab */}
+        {currentTab === 'dashboard' && (
+          <>
+            {/* Verification Alert */}
+            {!user.is_verified && (
+              <Card className="dashboard-card mb-6 border-yellow-500/20 bg-yellow-500/5">
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-400 mt-1" />
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold">Verification Required</h3>
+                      <p className="text-gray-300 text-sm mt-1">
+                        Upload your ID document to get verified and access premium job opportunities.
+                      </p>
+                      <Button 
+                        className="mt-3 bg-yellow-400 hover:bg-yellow-500 text-black"
+                        size="sm"
+                        onClick={() => setCurrentTab('profile')}
+                      >
+                        Complete Verification
+                      </Button>
+                    </div>
                   </div>
-                ) : recentJobs.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentJobs.map((job, index) => (
-                      <div key={index} className="border border-gray-700 rounded-lg p-4 hover:border-yellow-400/50 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-white font-semibold">{job.title}</h3>
-                          <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
-                            {job.status}
-                          </Badge>
-                        </div>
-                        <p className="text-gray-400 text-sm mb-2 line-clamp-2">{job.description}</p>
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <span>R{job.budget}</span>
-                          <span>{job.applications_count} applications</span>
-                        </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+              <Card className="dashboard-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Active Applications</p>
+                      <p className="text-2xl font-bold text-white">{stats.activeApplications}</p>
+                    </div>
+                    <Briefcase className="w-8 h-8 text-yellow-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Completed Jobs</p>
+                      <p className="text-2xl font-bold text-white">{stats.completedJobs}</p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Total Earnings</p>
+                      <p className="text-2xl font-bold text-white">R{stats.totalEarnings.toLocaleString()}</p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Rating</p>
+                      <p className="text-2xl font-bold text-white flex items-center">
+                        {stats.rating}
+                        <Star className="w-4 h-4 text-yellow-400 ml-1 fill-current" />
+                      </p>
+                    </div>
+                    <Award className="w-8 h-8 text-yellow-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Profile Views</p>
+                      <p className="text-2xl font-bold text-white">{stats.profileViews}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-blue-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Recent Job Applications */}
+              <div className="lg:col-span-2">
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-white flex items-center">
+                        <FileText className="w-5 h-5 mr-2" />
+                        Recent Job Applications
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentTab('applications')}
+                        className="text-yellow-400 hover:text-yellow-300"
+                      >
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse bg-gray-700 h-16 rounded"></div>
+                        ))}
                       </div>
-                    ))}
+                    ) : recentJobs.length > 0 ? (
+                      <div className="space-y-4">
+                        {recentJobs.map((job, index) => (
+                          <div key={index} className="border border-gray-700 rounded-lg p-4 hover:border-yellow-400/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="text-white font-semibold">{job.title}</h3>
+                              <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
+                                {job.status}
+                              </Badge>
+                            </div>
+                            <p className="text-gray-400 text-sm mb-2 line-clamp-2">{job.description}</p>
+                            <div className="flex items-center justify-between text-sm text-gray-500">
+                              <span className="flex items-center">
+                                <DollarSign className="w-4 h-4 mr-1" />
+                                R{job.budget}
+                              </span>
+                              <span className="flex items-center">
+                                <Users className="w-4 h-4 mr-1" />
+                                {job.applications_count} applications
+                              </span>
+                              <span className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {new Date(job.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Briefcase className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h3 className="text-white font-medium mb-2">No applications yet</h3>
+                        <p className="text-gray-400 mb-4">Start browsing jobs and submit your first proposal</p>
+                        <Button 
+                          className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black"
+                          onClick={() => setCurrentTab('jobs')}
+                        >
+                          Browse Jobs
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions & Profile */}
+              <div className="space-y-6">
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                      onClick={() => setCurrentTab('jobs')}
+                    >
+                      <Briefcase className="w-4 h-4 mr-2" />
+                      Browse Jobs
+                    </Button>
                     <Button 
                       variant="outline"
                       className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
-                      onClick={() => onNavigate('jobs')}
+                      onClick={() => setCurrentTab('profile')}
                     >
-                      View All Applications
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
                     </Button>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Briefcase className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-white font-medium mb-2">No applications yet</h3>
-                    <p className="text-gray-400 mb-4">Start browsing jobs and submit your first proposal</p>
                     <Button 
-                      className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black"
-                      onClick={() => onNavigate('jobs')}
+                      variant="outline"
+                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                      onClick={() => setCurrentTab('applications')}
                     >
-                      Browse Jobs
+                      <FileText className="w-4 h-4 mr-2" />
+                      My Applications
                     </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Messages
+                    </Button>
+                  </CardContent>
+                </Card>
 
-          {/* Quick Actions & Profile */}
-          <div className="space-y-6">
-            <Card className="dashboard-card">
-              <CardHeader>
-                <CardTitle className="text-white">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
-                  onClick={() => onNavigate('jobs')}
-                >
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Browse Jobs
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
-                  onClick={() => onNavigate('profile')}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
-                  onClick={() => onNavigate('messages')}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Messages
-                </Button>
-              </CardContent>
-            </Card>
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white">This Week</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Jobs Applied</span>
+                        <span className="text-white font-medium">3</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Profile Views</span>
+                        <span className="text-white font-medium">12</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Messages</span>
+                        <span className="text-white font-medium">5</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Earnings</span>
+                        <span className="text-green-400 font-medium">R2,400</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card className="dashboard-card">
-              <CardHeader>
-                <CardTitle className="text-white">This Week</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Jobs Applied</span>
-                    <span className="text-white font-medium">3</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Profile Views</span>
-                    <span className="text-white font-medium">12</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Messages</span>
-                    <span className="text-white font-medium">5</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                {/* Profile Completion */}
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white text-sm">Profile Completion</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Overall Progress</span>
+                        <span className="text-white font-medium">
+                          {user.profile_completed ? '100%' : '60%'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-yellow-400 to-green-500 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: user.profile_completed ? '100%' : '60%' }}
+                        ></div>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">Basic Info</span>
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">Skills & Experience</span>
+                          {user.profile_completed ? (
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Clock className="w-4 h-4 text-yellow-400" />
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400">Verification</span>
+                          {user.is_verified ? (
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-red-400" />
+                          )}
+                        </div>
+                      </div>
+                      {!user.profile_completed && (
+                        <Button 
+                          size="sm"
+                          className="w-full mt-3 bg-yellow-400 hover:bg-yellow-500 text-black"
+                          onClick={() => setCurrentTab('profile')}
+                        >
+                          Complete Profile
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
