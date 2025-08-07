@@ -211,7 +211,51 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
+  const filteredJobs = availableJobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
+                         job.description.toLowerCase().includes(jobSearch.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'all' || job.category === categoryFilter;
+    
+    const matchesBudget = budgetFilter === 'all' || 
+                         (budgetFilter === 'low' && job.budget < 5000) ||
+                         (budgetFilter === 'medium' && job.budget >= 5000 && job.budget < 15000) ||
+                         (budgetFilter === 'high' && job.budget >= 15000);
+    
+    return matchesSearch && matchesCategory && matchesBudget;
+  });
+
+  const jobCategories = [...new Set(availableJobs.map(job => job.category))];
+
   const verification = getVerificationStatus();
+
+  const TabNavigation = () => (
+    <div className="flex space-x-1 bg-gray-800/50 p-1 rounded-lg mb-6">
+      {[
+        { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+        { id: 'jobs', label: 'Browse Jobs', icon: Search },
+        { id: 'applications', label: 'My Applications', icon: FileText },
+        { id: 'profile', label: 'Profile', icon: Users },
+        { id: 'earnings', label: 'Earnings', icon: DollarSign }
+      ].map(tab => {
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setCurrentTab(tab.id)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+              currentTab === tab.id
+                ? 'bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="dashboard-modern">
