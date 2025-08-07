@@ -625,17 +625,21 @@ class AfrilanceAPITester:
         return success
 
     def test_update_freelancer_profile(self):
-        """Test updating freelancer profile"""
+        """Test updating freelancer profile with enhanced fields"""
         profile_data = {
-            "skills": ["Python", "React", "Node.js"],
-            "experience": "5 years of full-stack development",
-            "hourly_rate": 500.0,
-            "bio": "Experienced full-stack developer specializing in web applications",
-            "portfolio_links": ["https://github.com/testuser", "https://portfolio.test.com"]
+            "skills": ["Python", "React", "Node.js", "FastAPI", "MongoDB", "PostgreSQL", "Docker", "AWS"],
+            "experience": "Senior Full-Stack Developer with 7+ years of experience in building scalable web applications. Specialized in Python/Django/FastAPI backends and React/Vue.js frontends. Experience with cloud deployment, microservices architecture, and agile development methodologies.",
+            "hourly_rate": 750.0,
+            "bio": "Passionate full-stack developer from Cape Town, South Africa. I specialize in creating robust, scalable web applications using modern technologies. My expertise includes backend development with Python (Django/FastAPI), frontend development with React/Vue.js, database design, cloud deployment, and DevOps practices. I have successfully delivered 50+ projects for clients across various industries including fintech, e-commerce, and healthcare.",
+            "portfolio_links": [
+                "https://github.com/capetown-dev", 
+                "https://portfolio.capetown-developer.co.za",
+                "https://linkedin.com/in/capetown-fullstack-dev"
+            ]
         }
         
         success, response = self.run_test(
-            "Update Freelancer Profile",
+            "Update Freelancer Profile with Enhanced Fields",
             "PUT",
             "/api/freelancer/profile",
             200,
