@@ -887,6 +887,399 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
             )}
           </div>
         )}
+
+        {/* Profile Tab */}
+        {currentTab === 'profile' && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Profile Management</h2>
+              <div className="flex items-center space-x-2">
+                {verification.icon}
+                <span className={`font-medium ${verification.color}`}>
+                  {verification.text}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Profile Information */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Users className="w-5 h-5 mr-2" />
+                      Professional Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Full Name
+                        </label>
+                        <Input
+                          value={user.full_name}
+                          disabled
+                          className="bg-gray-800 border-gray-600 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Email Address
+                        </label>
+                        <Input
+                          value={user.email}
+                          disabled
+                          className="bg-gray-800 border-gray-600 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Skills (comma-separated)
+                      </label>
+                      <Input
+                        value={Array.isArray(profileForm.skills) 
+                          ? profileForm.skills.join(', ') 
+                          : profileForm.skills}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, skills: e.target.value }))}
+                        placeholder="e.g., React, Node.js, Python, Web Design"
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Hourly Rate (R)
+                      </label>
+                      <Input
+                        type="number"
+                        value={profileForm.hourly_rate}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, hourly_rate: e.target.value }))}
+                        placeholder="500"
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Professional Bio
+                      </label>
+                      <Textarea
+                        value={profileForm.bio}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
+                        placeholder="Tell clients about your experience, expertise, and what makes you unique..."
+                        rows={4}
+                        className="bg-gray-800 border-gray-600 text-white resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Experience Level
+                      </label>
+                      <select
+                        value={profileForm.experience}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, experience: e.target.value }))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      >
+                        <option value="">Select experience level</option>
+                        <option value="beginner">Beginner (0-1 years)</option>
+                        <option value="intermediate">Intermediate (2-4 years)</option>
+                        <option value="expert">Expert (5+ years)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Portfolio Links (comma-separated)
+                      </label>
+                      <Input
+                        value={Array.isArray(profileForm.portfolio_links) 
+                          ? profileForm.portfolio_links.join(', ') 
+                          : profileForm.portfolio_links}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, portfolio_links: e.target.value }))}
+                        placeholder="https://myportfolio.com, https://github.com/username"
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                    </div>
+
+                    <Button
+                      onClick={updateProfile}
+                      className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Update Profile
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Profile Summary & Verification */}
+              <div className="space-y-6">
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white text-sm">Profile Preview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center mb-4">
+                      <Avatar className="h-20 w-20 mx-auto mb-3">
+                        <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black text-2xl font-bold">
+                          {user?.full_name?.charAt(0) || 'F'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <h3 className="text-white font-semibold">{user.full_name}</h3>
+                      <div className="flex items-center justify-center space-x-1 mt-2">
+                        {verification.icon}
+                        <span className={`text-sm ${verification.color}`}>
+                          {verification.text}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Hourly Rate:</span>
+                        <span className="text-white">
+                          R{profileForm.hourly_rate || 'Not set'}/hr
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Experience:</span>
+                        <span className="text-white capitalize">
+                          {profileForm.experience || 'Not set'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Skills:</span>
+                        <span className="text-white">
+                          {(Array.isArray(profileForm.skills) 
+                            ? profileForm.skills 
+                            : profileForm.skills.split(',').map(s => s.trim())
+                          ).length || 0} skills
+                        </span>
+                      </div>
+                    </div>
+
+                    {profileForm.skills && (
+                      <div className="mt-4">
+                        <div className="flex flex-wrap gap-1">
+                          {(Array.isArray(profileForm.skills) 
+                            ? profileForm.skills 
+                            : profileForm.skills.split(',').map(s => s.trim())
+                          ).slice(0, 4).map((skill, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Verification Status */}
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white text-sm">Verification Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-sm">Email Verified</span>
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-sm">Profile Complete</span>
+                        {user.profile_completed ? (
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-yellow-400" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-sm">ID Document</span>
+                        {user.is_verified ? (
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        ) : user.id_document ? (
+                          <Clock className="w-4 h-4 text-yellow-400" />
+                        ) : (
+                          <AlertTriangle className="w-4 h-4 text-red-400" />
+                        )}
+                      </div>
+                    </div>
+
+                    {!user.is_verified && (
+                      <div className="mt-4 p-3 bg-yellow-500/10 rounded-lg">
+                        <p className="text-yellow-400 text-sm mb-3">
+                          {user.id_document 
+                            ? 'Your ID document is under review.'
+                            : 'Upload your ID document to get verified.'
+                          }
+                        </p>
+                        {!user.id_document && (
+                          <Button
+                            size="sm"
+                            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload ID Document
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Quick Stats */}
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white text-sm">Quick Stats</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Member Since:</span>
+                        <span className="text-white">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Jobs Applied:</span>
+                        <span className="text-white">{stats.activeApplications}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Success Rate:</span>
+                        <span className="text-green-400">85%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Earnings Tab */}
+        {currentTab === 'earnings' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Earnings Overview</h2>
+              <div className="flex items-center space-x-4">
+                <select className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                  <option>This Month</option>
+                  <option>Last Month</option>
+                  <option>This Year</option>
+                  <option>All Time</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Earnings Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="dashboard-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Total Earnings</p>
+                      <p className="text-3xl font-bold text-white">R{stats.totalEarnings.toLocaleString()}</p>
+                      <p className="text-green-400 text-sm">+12% from last month</p>
+                    </div>
+                    <DollarSign className="w-10 h-10 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">This Month</p>
+                      <p className="text-3xl font-bold text-white">R2,400</p>
+                      <p className="text-yellow-400 text-sm">3 projects</p>
+                    </div>
+                    <Calendar className="w-10 h-10 text-yellow-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Average Per Job</p>
+                      <p className="text-3xl font-bold text-white">R800</p>
+                      <p className="text-blue-400 text-sm">Based on 15 jobs</p>
+                    </div>
+                    <TrendingUp className="w-10 h-10 text-blue-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="dashboard-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Success Rate</p>
+                      <p className="text-3xl font-bold text-white">85%</p>
+                      <p className="text-green-400 text-sm">17 of 20 applications</p>
+                    </div>
+                    <Target className="w-10 h-10 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Earnings Chart Placeholder */}
+            <Card className="dashboard-card">
+              <CardHeader>
+                <CardTitle className="text-white">Earnings Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center border border-gray-700 rounded-lg">
+                  <div className="text-center">
+                    <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Earnings chart visualization</p>
+                    <p className="text-gray-500 text-sm">Charts integration coming soon</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Payments */}
+            <Card className="dashboard-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <DollarSign className="w-5 h-5 mr-2" />
+                  Recent Payments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { project: "E-commerce Website", amount: 1200, date: "2025-01-05", status: "Completed" },
+                    { project: "Mobile App UI/UX", amount: 800, date: "2024-12-28", status: "Completed" },
+                    { project: "Database Optimization", amount: 400, date: "2024-12-20", status: "Pending" }
+                  ].map((payment, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border border-gray-700 rounded-lg">
+                      <div>
+                        <h4 className="text-white font-medium">{payment.project}</h4>
+                        <p className="text-gray-400 text-sm">{payment.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-semibold">R{payment.amount.toLocaleString()}</p>
+                        <Badge variant={payment.status === 'Completed' ? 'default' : 'secondary'}>
+                          {payment.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
