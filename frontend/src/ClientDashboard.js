@@ -1098,6 +1098,155 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
 
+        {/* Contracts Tab */}
+        {currentTab === 'contracts' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">My Contracts</h2>
+              <Badge variant="secondary">{contracts.length} Active Contracts</Badge>
+            </div>
+
+            {jobsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="dashboard-card animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                      <div className="h-16 bg-gray-700 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : contracts.length > 0 ? (
+              <div className="space-y-4">
+                {contracts.map((contract) => (
+                  <Card key={contract.id} className="dashboard-card">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-semibold text-white">{contract.job_title}</h3>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={contract.status === 'In Progress' ? 'default' : 
+                                           contract.status === 'Completed' ? 'secondary' : 'destructive'}>
+                                {contract.status}
+                              </Badge>
+                              <Badge variant="outline">{contract.job_category}</Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-4 mb-4">
+                            <Avatar>
+                              <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black">
+                                {contract.freelancer_name?.charAt(0) || 'F'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-white font-medium">{contract.freelancer_name}</p>
+                              <p className="text-gray-400 text-sm">
+                                {contract.freelancer_profile?.experience_level} • 
+                                R{contract.freelancer_profile?.hourly_rate}/hr
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                            <div>
+                              <span className="text-gray-400">Contract Amount:</span>
+                              <p className="text-white font-medium">R{contract.amount?.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Started:</span>
+                              <p className="text-white font-medium">
+                                {new Date(contract.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Progress:</span>
+                              <p className={`font-medium ${
+                                contract.status === 'In Progress' ? 'text-yellow-400' : 
+                                contract.status === 'Completed' ? 'text-green-400' : 'text-red-400'
+                              }`}>
+                                {contract.status === 'In Progress' ? 'Active' : 
+                                 contract.status === 'Completed' ? 'Done' : 'Cancelled'}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Type:</span>
+                              <p className="text-white font-medium">Fixed Price</p>
+                            </div>
+                          </div>
+
+                          {contract.freelancer_profile?.skills && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {contract.freelancer_profile.skills.slice(0, 5).map((skill, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {contract.freelancer_profile.skills.length > 5 && (
+                                <Badge variant="outline" className="text-xs text-gray-400">
+                                  +{contract.freelancer_profile.skills.length - 5} more
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="ml-6 flex flex-col space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Message
+                          </Button>
+                          {contract.status === 'In Progress' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-green-600 text-green-300 hover:bg-green-800/20"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Mark Complete
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="dashboard-card">
+                <CardContent className="p-12 text-center">
+                  <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-white font-medium mb-2">No contracts yet</h3>
+                  <p className="text-gray-400 mb-6">
+                    Once you accept a proposal from a freelancer, contracts will appear here for project management.
+                  </p>
+                  <Button
+                    onClick={() => setCurrentTab('jobs')}
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 text-black"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Review Job Applications
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* Projects Tab */}
         {currentTab === 'projects' && (
           <div className="space-y-6">
