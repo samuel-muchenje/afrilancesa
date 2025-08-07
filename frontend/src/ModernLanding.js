@@ -660,7 +660,7 @@ const ModernLanding = ({
                 <img 
                   src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/n2pyrvrg_4.png" 
                   alt="Afrilance" 
-                  className="h-12 w-auto"
+                  className="h-12 w-auto afrilance-logo"
                 />
               </div>
               <p className="text-gray-400 mb-4">Connecting Africa's talent with opportunities worldwide.</p>
