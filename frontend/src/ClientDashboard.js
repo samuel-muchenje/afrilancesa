@@ -594,7 +594,171 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                 </Card>
               </div>
             </div>
-          </>
+        {/* Post Job Tab */}
+        {currentTab === 'post-job' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Post a New Job</h2>
+              <p className="text-gray-400">Create a detailed job posting to attract the best freelancers</p>
+            </div>
+
+            <Card className="dashboard-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Job Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={createJob} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Job Title *
+                      </label>
+                      <Input
+                        placeholder="e.g., Full Stack Developer for E-commerce Website"
+                        value={jobForm.title}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="bg-gray-800 border-gray-600 text-white"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Category *
+                      </label>
+                      <select
+                        value={jobForm.category}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, category: e.target.value }))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        required
+                      >
+                        <option value="">Select a category</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Mobile Development">Mobile Development</option>
+                        <option value="Design">Design</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Budget Type *
+                      </label>
+                      <select
+                        value={jobForm.budget_type}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, budget_type: e.target.value }))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        required
+                      >
+                        <option value="fixed">Fixed Price</option>
+                        <option value="hourly">Hourly Rate</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Budget (R) *
+                      </label>
+                      <Input
+                        type="number"
+                        placeholder="5000"
+                        value={jobForm.budget}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, budget: e.target.value }))}
+                        className="bg-gray-800 border-gray-600 text-white"
+                        required
+                      />
+                      <p className="text-gray-400 text-xs mt-1">
+                        {jobForm.budget_type === 'hourly' ? 'Maximum hourly rate' : 'Total project budget'}
+                      </p>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Job Description *
+                      </label>
+                      <Textarea
+                        placeholder="Describe your project in detail. Include what you're looking for, project goals, timeline, and any specific requirements..."
+                        value={jobForm.description}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, description: e.target.value }))}
+                        rows={6}
+                        className="bg-gray-800 border-gray-600 text-white resize-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Required Skills (comma-separated)
+                      </label>
+                      <Input
+                        placeholder="e.g., React, Node.js, MongoDB, API Integration"
+                        value={jobForm.requirements}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, requirements: e.target.value }))}
+                        className="bg-gray-800 border-gray-600 text-white"
+                      />
+                      <p className="text-gray-400 text-xs mt-1">
+                        List the key skills and technologies needed for this project
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h4 className="text-white font-medium mb-2">Job Posting Preview</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Title:</span>
+                        <span className="text-white">{jobForm.title || 'Not specified'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Category:</span>
+                        <span className="text-white">{jobForm.category || 'Not specified'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Budget:</span>
+                        <span className="text-white">
+                          {jobForm.budget ? `R${parseFloat(jobForm.budget).toLocaleString()} (${jobForm.budget_type})` : 'Not specified'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentTab('dashboard')}
+                      className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-8"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
+                          Posting...
+                        </div>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Post Job
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>
