@@ -1,6 +1,7 @@
 import requests
 import sys
 import json
+import jwt
 from datetime import datetime
 
 class AfrilanceAPITester:
