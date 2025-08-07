@@ -18,6 +18,7 @@ import {
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
+  const [currentTab, setCurrentTab] = useState('dashboard');
   const [stats, setStats] = useState({
     activeApplications: 0,
     completedJobs: 0,
@@ -27,7 +28,31 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
   });
   
   const [recentJobs, setRecentJobs] = useState([]);
+  const [availableJobs, setAvailableJobs] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  
+  // Search and filter states
+  const [jobSearch, setJobSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [budgetFilter, setBudgetFilter] = useState('all');
+  
+  // Profile management states
+  const [profileForm, setProfileForm] = useState({
+    skills: user?.profile?.skills || [],
+    experience: user?.profile?.experience || '',
+    hourly_rate: user?.profile?.hourly_rate || '',
+    bio: user?.profile?.bio || '',
+    portfolio_links: user?.profile?.portfolio_links || []
+  });
+  
+  // Application form
+  const [applicationForm, setApplicationForm] = useState({
+    proposal: '',
+    bid_amount: ''
+  });
 
   useEffect(() => {
     fetchDashboardData();
