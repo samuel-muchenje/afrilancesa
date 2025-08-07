@@ -197,6 +197,12 @@ async def login_user(user: UserLogin):
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Update last login
+    db.users.update_one(
+        {"id": db_user["id"]},
+        {"$set": {"last_login": datetime.utcnow()}}
+    )
+    
     token = create_token(db_user["id"], db_user["role"])
     
     return {
@@ -206,7 +212,11 @@ async def login_user(user: UserLogin):
             "email": db_user["email"],
             "role": db_user["role"],
             "full_name": db_user["full_name"],
-            "profile_completed": db_user.get("profile_completed", False)
+            "phone": db_user.get("phone", ""),
+            "is_verified": db_user.get("is_verified", False),
+            "profile_completed": db_user.get("profile_completed", False),
+            "verification_required": db_user.get("verification_required", False),
+            "can_bid": db_user.get("can_bid", True)
         }
     }
 
