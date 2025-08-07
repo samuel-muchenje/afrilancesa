@@ -231,9 +231,71 @@ async def get_profile(current_user = Depends(verify_token)):
         "email": user["email"],
         "role": user["role"],
         "full_name": user["full_name"],
+        "phone": user.get("phone", ""),
+        "is_verified": user.get("is_verified", False),
         "profile": user.get("profile", {}),
-        "profile_completed": user.get("profile_completed", False)
+        "profile_completed": user.get("profile_completed", False),
+        "verification_required": user.get("verification_required", False),
+        "can_bid": user.get("can_bid", True),
+        "created_at": user.get("created_at"),
+        "id_document": user.get("id_document")
     }
+
+@app.put("/api/profile")
+async def update_profile(profile: UserProfile, current_user = Depends(verify_token)):
+    # Update basic profile information
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$set": {
+                "full_name": profile.full_name,
+                "phone": profile.phone,
+                "email": profile.email
+            }
+        }
+    )
+    
+    return {"message": "Profile updated successfully"}
+
+# Admin-only endpoint for user verification
+@app.post("/api/admin/verify-user")
+async def verify_user(verification: VerificationRequest, current_user = Depends(verify_token)):
+    # Check if current user is admin
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Update user verification status
+    update_data = {
+        "is_verified": verification.verification_status,
+        "verified_at": datetime.utcnow() if verification.verification_status else None
+    }
+    
+    # If verifying a freelancer, allow them to bid
+    user = db.users.find_one({"id": verification.user_id})
+    if user and user["role"] == "freelancer" and verification.verification_status:
+        update_data["can_bid"] = True
+        update_data["verification_required"] = False
+    
+    db.users.update_one(
+        {"id": verification.user_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "User verification status updated"}
+
+@app.get("/api/admin/users")
+async def get_all_users(current_user = Depends(verify_token)):
+    # Check if current user is admin
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = list(db.users.find({}, {"password": 0}).sort("created_at", -1))
+    
+    # Convert ObjectId to string for JSON serialization
+    for user in users:
+        user["_id"] = str(user["_id"])
+    
+    return users
 
 @app.put("/api/freelancer/profile")
 async def update_freelancer_profile(profile: FreelancerProfile, current_user = Depends(verify_token)):
