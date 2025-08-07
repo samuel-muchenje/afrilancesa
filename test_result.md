@@ -243,7 +243,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Authentication System"
     - "Login Page Implementation" 
     - "App.js Routing Integration"
     - "AdminDashboard Component"
