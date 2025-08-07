@@ -15,6 +15,10 @@ from email.mime.multipart import MIMEMultipart
 import shutil
 from pathlib import Path
 
+# Create uploads directory
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 app = FastAPI()
 
 # CORS middleware
