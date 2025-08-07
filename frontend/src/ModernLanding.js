@@ -614,38 +614,47 @@ const ModernLanding = ({
       </section>
 
       {/* Sticky CTA Footer */}
-      <div className="sticky-cta">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white font-semibold">Ready to Find Africa's Best Freelancers or Start Selling Your Skills?</p>
-            </div>
-            <div className="flex space-x-4">
-              <Button
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthForm(prev => ({ ...prev, role: 'client' }));
-                  setCurrentPage('auth');
-                }}
-                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
-              >
-                Hire Now
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
-                  setCurrentPage('auth');
-                }}
-                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
-              >
-                Join Afrilance
-              </Button>
+      {ctaBarVisible && (
+        <div className="sticky-cta">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-white font-semibold">Ready to Find Africa's Best Freelancers or Start Selling Your Skills?</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex space-x-4">
+                  <Button
+                    onClick={() => {
+                      setCurrentPage('register');
+                    }}
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                  >
+                    Hire Now
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setCurrentPage('register');
+                    }}
+                    className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
+                  >
+                    Join Afrilance
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCtaBarVisible(false)}
+                  className="text-gray-400 hover:text-white hover:bg-white/10 ml-4"
+                  title="Close this notification"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer */}
       <footer className="footer-modern py-12">
