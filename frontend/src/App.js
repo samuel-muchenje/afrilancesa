@@ -414,6 +414,16 @@ function App() {
     );
   }
 
+  // Login Page
+  if (currentPage === 'login') {
+    return (
+      <Login
+        onNavigate={handleLoginNavigation}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    );
+  }
+
   // Register Page
   if (currentPage === 'register') {
     return (
