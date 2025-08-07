@@ -137,6 +137,7 @@ const ModernLanding = ({
   setSupportForm, 
   loading 
 }) => {
+  const [ctaBarVisible, setCtaBarVisible] = useState(true);
   return (
     <div className="modern-landing">
       {/* Navigation */}
