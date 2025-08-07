@@ -6,7 +6,12 @@ import { Textarea } from './components/ui/textarea';
 import { Label } from './components/ui/label';
 import { Badge } from './components/ui/badge';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Briefcase, DollarSign, FileText, Plus, X, CheckCircle, AlertTriangle, Clock, Users } from 'lucide-react';
+import { Progress } from './components/ui/progress';
+import { 
+  Briefcase, DollarSign, FileText, Plus, X, CheckCircle, AlertTriangle, 
+  Clock, Users, MapPin, Calendar, Target, Zap, Eye, TrendingUp,
+  ChevronRight, Globe, Star
+} from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
