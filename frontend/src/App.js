@@ -326,190 +326,20 @@ function App() {
     }
   };
 
-  // Modern Landing Page Component
+  // Modern Landing Page
   if (currentPage === 'landing') {
     return (
-      <div className="modern-landing">
-        {/* Navigation */}
-        <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-gray-800 z-50">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
-                <span className="text-black font-bold text-xl">A</span>
-              </div>
-              <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentPage('auth')}
-                className="text-white hover:text-yellow-400 hover:bg-white/5"
-              >
-                Sign In
-              </Button>
-              <Button
-                onClick={() => {
-                  setAuthMode('register');
-                  setCurrentPage('auth');
-                }}
-                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-6"
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Hero Section */}
-        <section className="hero-section min-h-screen bg-black flex items-center relative overflow-hidden">
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0">
-            <div className="floating-shape shape-1"></div>
-            <div className="floating-shape shape-2"></div>
-            <div className="floating-shape shape-3"></div>
-          </div>
-          
-          <div className="container mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
-            <div className="text-left">
-              <div className="mb-6">
-                <span className="text-yellow-400 font-semibold text-lg tracking-wider">INTRODUCING</span>
-              </div>
-              <h1 className="hero-title text-white mb-8">
-                SA'S FIRST<br />
-                FREE LANCING<br />
-                <span className="text-gradient">TOOL</span>
-              </h1>
-              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-                The future of freelance in Africa starts here
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  onClick={() => {
-                    setAuthMode('register');
-                    setAuthForm(prev => ({ ...prev, role: 'client' }));
-                    setCurrentPage('auth');
-                  }}
-                  className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
-                >
-                  Start Hiring
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => {
-                    setAuthMode('register');
-                    setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
-                    setCurrentPage('auth');
-                  }}
-                  className="border-2 border-white/30 text-white hover:bg-white/5 hover:border-yellow-400 px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
-                >
-                  Join as a Freelancer
-                </Button>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="animated-graphic">
-                <svg viewBox="0 0 400 400" className="w-full h-auto">
-                  <defs>
-                    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#F6E96B" />
-                      <stop offset="25%" stopColor="#BEDC74" />
-                      <stop offset="50%" stopColor="#A2CA71" />
-                      <stop offset="100%" stopColor="#387F39" />
-                    </linearGradient>
-                  </defs>
-                  <path className="floating-path" d="M100,200 Q200,100 300,200 T500,200" stroke="url(#gradient1)" strokeWidth="8" fill="none" opacity="0.6" />
-                  <path className="floating-path delay-1" d="M80,220 Q180,120 280,220 T480,220" stroke="url(#gradient1)" strokeWidth="6" fill="none" opacity="0.4" />
-                  <path className="floating-path delay-2" d="M120,180 Q220,80 320,180 T520,180" stroke="url(#gradient1)" strokeWidth="4" fill="none" opacity="0.3" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Dynamic Categories Section */}
-        <section className="py-20 bg-black">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-6">Find Talent Across All Industries</h2>
-              <p className="text-xl text-gray-300">Real professionals, real results</p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {categories.map((category, index) => (
-                <div
-                  key={index}
-                  className="category-card relative h-64 rounded-2xl overflow-hidden cursor-pointer group transform hover:scale-105 transition-all duration-300"
-                  style={{
-                    backgroundImage: `linear-gradient(45deg, rgba(0,0,0,0.7), rgba(56,127,57,0.3)), url(${category.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <h3 className="text-xl font-bold mb-2">{category.title}</h3>
-                    <p className="text-yellow-400 text-sm">{category.count}</p>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Freelancers */}
-        <section className="py-20 bg-gray-900">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-6">Featured Freelancers</h2>
-              <p className="text-xl text-gray-300">Talent you can trust</p>
-            </div>
-            <div className="relative">
-              <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
-                {featuredFreelancers.map((freelancer, index) => (
-                  <div key={index} className="flex-shrink-0 w-80">
-                    <Card className="bg-black/50 border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20">
-                      <CardContent className="p-6">
-                        <div className="flex items-center mb-4">
-                          <img
-                            src={freelancer.image}
-                            alt={freelancer.name}
-                            className="w-16 h-16 rounded-full object-cover mr-4"
-                          />
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">{freelancer.name}</h3>
-                            <p className="text-gray-400">{freelancer.profession}</p>
-                            <div className="flex items-center mt-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-yellow-400 ml-1">{freelancer.rating}</span>
-                              <span className="text-gray-500 ml-2">({freelancer.reviews} reviews)</span>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-gray-300 mb-4 italic">"{freelancer.tagline}"</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-green-400 font-semibold">From {freelancer.price}/hr</span>
-                          <Button
-                            size="sm"
-                            className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
-                            onClick={() => {
-                              setAuthMode('register');
-                              setAuthForm(prev => ({ ...prev, role: 'client' }));
-                              setCurrentPage('auth');
-                            }}
-                          >
-                            View Profile
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+      <ModernLanding 
+        setCurrentPage={setCurrentPage}
+        setAuthMode={setAuthMode}
+        setAuthForm={setAuthForm}
+        submitSupport={submitSupport}
+        supportForm={supportForm}
+        setSupportForm={setSupportForm}
+        loading={loading}
+      />
+    );
+  }
 
   if (currentPage === 'auth') {
     return (
