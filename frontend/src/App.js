@@ -369,6 +369,13 @@ function App() {
                     className="auth-input"
                     required
                   />
+                  <Input
+                    placeholder="Phone Number"
+                    value={authForm.phone}
+                    onChange={(e) => setAuthForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="auth-input"
+                    required
+                  />
                   <div>
                     <label className="block text-sm font-medium text-white mb-2">I am a:</label>
                     <div className="flex space-x-4">
