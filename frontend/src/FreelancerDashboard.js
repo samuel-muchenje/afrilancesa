@@ -605,8 +605,283 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                   </CardContent>
                 </Card>
               </div>
+        {/* Jobs Tab - Browse Available Jobs */}
+        {currentTab === 'jobs' && (
+          <div className="space-y-6">
+            {/* Search and Filter Controls */}
+            <Card className="dashboard-card">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search jobs..."
+                      value={jobSearch}
+                      onChange={(e) => setJobSearch(e.target.value)}
+                      className="pl-10 bg-gray-800 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value="all">All Categories</option>
+                    {jobCategories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={budgetFilter}
+                    onChange={(e) => setBudgetFilter(e.target.value)}
+                    className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value="all">All Budgets</option>
+                    <option value="low">Under R5,000</option>
+                    <option value="medium">R5,000 - R15,000</option>
+                    <option value="high">R15,000+</option>
+                  </select>
+
+                  <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-400 text-sm">
+                      {filteredJobs.length} of {availableJobs.length} jobs
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Jobs List */}
+            {jobsLoading ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Card key={i} className="dashboard-card animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                      <div className="h-16 bg-gray-700 rounded mb-4"></div>
+                      <div className="flex space-x-4">
+                        <div className="h-4 bg-gray-700 rounded w-20"></div>
+                        <div className="h-4 bg-gray-700 rounded w-20"></div>
+                        <div className="h-4 bg-gray-700 rounded w-20"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredJobs.length > 0 ? (
+              <div className="space-y-4">
+                {filteredJobs.map((job) => (
+                  <Card key={job.id} className="dashboard-card hover:border-yellow-400/50 transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
+                          <Badge variant="secondary" className="mb-3">{job.category}</Badge>
+                          <p className="text-gray-300 mb-4 leading-relaxed">{job.description}</p>
+                          
+                          <div className="flex items-center space-x-6 text-sm text-gray-400 mb-4">
+                            <span className="flex items-center">
+                              <DollarSign className="w-4 h-4 mr-1" />
+                              R{job.budget?.toLocaleString()} ({job.budget_type})
+                            </span>
+                            <span className="flex items-center">
+                              <Users className="w-4 h-4 mr-1" />
+                              {job.applications_count} proposals
+                            </span>
+                            <span className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              {new Date(job.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          {job.requirements && job.requirements.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {job.requirements.map((req, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {req}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          <p className="text-sm text-gray-500 mb-4">
+                            Posted by: <span className="text-gray-400">{job.client_name}</span>
+                          </p>
+                        </div>
+
+                        <div className="ml-6 flex flex-col space-y-2">
+                          <Button
+                            onClick={() => {
+                              setSelectedJob(job);
+                              setApplicationForm({ proposal: '', bid_amount: '' });
+                            }}
+                            className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                            disabled={!user.can_bid}
+                          >
+                            Apply Now
+                          </Button>
+                          
+                          {!user.can_bid && (
+                            <p className="text-xs text-red-400 text-center">
+                              Verification required
+                            </p>
+                          )}
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <Heart className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="dashboard-card">
+                <CardContent className="p-12 text-center">
+                  <Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-white font-medium mb-2">No jobs found</h3>
+                  <p className="text-gray-400 mb-4">
+                    Try adjusting your search criteria or check back later for new opportunities.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setJobSearch('');
+                      setCategoryFilter('all');
+                      setBudgetFilter('all');
+                    }}
+                    variant="outline"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                  >
+                    Clear Filters
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Applications Tab */}
+        {currentTab === 'applications' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">My Applications</h2>
+              <div className="flex items-center space-x-4">
+                <Badge variant="secondary">{myApplications.length} Total Applications</Badge>
+                <Button
+                  onClick={() => setCurrentTab('jobs')}
+                  className="bg-gradient-to-r from-yellow-400 to-green-500 text-black"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Apply to New Jobs
+                </Button>
+              </div>
             </div>
-          </>
+
+            {jobsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="dashboard-card animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                      <div className="h-16 bg-gray-700 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : myApplications.length > 0 ? (
+              <div className="space-y-4">
+                {myApplications.map((application, index) => (
+                  <Card key={index} className="dashboard-card">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-white mb-2">{application.title}</h3>
+                          <div className="flex items-center space-x-4 mb-3">
+                            <Badge variant={application.status === 'open' ? 'default' : 'secondary'}>
+                              {application.status}
+                            </Badge>
+                            <span className="text-sm text-gray-400">
+                              Applied {new Date(application.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-gray-300 mb-4">{application.description}</p>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-400">Budget:</span>
+                              <p className="text-white font-medium">R{application.budget?.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">My Bid:</span>
+                              <p className="text-white font-medium">R{application.bid_amount?.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Applications:</span>
+                              <p className="text-white font-medium">{application.applications_count}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Status:</span>
+                              <p className={`font-medium ${
+                                application.status === 'open' ? 'text-green-400' : 
+                                application.status === 'closed' ? 'text-red-400' : 'text-yellow-400'
+                              }`}>
+                                {application.status === 'open' ? 'Active' : 
+                                 application.status === 'closed' ? 'Closed' : 'In Review'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="ml-6 flex flex-col space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Message Client
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="dashboard-card">
+                <CardContent className="p-12 text-center">
+                  <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-white font-medium mb-2">No applications yet</h3>
+                  <p className="text-gray-400 mb-6">
+                    Start browsing available jobs and submit your first application to begin your freelancing journey.
+                  </p>
+                  <Button
+                    onClick={() => setCurrentTab('jobs')}
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 text-black"
+                  >
+                    Browse Available Jobs
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
       </div>
     </div>
