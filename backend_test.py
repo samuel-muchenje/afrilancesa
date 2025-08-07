@@ -705,19 +705,48 @@ class AfrilanceAPITester:
         return False
 
     def test_apply_to_job(self):
-        """Test job application by freelancer"""
+        """Test job application by freelancer with comprehensive proposal"""
         if not self.test_job_id:
             print("❌ No job ID available for application test")
             return False
             
         application_data = {
             "job_id": self.test_job_id,
-            "proposal": "I am an experienced full-stack developer with expertise in React and Python. I can deliver this project within the specified timeline and budget.",
-            "bid_amount": 14000.0
+            "proposal": """Dear Client,
+
+I am excited to submit my proposal for your Senior Full-Stack Developer position for the E-commerce Platform project. With over 7 years of experience in full-stack development and a proven track record of delivering complex e-commerce solutions, I am confident I can exceed your expectations.
+
+**My Relevant Experience:**
+- Built 15+ e-commerce platforms using React, Python FastAPI, and MongoDB
+- Integrated multiple payment gateways (Stripe, PayPal, PayFast for South African market)
+- Developed scalable admin dashboards with real-time analytics
+- Implemented secure user authentication and authorization systems
+
+**Technical Approach:**
+- Frontend: React with TypeScript, Redux for state management, Tailwind CSS for styling
+- Backend: Python FastAPI with async/await for high performance
+- Database: MongoDB with proper indexing and data modeling
+- Payment: Stripe integration with South African payment methods
+- Deployment: Docker containers on AWS with CI/CD pipeline
+
+**Timeline:** I can complete this project within 8-10 weeks with regular updates and milestone deliveries.
+
+**Why Choose Me:**
+- Based in Cape Town, South Africa - perfect timezone alignment
+- Strong communication skills in English and Afrikaans
+- Available for regular video calls and project updates
+- 100% client satisfaction rate on previous projects
+
+I would love to discuss your project requirements in detail. Please feel free to review my portfolio and previous client testimonials.
+
+Best regards,
+Thabo Mthembu
+Senior Full-Stack Developer""",
+            "bid_amount": 23000.0
         }
         
         success, response = self.run_test(
-            "Apply to Job",
+            "Apply to Job with Comprehensive Proposal",
             "POST",
             f"/api/jobs/{self.test_job_id}/apply",
             200,
