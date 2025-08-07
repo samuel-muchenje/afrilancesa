@@ -97,6 +97,19 @@ class SupportTicket(BaseModel):
     email: EmailStr
     message: str
 
+class ContractCreate(BaseModel):
+    job_id: str
+    freelancer_id: str
+    client_id: str
+    amount: float
+    status: str = "In Progress"
+
+class ProposalAcceptance(BaseModel):
+    job_id: str
+    freelancer_id: str
+    proposal_id: str
+    bid_amount: float
+
 # Utility functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
