@@ -133,13 +133,18 @@ function App() {
         body: JSON.stringify(authForm)
       });
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-      setCurrentPage('dashboard');
-      setAuthForm({ email: '', password: '', full_name: '', role: 'freelancer' });
+      if (data.token && data.user) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        setCurrentPage('dashboard');
+        setAuthForm({ email: '', password: '', full_name: '', role: 'freelancer' });
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
-      alert(error.message);
+      console.error('Auth error:', error);
+      alert(`${authMode === 'login' ? 'Login' : 'Registration'} failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
