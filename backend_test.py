@@ -65,13 +65,14 @@ class AfrilanceAPITester:
         return success
 
     def test_freelancer_registration(self):
-        """Test freelancer registration"""
+        """Test freelancer registration with enhanced fields"""
         timestamp = datetime.now().strftime('%H%M%S')
         freelancer_data = {
             "email": f"freelancer_{timestamp}@test.com",
             "password": "TestPass123!",
             "role": "freelancer",
-            "full_name": f"Test Freelancer {timestamp}"
+            "full_name": f"Test Freelancer {timestamp}",
+            "phone": f"+27123456{timestamp[-3:]}"
         }
         
         success, response = self.run_test(
