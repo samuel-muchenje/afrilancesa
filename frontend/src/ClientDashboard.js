@@ -632,7 +632,6 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                 </Card>
               </div>
             </div>
-            </div>
           </>
         )}
 
