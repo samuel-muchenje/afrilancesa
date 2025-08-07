@@ -1356,95 +1356,9 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                   Submit Application
                 </Button>
               </div>
-            </form>
-        {/* Job Application Modal */}
-        {selectedJob && (
-          <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
-            <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
-              <DialogHeader>
-                <DialogTitle className="text-white">Apply to: {selectedJob.title}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={applyToJob} className="space-y-4">
-                <div className="bg-gray-800 p-4 rounded-lg">
-                  <h4 className="font-medium text-white mb-2">Job Details:</h4>
-                  <p className="text-gray-300 text-sm mb-3">{selectedJob.description}</p>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Budget:</span>
-                      <p className="text-white font-medium">
-                        R{selectedJob.budget?.toLocaleString()} ({selectedJob.budget_type})
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Applications:</span>
-                      <p className="text-white font-medium">{selectedJob.applications_count} proposals</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Your Proposal *
-                  </label>
-                  <Textarea
-                    placeholder="Explain why you're the perfect fit for this project. Highlight your relevant experience and how you'll approach the work..."
-                    value={applicationForm.proposal}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, proposal: e.target.value }))}
-                    rows={6}
-                    className="bg-gray-800 border-gray-600 text-white resize-none"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Your Bid Amount (R) *
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="Enter your bid amount"
-                    value={applicationForm.bid_amount}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, bid_amount: e.target.value }))}
-                    className="bg-gray-800 border-gray-600 text-white"
-                    required
-                  />
-                  <p className="text-gray-400 text-xs mt-1">
-                    Recommended: R{Math.round(selectedJob.budget * 0.8)?.toLocaleString()} - R{selectedJob.budget?.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedJob(null)}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
-                        Submitting...
-                      </div>
-                    ) : (
-                      <>
-                        <FileText className="w-4 h-4 mr-2" />
-                        Submit Application
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
