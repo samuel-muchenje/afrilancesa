@@ -263,8 +263,9 @@ body {
   box-shadow: 0 35px 70px rgba(246, 233, 107, 0.2);
 }
 
-/* Sticky CTA Footer */
+/* Sticky CTA Footer - DISABLED */
 .sticky-cta {
+  display: none !important; /* Completely disable */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -274,7 +275,7 @@ body {
   border-top: 1px solid rgba(246, 233, 107, 0.2);
   z-index: 40;
   transform: translateY(100%);
-  animation: slideUpSticky 0.5s ease-out 2s forwards;
+  animation: none; /* Disable animation */
   transition: transform 0.3s ease-out;
 }
 
