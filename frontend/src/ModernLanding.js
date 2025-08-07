@@ -137,7 +137,7 @@ const ModernLanding = ({
   setSupportForm, 
   loading 
 }) => {
-  const [ctaBarVisible, setCtaBarVisible] = useState(true);
+  const [ctaBarVisible, setCtaBarVisible] = useState(false); // Start hidden by default
   return (
     <div className="modern-landing">
       {/* Navigation */}
