@@ -27,7 +27,6 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [currentFreelancerIndex, setCurrentFreelancerIndex] = useState(0);
 
   // Auth forms
   const [authMode, setAuthMode] = useState('login');
