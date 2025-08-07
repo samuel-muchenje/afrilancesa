@@ -2008,6 +2008,35 @@ def main():
             ("ID Document Upload", tester.test_id_document_upload),
         ]
         
+        # Add Contract System Tests
+        contract_tests = [
+            ("Contract Creation Flow", tester.test_contract_creation_flow),
+            ("Contract Trigger Logic", tester.test_contract_trigger_logic),
+            ("Contracts GET All Roles", tester.test_contracts_get_all_roles),
+            ("Contract Detailed View", tester.test_contract_detailed_view),
+            ("Contract Status Update", tester.test_contract_status_update),
+            ("Contract Stats", tester.test_contract_stats),
+            ("Contract Error Handling", tester.test_contract_error_handling),
+            ("Contract Integration Workflow", tester.test_contract_integration_workflow),
+        ]
+        
+        # Run additional tests first
+        for test_name, test_func in additional_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
+        # Run contract tests
+        print("\n📋 CONTRACTS SYSTEM TESTS")
+        print("=" * 60)
+        
+        for test_name, test_func in contract_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
         for test_name, test_func in additional_tests:
             try:
                 test_func()
