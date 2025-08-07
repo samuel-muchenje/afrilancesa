@@ -462,7 +462,57 @@ async def get_messages(job_id: str, current_user = Depends(verify_token)):
     
     return messages
 
-@app.post("/api/support")
+@app.post("/api/upload-id-document")
+async def upload_id_document(
+    file: UploadFile = File(...),
+    current_user = Depends(verify_token)
+):
+    # Check if user is freelancer
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can upload ID documents")
+    
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG, PNG, and PDF files are allowed")
+    
+    # Validate file size (max 5MB)
+    max_size = 5 * 1024 * 1024  # 5MB
+    file_content = await file.read()
+    if len(file_content) > max_size:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+    
+    # Generate unique filename
+    file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    unique_filename = f"{current_user['user_id']}_id_document_{uuid.uuid4().hex[:8]}.{file_extension}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        buffer.write(file_content)
+    
+    # Update user document in database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$set": {
+                "id_document": {
+                    "filename": unique_filename,
+                    "original_name": file.filename,
+                    "file_path": str(file_path),
+                    "content_type": file.content_type,
+                    "uploaded_at": datetime.utcnow()
+                },
+                "document_submitted": True
+            }
+        }
+    )
+    
+    return {
+        "message": "ID document uploaded successfully",
+        "filename": unique_filename,
+        "status": "pending_verification"
+    }
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
     ticket_data = {
