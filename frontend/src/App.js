@@ -446,23 +446,24 @@ function App() {
     }
   };
 
+  // Modern Landing Page Component
   if (currentPage === 'landing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50">
+      <div className="modern-landing">
         {/* Navigation */}
-        <nav className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-green-100 z-50">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
+        <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-gray-800 z-50">
+          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
+                <span className="text-black font-bold text-xl">A</span>
               </div>
-              <span className="text-2xl font-bold text-green-800">Afrilance</span>
+              <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
             </div>
             <div className="flex items-center space-x-4">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setCurrentPage('auth')}
-                className="border-green-600 text-green-600 hover:bg-green-50"
+                className="text-white hover:text-yellow-400 hover:bg-white/5"
               >
                 Sign In
               </Button>
@@ -471,7 +472,7 @@ function App() {
                   setAuthMode('register');
                   setCurrentPage('auth');
                 }}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-6"
               >
                 Get Started
               </Button>
@@ -480,158 +481,155 @@ function App() {
         </nav>
 
         {/* Hero Section */}
-        <section className="container mx-auto px-4 py-20 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl font-bold text-green-800 mb-6 leading-tight">
-              Connect with South Africa's
-              <span className="text-yellow-500 block">Top Freelancers</span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Afrilance bridges the gap between verified South African freelancers and clients seeking quality services across all sectors.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthForm(prev => ({ ...prev, role: 'client' }));
-                  setCurrentPage('auth');
-                }}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
-              >
-                <Briefcase className="mr-2 w-5 h-5" />
-                Hire Freelancers
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
-                  setCurrentPage('auth');
-                }}
-                className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-4 text-lg"
-              >
-                <Users className="mr-2 w-5 h-5" />
-                Find Work
-              </Button>
+        <section className="hero-section min-h-screen bg-black flex items-center relative overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0">
+            <div className="floating-shape shape-1"></div>
+            <div className="floating-shape shape-2"></div>
+            <div className="floating-shape shape-3"></div>
+          </div>
+          
+          <div className="container mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div className="text-left">
+              <div className="mb-6">
+                <span className="text-yellow-400 font-semibold text-lg tracking-wider">INTRODUCING</span>
+              </div>
+              <h1 className="hero-title text-white mb-8">
+                SA'S FIRST<br />
+                FREE LANCING<br />
+                <span className="text-gradient">TOOL</span>
+              </h1>
+              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+                The future of freelance in Africa starts here
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    setAuthMode('register');
+                    setAuthForm(prev => ({ ...prev, role: 'client' }));
+                    setCurrentPage('auth');
+                  }}
+                  className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
+                >
+                  Start Hiring
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    setAuthMode('register');
+                    setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
+                    setCurrentPage('auth');
+                  }}
+                  className="border-2 border-white/30 text-white hover:bg-white/5 hover:border-yellow-400 px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
+                >
+                  Join as a Freelancer
+                </Button>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="animated-graphic">
+                <svg viewBox="0 0 400 400" className="w-full h-auto">
+                  <defs>
+                    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#F6E96B" />
+                      <stop offset="25%" stopColor="#BEDC74" />
+                      <stop offset="50%" stopColor="#A2CA71" />
+                      <stop offset="100%" stopColor="#387F39" />
+                    </linearGradient>
+                  </defs>
+                  <path className="floating-path" d="M100,200 Q200,100 300,200 T500,200" stroke="url(#gradient1)" strokeWidth="8" fill="none" opacity="0.6" />
+                  <path className="floating-path delay-1" d="M80,220 Q180,120 280,220 T480,220" stroke="url(#gradient1)" strokeWidth="6" fill="none" opacity="0.4" />
+                  <path className="floating-path delay-2" d="M120,180 Q220,80 320,180 T520,180" stroke="url(#gradient1)" strokeWidth="4" fill="none" opacity="0.3" />
+                </svg>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="bg-white py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-green-800 mb-12">Why Choose Afrilance?</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                    <Star className="w-6 h-6 text-green-600" />
+        {/* Dynamic Categories Section */}
+        <section className="py-20 bg-black">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-white mb-6">Find Talent Across All Industries</h2>
+              <p className="text-xl text-gray-300">Real professionals, real results</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {categories.map((category, index) => (
+                <div
+                  key={index}
+                  className="category-card relative h-64 rounded-2xl overflow-hidden cursor-pointer group transform hover:scale-105 transition-all duration-300"
+                  style={{
+                    backgroundImage: `linear-gradient(45deg, rgba(0,0,0,0.7), rgba(56,127,57,0.3)), url(${category.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6 text-white">
+                    <h3 className="text-xl font-bold mb-2">{category.title}</h3>
+                    <p className="text-yellow-400 text-sm">{category.count}</p>
                   </div>
-                  <CardTitle className="text-green-800">Verified Professionals</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">All freelancers are thoroughly verified with skill assessments and background checks.</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                    <MapPin className="w-6 h-6 text-yellow-600" />
-                  </div>
-                  <CardTitle className="text-green-800">Local Expertise</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Connect with South African professionals who understand your local market needs.</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                    <MessageCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <CardTitle className="text-green-800">Seamless Communication</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Built-in messaging and project management tools keep everyone on the same page.</p>
-                </CardContent>
-              </Card>
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="bg-green-600 py-20 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-            <p className="text-xl mb-8 opacity-90">Join thousands of South Africans already using Afrilance</p>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => {
-                setAuthMode('register');
-                setCurrentPage('auth');
-              }}
-              className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 text-lg border-white"
-            >
-              Start Your Journey
-            </Button>
-          </div>
-        </section>
-
-        {/* Support Form */}
-        <section className="bg-gray-50 py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold text-center text-green-800 mb-8">Get Support</h2>
-              <Card>
-                <CardContent className="p-6">
-                  <form onSubmit={submitSupport} className="space-y-4">
-                    <div>
-                      <Input
-                        placeholder="Your Name"
-                        value={supportForm.name}
-                        onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="email"
-                        placeholder="Your Email"
-                        value={supportForm.email}
-                        onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Textarea
-                        placeholder="How can we help you?"
-                        value={supportForm.message}
-                        onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
-                        rows={4}
-                        required
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      disabled={loading}
-                    >
-                      {loading ? 'Sending...' : 'Send Message'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+        {/* Featured Freelancers */}
+        <section className="py-20 bg-gray-900">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-white mb-6">Featured Freelancers</h2>
+              <p className="text-xl text-gray-300">Talent you can trust</p>
+            </div>
+            <div className="relative">
+              <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
+                {featuredFreelancers.map((freelancer, index) => (
+                  <div key={index} className="flex-shrink-0 w-80">
+                    <Card className="bg-black/50 border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20">
+                      <CardContent className="p-6">
+                        <div className="flex items-center mb-4">
+                          <img
+                            src={freelancer.image}
+                            alt={freelancer.name}
+                            className="w-16 h-16 rounded-full object-cover mr-4"
+                          />
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{freelancer.name}</h3>
+                            <p className="text-gray-400">{freelancer.profession}</p>
+                            <div className="flex items-center mt-1">
+                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                              <span className="text-yellow-400 ml-1">{freelancer.rating}</span>
+                              <span className="text-gray-500 ml-2">({freelancer.reviews} reviews)</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-gray-300 mb-4 italic">"{freelancer.tagline}"</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-green-400 font-semibold">From {freelancer.price}/hr</span>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                            onClick={() => {
+                              setAuthMode('register');
+                              setAuthForm(prev => ({ ...prev, role: 'client' }));
+                              setCurrentPage('auth');
+                            }}
+                          >
+                            View Profile
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
-      </div>
-    );
-  }
 
   if (currentPage === 'auth') {
     return (
