@@ -254,6 +254,8 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
       alert(`Error accepting proposal: ${error.message}`);
     }
   };
+
+  const createJob = async (e) => {
     e.preventDefault();
     setLoading(true);
 
