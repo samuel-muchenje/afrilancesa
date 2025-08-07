@@ -1,52 +1,1029 @@
-import { useEffect } from "react";
-import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Button } from './components/ui/button';
+import { Input } from './components/ui/input';
+import { Textarea } from './components/ui/textarea';
+import { Badge } from './components/ui/badge';
+import { Avatar, AvatarFallback } from './components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { MessageCircle, HelpCircle, Briefcase, Users, Star, MapPin, Clock, DollarSign, Send, LogOut, User, Plus } from 'lucide-react';
+import './App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-const Home = () => {
-  const helloWorldApi = async () => {
+function App() {
+  const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState('landing');
+  const [jobs, setJobs] = useState([]);
+  const [myJobs, setMyJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+
+  // Auth forms
+  const [authMode, setAuthMode] = useState('login');
+  const [authForm, setAuthForm] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    role: 'freelancer'
+  });
+
+  // Job form
+  const [jobForm, setJobForm] = useState({
+    title: '',
+    description: '',
+    category: '',
+    budget: '',
+    budget_type: 'fixed',
+    requirements: ''
+  });
+
+  // Application form
+  const [applicationForm, setApplicationForm] = useState({
+    proposal: '',
+    bid_amount: ''
+  });
+
+  // Profile form
+  const [profileForm, setProfileForm] = useState({
+    skills: '',
+    experience: '',
+    hourly_rate: '',
+    bio: '',
+    portfolio_links: ''
+  });
+
+  // Support form
+  const [supportForm, setSupportForm] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+      setCurrentPage('dashboard');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user && currentPage === 'jobs') {
+      fetchJobs();
+    }
+    if (user && currentPage === 'dashboard') {
+      fetchMyJobs();
+    }
+  }, [user, currentPage]);
+
+  const apiCall = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      headers,
+      ...options
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'An error occurred');
+    }
+
+    return response.json();
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
+      const data = await apiCall(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(authForm)
+      });
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+      setCurrentPage('dashboard');
+      setAuthForm({ email: '', password: '', full_name: '', role: 'freelancer' });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setCurrentPage('landing');
+  };
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+  const fetchJobs = async () => {
+    try {
+      const data = await apiCall('/api/jobs');
+      setJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+  };
 
-function App() {
+  const fetchMyJobs = async () => {
+    try {
+      const data = await apiCall('/api/jobs/my');
+      setMyJobs(data);
+    } catch (error) {
+      console.error('Error fetching my jobs:', error);
+    }
+  };
+
+  const createJob = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const jobData = {
+        ...jobForm,
+        budget: parseFloat(jobForm.budget),
+        requirements: jobForm.requirements.split(',').map(req => req.trim()).filter(req => req)
+      };
+
+      await apiCall('/api/jobs', {
+        method: 'POST',
+        body: JSON.stringify(jobData)
+      });
+
+      alert('Job posted successfully!');
+      setJobForm({
+        title: '',
+        description: '',
+        category: '',
+        budget: '',
+        budget_type: 'fixed',
+        requirements: ''
+      });
+      fetchMyJobs();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyToJob = async (e) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+
+    setLoading(true);
+    try {
+      await apiCall(`/api/jobs/${selectedJob.id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify({
+          job_id: selectedJob.id,
+          proposal: applicationForm.proposal,
+          bid_amount: parseFloat(applicationForm.bid_amount)
+        })
+      });
+
+      alert('Application submitted successfully!');
+      setApplicationForm({ proposal: '', bid_amount: '' });
+      setSelectedJob(null);
+      fetchJobs();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const profileData = {
+        skills: profileForm.skills.split(',').map(skill => skill.trim()).filter(skill => skill),
+        experience: profileForm.experience,
+        hourly_rate: parseFloat(profileForm.hourly_rate),
+        bio: profileForm.bio,
+        portfolio_links: profileForm.portfolio_links.split(',').map(link => link.trim()).filter(link => link)
+      };
+
+      await apiCall('/api/freelancer/profile', {
+        method: 'PUT',
+        body: JSON.stringify(profileData)
+      });
+
+      alert('Profile updated successfully!');
+      const updatedUser = { ...user, profile_completed: true };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitSupport = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await apiCall('/api/support', {
+        method: 'POST',
+        body: JSON.stringify(supportForm)
+      });
+
+      alert('Support ticket submitted successfully! We\'ll get back to you soon.');
+      setSupportForm({ name: '', email: '', message: '' });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchJobApplications = async (jobId) => {
+    try {
+      const data = await apiCall(`/api/jobs/${jobId}/applications`);
+      setApplications(data);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedJob) return;
+
+    try {
+      await apiCall('/api/messages', {
+        method: 'POST',
+        body: JSON.stringify({
+          job_id: selectedJob.id,
+          receiver_id: user.role === 'client' ? selectedJob.freelancer_id : selectedJob.client_id,
+          content: newMessage
+        })
+      });
+
+      setNewMessage('');
+      fetchMessages(selectedJob.id);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const fetchMessages = async (jobId) => {
+    try {
+      const data = await apiCall(`/api/messages/${jobId}`);
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
+  if (currentPage === 'landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50">
+        {/* Navigation */}
+        <nav className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-green-100 z-50">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-xl">A</span>
+              </div>
+              <span className="text-2xl font-bold text-green-800">Afrilance</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage('auth')}
+                className="border-green-600 text-green-600 hover:bg-green-50"
+              >
+                Sign In
+              </Button>
+              <Button
+                onClick={() => {
+                  setAuthMode('register');
+                  setCurrentPage('auth');
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Get Started
+              </Button>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="container mx-auto px-4 py-20 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-5xl font-bold text-green-800 mb-6 leading-tight">
+              Connect with South Africa's
+              <span className="text-yellow-500 block">Top Freelancers</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Afrilance bridges the gap between verified South African freelancers and clients seeking quality services across all sectors.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                size="lg"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'client' }));
+                  setCurrentPage('auth');
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
+              >
+                <Briefcase className="mr-2 w-5 h-5" />
+                Hire Freelancers
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
+                  setCurrentPage('auth');
+                }}
+                className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-4 text-lg"
+              >
+                <Users className="mr-2 w-5 h-5" />
+                Find Work
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="bg-white py-20">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center text-green-800 mb-12">Why Choose Afrilance?</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <Star className="w-6 h-6 text-green-600" />
+                  </div>
+                  <CardTitle className="text-green-800">Verified Professionals</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">All freelancers are thoroughly verified with skill assessments and background checks.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <MapPin className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <CardTitle className="text-green-800">Local Expertise</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Connect with South African professionals who understand your local market needs.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <MessageCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <CardTitle className="text-green-800">Seamless Communication</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Built-in messaging and project management tools keep everyone on the same page.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-green-600 py-20 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
+            <p className="text-xl mb-8 opacity-90">Join thousands of South Africans already using Afrilance</p>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                setAuthMode('register');
+                setCurrentPage('auth');
+              }}
+              className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 text-lg border-white"
+            >
+              Start Your Journey
+            </Button>
+          </div>
+        </section>
+
+        {/* Support Form */}
+        <section className="bg-gray-50 py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-center text-green-800 mb-8">Get Support</h2>
+              <Card>
+                <CardContent className="p-6">
+                  <form onSubmit={submitSupport} className="space-y-4">
+                    <div>
+                      <Input
+                        placeholder="Your Name"
+                        value={supportForm.name}
+                        onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        type="email"
+                        placeholder="Your Email"
+                        value={supportForm.email}
+                        onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Textarea
+                        placeholder="How can we help you?"
+                        value={supportForm.message}
+                        onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
+                        rows={4}
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={loading}
+                    >
+                      {loading ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (currentPage === 'auth') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-xl">A</span>
+              </div>
+              <span className="text-2xl font-bold text-green-800">Afrilance</span>
+            </div>
+            <CardTitle className="text-2xl text-green-800">
+              {authMode === 'login' ? 'Welcome Back' : 'Join Afrilance'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAuth} className="space-y-4">
+              {authMode === 'register' && (
+                <>
+                  <Input
+                    placeholder="Full Name"
+                    value={authForm.full_name}
+                    onChange={(e) => setAuthForm(prev => ({ ...prev, full_name: e.target.value }))}
+                    required
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">I am a:</label>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="freelancer"
+                          checked={authForm.role === 'freelancer'}
+                          onChange={(e) => setAuthForm(prev => ({ ...prev, role: e.target.value }))}
+                          className="mr-2"
+                        />
+                        Freelancer
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="client"
+                          checked={authForm.role === 'client'}
+                          onChange={(e) => setAuthForm(prev => ({ ...prev, role: e.target.value }))}
+                          className="mr-2"
+                        />
+                        Client
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
+              <Input
+                type="email"
+                placeholder="Email"
+                value={authForm.email}
+                onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
+                required
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={authForm.password}
+                onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
+                required
+              />
+              <Button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
+              </Button>
+            </form>
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                className="text-green-600 hover:underline"
+              >
+                {authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
+              </button>
+            </div>
+            <div className="text-center mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage('landing')}
+                className="text-gray-600"
+              >
+                Back to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Main Dashboard
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
+              </div>
+              <span className="text-xl font-bold text-green-800">Afrilance</span>
+            </div>
+            <div className="flex space-x-4">
+              <Button
+                variant={currentPage === 'dashboard' ? 'default' : 'ghost'}
+                onClick={() => setCurrentPage('dashboard')}
+                className={currentPage === 'dashboard' ? 'bg-green-600 text-white' : 'text-gray-600'}
+              >
+                Dashboard
+              </Button>
+              <Button
+                variant={currentPage === 'jobs' ? 'default' : 'ghost'}
+                onClick={() => setCurrentPage('jobs')}
+                className={currentPage === 'jobs' ? 'bg-green-600 text-white' : 'text-gray-600'}
+              >
+                {user?.role === 'client' ? 'Browse Freelancers' : 'Browse Jobs'}
+              </Button>
+              <Button
+                variant={currentPage === 'profile' ? 'default' : 'ghost'}
+                onClick={() => setCurrentPage('profile')}
+                className={currentPage === 'profile' ? 'bg-green-600 text-white' : 'text-gray-600'}
+              >
+                Profile
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCurrentPage('messages')}
+              className="text-gray-600 hover:text-green-600"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-gray-600 hover:text-green-600">
+                  <HelpCircle className="w-5 h-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Contact Support</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={submitSupport} className="space-y-4">
+                  <Input
+                    placeholder="Your Name"
+                    value={supportForm.name}
+                    onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Your Email"
+                    value={supportForm.email}
+                    onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                  <Textarea
+                    placeholder="How can we help?"
+                    value={supportForm.message}
+                    onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
+                    required
+                  />
+                  <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+                    {loading ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+            <div className="flex items-center space-x-2">
+              <Avatar>
+                <AvatarFallback className="bg-green-100 text-green-600">
+                  {user?.full_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-gray-700">{user?.full_name}</span>
+              <Button variant="ghost" size="icon" onClick={logout} className="text-gray-600 hover:text-red-600">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8">
+        {currentPage === 'dashboard' && (
+          <div className="space-y-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, {user?.full_name}!
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {user?.role === 'client' ? 'Manage your projects and find talented freelancers' : 'Discover new opportunities and manage your applications'}
+              </p>
+            </div>
+
+            {user?.role === 'client' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Plus className="mr-2 w-5 h-5" />
+                    Post a New Job
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={createJob} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input
+                        placeholder="Job Title"
+                        value={jobForm.title}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, title: e.target.value }))}
+                        required
+                      />
+                      <Input
+                        placeholder="Category (e.g., Web Development, Design)"
+                        value={jobForm.category}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, category: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <Textarea
+                      placeholder="Job Description"
+                      value={jobForm.description}
+                      onChange={(e) => setJobForm(prev => ({ ...prev, description: e.target.value }))}
+                      rows={4}
+                      required
+                    />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        placeholder="Budget (R)"
+                        value={jobForm.budget}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, budget: e.target.value }))}
+                        required
+                      />
+                      <select
+                        value={jobForm.budget_type}
+                        onChange={(e) => setJobForm(prev => ({ ...prev, budget_type: e.target.value }))}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        <option value="fixed">Fixed Price</option>
+                        <option value="hourly">Hourly Rate</option>
+                      </select>
+                    </div>
+                    <Textarea
+                      placeholder="Requirements (comma-separated)"
+                      value={jobForm.requirements}
+                      onChange={(e) => setJobForm(prev => ({ ...prev, requirements: e.target.value }))}
+                      rows={2}
+                    />
+                    <Button
+                      type="submit"
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={loading}
+                    >
+                      {loading ? 'Posting...' : 'Post Job'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {user?.role === 'client' ? 'Your Posted Jobs' : 'Your Applications'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {myJobs.length === 0 ? (
+                  <p className="text-gray-600 text-center py-8">
+                    {user?.role === 'client' ? 'No jobs posted yet.' : 'No applications yet.'}
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {myJobs.map((job) => (
+                      <Card key={job.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-semibold text-lg">{job.title}</h3>
+                              <p className="text-gray-600 text-sm mb-2">{job.description.substring(0, 150)}...</p>
+                              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                <span className="flex items-center">
+                                  <DollarSign className="w-4 h-4 mr-1" />
+                                  R{job.budget}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  {new Date(job.created_at).toLocaleDateString()}
+                                </span>
+                                <span className="flex items-center">
+                                  <Users className="w-4 h-4 mr-1" />
+                                  {job.applications_count} applications
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
+                                {job.status}
+                              </Badge>
+                              {user?.role === 'client' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedJob(job);
+                                    fetchJobApplications(job.id);
+                                  }}
+                                >
+                                  View Applications
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {currentPage === 'jobs' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {user?.role === 'client' ? 'Browse Freelancers' : 'Available Jobs'}
+            </h1>
+            
+            <div className="grid gap-6">
+              {jobs.map((job) => (
+                <Card key={job.id} className="hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h3>
+                        <p className="text-gray-600 mb-4">{job.description}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                          <Badge variant="secondary">{job.category}</Badge>
+                          <span className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            R{job.budget} ({job.budget_type})
+                          </span>
+                          <span className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {new Date(job.created_at).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            {job.applications_count} proposals
+                          </span>
+                        </div>
+                        {job.requirements && job.requirements.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {job.requirements.map((req, index) => (
+                              <Badge key={index} variant="outline">{req}</Badge>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-500">Posted by: {job.client_name}</p>
+                      </div>
+                      {user?.role === 'freelancer' && (
+                        <Button
+                          onClick={() => {
+                            setSelectedJob(job);
+                            setApplicationForm({ proposal: '', bid_amount: '' });
+                          }}
+                          className="bg-green-600 hover:bg-green-700 ml-4"
+                        >
+                          Apply Now
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'profile' && user?.role === 'freelancer' && (
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <User className="mr-2 w-5 h-5" />
+                  Complete Your Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={updateProfile} className="space-y-4">
+                  <Textarea
+                    placeholder="Skills (comma-separated, e.g., React, Node.js, Python)"
+                    value={profileForm.skills}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, skills: e.target.value }))}
+                    required
+                  />
+                  <Textarea
+                    placeholder="Experience Description"
+                    value={profileForm.experience}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, experience: e.target.value }))}
+                    rows={3}
+                    required
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Hourly Rate (R)"
+                    value={profileForm.hourly_rate}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, hourly_rate: e.target.value }))}
+                    required
+                  />
+                  <Textarea
+                    placeholder="Professional Bio"
+                    value={profileForm.bio}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
+                    rows={4}
+                    required
+                  />
+                  <Textarea
+                    placeholder="Portfolio Links (comma-separated)"
+                    value={profileForm.portfolio_links}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, portfolio_links: e.target.value }))}
+                    rows={2}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    disabled={loading}
+                  >
+                    {loading ? 'Updating...' : 'Update Profile'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Job Application Modal */}
+      {selectedJob && user?.role === 'freelancer' && (
+        <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Apply to: {selectedJob.title}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={applyToJob} className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Job Details:</h4>
+                <p className="text-gray-600 text-sm mb-4">{selectedJob.description}</p>
+                <p className="text-sm text-gray-500">Budget: R{selectedJob.budget} ({selectedJob.budget_type})</p>
+              </div>
+              <Textarea
+                placeholder="Write your proposal here..."
+                value={applicationForm.proposal}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, proposal: e.target.value }))}
+                rows={6}
+                required
+              />
+              <Input
+                type="number"
+                placeholder="Your bid amount (R)"
+                value={applicationForm.bid_amount}
+                onChange={(e) => setApplicationForm(prev => ({ ...prev, bid_amount: e.target.value }))}
+                required
+              />
+              <div className="flex justify-end space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedJob(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={loading}
+                >
+                  {loading ? 'Submitting...' : 'Submit Application'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Applications Modal */}
+      {selectedJob && user?.role === 'client' && applications.length > 0 && (
+        <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Applications for: {selectedJob.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {applications.map((app) => (
+                <Card key={app.id}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{app.freelancer_name}</h4>
+                        <p className="text-sm text-gray-500">Bid: R{app.bid_amount}</p>
+                      </div>
+                      <Badge variant={app.status === 'pending' ? 'secondary' : 'default'}>
+                        {app.status}
+                      </Badge>
+                    </div>
+                    <p className="text-gray-600 mb-3">{app.proposal}</p>
+                    {app.freelancer_profile && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h5 className="font-medium mb-2">Freelancer Profile:</h5>
+                        {app.freelancer_profile.skills && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium">Skills: </span>
+                            {app.freelancer_profile.skills.map((skill, index) => (
+                              <Badge key={index} variant="outline" className="mr-1">{skill}</Badge>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-600">{app.freelancer_profile.bio}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
