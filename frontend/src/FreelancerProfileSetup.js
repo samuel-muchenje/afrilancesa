@@ -81,13 +81,43 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
     if (error) setError('');
   };
 
-  const addSkill = () => {
-    if (currentSkill.trim() && !profileData.skills.includes(currentSkill.trim())) {
+  const addSkill = (skill = null) => {
+    const skillToAdd = skill || currentSkill.trim();
+    if (skillToAdd && !profileData.skills.includes(skillToAdd)) {
       setProfileData(prev => ({
         ...prev,
-        skills: [...prev.skills, currentSkill.trim()]
+        skills: [...prev.skills, skillToAdd]
       }));
-      setCurrentSkill('');
+      if (!skill) setCurrentSkill('');
+    }
+  };
+
+  const addSpecialization = () => {
+    if (currentSpecialization.trim() && !profileData.specializations.includes(currentSpecialization.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        specializations: [...prev.specializations, currentSpecialization.trim()]
+      }));
+      setCurrentSpecialization('');
+    }
+  };
+
+  const removeSpecialization = (specToRemove) => {
+    setProfileData(prev => ({
+      ...prev,
+      specializations: prev.specializations.filter(spec => spec !== specToRemove)
+    }));
+  };
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
