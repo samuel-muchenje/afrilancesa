@@ -205,9 +205,7 @@ const ModernLanding = ({
                 size="lg"
                 variant="outline"
                 onClick={() => {
-                  setAuthMode('register');
-                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
-                  setCurrentPage('auth');
+                  setCurrentPage('register');
                 }}
                 className="border-2 border-white/30 text-white hover:bg-white/5 hover:border-yellow-400 px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
               >
