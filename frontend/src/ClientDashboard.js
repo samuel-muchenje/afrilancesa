@@ -799,6 +799,9 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                 </form>
               </CardContent>
             </Card>
+          </div>
+        )}
+
         {/* My Jobs Tab */}
         {currentTab === 'jobs' && (
           <div className="space-y-6">
