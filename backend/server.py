@@ -144,17 +144,35 @@ async def register_user(user: UserRegister):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create user
+    # Validate role
+    if user.role not in ["freelancer", "client", "admin"]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be freelancer, client, or admin")
+    
+    # Create user with enhanced fields
     user_data = {
         "id": str(uuid.uuid4()),
         "email": user.email,
         "password": hash_password(user.password),
         "role": user.role,
         "full_name": user.full_name,
+        "phone": user.phone,
+        "is_verified": False,  # Always start as unverified
+        "id_document": None,   # Will be uploaded later for freelancers
         "profile_completed": False,
         "created_at": datetime.utcnow(),
-        "profile": {}
+        "profile": {},
+        # Additional metadata
+        "last_login": None,
+        "status": "active"
     }
+    
+    # For freelancers, verification is required before they can bid on jobs
+    if user.role == "freelancer":
+        user_data["verification_required"] = True
+        user_data["can_bid"] = False
+    else:
+        user_data["verification_required"] = False
+        user_data["can_bid"] = True
     
     db.users.insert_one(user_data)
     token = create_token(user_data["id"], user_data["role"])
@@ -166,7 +184,10 @@ async def register_user(user: UserRegister):
             "email": user_data["email"],
             "role": user_data["role"],
             "full_name": user_data["full_name"],
-            "profile_completed": user_data["profile_completed"]
+            "phone": user_data["phone"],
+            "is_verified": user_data["is_verified"],
+            "profile_completed": user_data["profile_completed"],
+            "verification_required": user_data.get("verification_required", False)
         }
     }
 
