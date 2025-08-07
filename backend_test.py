@@ -1223,6 +1223,717 @@ Freelance Web Developer"""
             return True
         return False
 
+    # ========== CONTRACTS SYSTEM TESTS ==========
+    
+    def test_contract_creation_flow(self):
+        """Test complete contract creation flow: Job → Application → Acceptance → Contract"""
+        print("\n🔄 Testing Contract Creation Flow...")
+        
+        # Step 1: Create a job as client
+        job_data = {
+            "title": "Mobile App Development for Restaurant Chain",
+            "description": "Develop a React Native mobile app for a South African restaurant chain with online ordering, payment integration, and loyalty program features.",
+            "category": "Mobile Development",
+            "budget": 45000.0,
+            "budget_type": "fixed",
+            "requirements": ["React Native", "Payment Integration", "Firebase", "3+ years experience"]
+        }
+        
+        success, response = self.run_test(
+            "Contract Flow - Create Job",
+            "POST",
+            "/api/jobs",
+            200,
+            data=job_data,
+            token=self.client_token
+        )
+        
+        if not success or 'job_id' not in response:
+            print("❌ Failed to create job for contract flow")
+            return False
+            
+        contract_job_id = response['job_id']
+        print(f"   ✓ Job created: {contract_job_id}")
+        
+        # Step 2: Apply to the job as freelancer
+        application_data = {
+            "job_id": contract_job_id,
+            "proposal": """Dear Client,
+
+I am excited to propose my services for your Mobile App Development project. With 5+ years of React Native experience and expertise in South African payment systems, I'm confident I can deliver an exceptional restaurant app.
+
+**My Approach:**
+- React Native with TypeScript for cross-platform compatibility
+- Firebase for real-time data and push notifications
+- PayFast integration for South African payments
+- Stripe for card payments
+- Custom loyalty program with points system
+
+**Timeline:** 10-12 weeks with weekly progress updates
+
+**Why Choose Me:**
+- Built 8+ restaurant apps with online ordering
+- Expert in South African payment gateways
+- Based in Cape Town for timezone alignment
+- 100% client satisfaction rate
+
+Looking forward to discussing your project in detail.
+
+Best regards,
+Thabo Mthembu""",
+            "bid_amount": 42000.0
+        }
+        
+        success, response = self.run_test(
+            "Contract Flow - Apply to Job",
+            "POST",
+            f"/api/jobs/{contract_job_id}/apply",
+            200,
+            data=application_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("❌ Failed to apply to job for contract flow")
+            return False
+        print("   ✓ Application submitted")
+        
+        # Step 3: Get applications to find the proposal ID
+        success, response = self.run_test(
+            "Contract Flow - Get Applications",
+            "GET",
+            f"/api/jobs/{contract_job_id}/applications",
+            200,
+            token=self.client_token
+        )
+        
+        if not success or not isinstance(response, list) or len(response) == 0:
+            print("❌ Failed to get applications for contract flow")
+            return False
+            
+        application = response[0]
+        proposal_id = application['id']
+        print(f"   ✓ Found application: {proposal_id}")
+        
+        # Step 4: Accept the proposal (this should create a contract)
+        acceptance_data = {
+            "job_id": contract_job_id,
+            "freelancer_id": self.freelancer_user['id'],
+            "proposal_id": proposal_id,
+            "bid_amount": 42000.0
+        }
+        
+        success, response = self.run_test(
+            "Contract Flow - Accept Proposal",
+            "POST",
+            f"/api/jobs/{contract_job_id}/accept-proposal",
+            200,
+            data=acceptance_data,
+            token=self.client_token
+        )
+        
+        if not success or 'contract_id' not in response:
+            print("❌ Failed to accept proposal and create contract")
+            return False
+            
+        self.test_contract_id = response['contract_id']
+        print(f"   ✓ Contract created: {self.test_contract_id}")
+        print(f"   ✓ Freelancer: {response.get('freelancer_name', 'Unknown')}")
+        
+        # Step 5: Verify contract was created with correct fields
+        success, contract_response = self.run_test(
+            "Contract Flow - Verify Contract Details",
+            "GET",
+            f"/api/contracts/{self.test_contract_id}",
+            200,
+            token=self.client_token
+        )
+        
+        if success:
+            required_fields = ['id', 'job_id', 'freelancer_id', 'client_id', 'amount', 'status', 'created_at']
+            missing_fields = []
+            
+            for field in required_fields:
+                if field not in contract_response:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Contract missing required fields: {missing_fields}")
+                return False
+            
+            # Verify contract details
+            if (contract_response['job_id'] == contract_job_id and
+                contract_response['freelancer_id'] == self.freelancer_user['id'] and
+                contract_response['client_id'] == self.client_user['id'] and
+                contract_response['amount'] == 42000.0 and
+                contract_response['status'] == "In Progress"):
+                print("   ✅ Contract created with correct details")
+                return True
+            else:
+                print("   ❌ Contract details don't match expected values")
+                return False
+        
+        return False
+
+    def test_contract_trigger_logic(self):
+        """Test that accepting proposal triggers all necessary updates"""
+        print("\n🔄 Testing Contract Trigger Logic...")
+        
+        # Get the job to verify it was updated
+        success, job_response = self.run_test(
+            "Trigger Logic - Check Job Status",
+            "GET",
+            "/api/jobs",
+            200,
+            token=self.client_token
+        )
+        
+        if success and isinstance(job_response, list):
+            # Find our test job
+            test_job = None
+            for job in job_response:
+                if hasattr(self, 'test_contract_id') and job.get('contract_id') == self.test_contract_id:
+                    test_job = job
+                    break
+            
+            if test_job:
+                # Verify job status changed to 'assigned'
+                if test_job.get('status') == 'assigned':
+                    print("   ✓ Job status updated to 'assigned'")
+                else:
+                    print(f"   ❌ Job status not updated correctly: {test_job.get('status')}")
+                    return False
+                
+                # Verify job has assigned_freelancer_id
+                if test_job.get('assigned_freelancer_id') == self.freelancer_user['id']:
+                    print("   ✓ Job assigned to correct freelancer")
+                else:
+                    print("   ❌ Job not assigned to correct freelancer")
+                    return False
+                
+                # Verify job has contract_id
+                if test_job.get('contract_id') == self.test_contract_id:
+                    print("   ✓ Job linked to contract")
+                else:
+                    print("   ❌ Job not linked to contract")
+                    return False
+                
+                print("   ✅ All trigger logic working correctly")
+                return True
+            else:
+                print("   ❌ Could not find test job to verify trigger logic")
+                return False
+        
+        return False
+
+    def test_contracts_get_all_roles(self):
+        """Test GET /api/contracts endpoint for all user roles"""
+        print("\n📋 Testing Contracts GET for All Roles...")
+        
+        # Test freelancer access
+        success, freelancer_contracts = self.run_test(
+            "Contracts - Freelancer Get Contracts",
+            "GET",
+            "/api/contracts",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(freelancer_contracts, list):
+            print(f"   ✓ Freelancer can access contracts: {len(freelancer_contracts)} found")
+            
+            # Verify freelancer only sees their contracts
+            for contract in freelancer_contracts:
+                if contract.get('freelancer_id') != self.freelancer_user['id']:
+                    print("   ❌ Freelancer seeing contracts they're not part of")
+                    return False
+            print("   ✓ Freelancer only sees their own contracts")
+        else:
+            print("   ❌ Freelancer contract access failed")
+            return False
+        
+        # Test client access
+        success, client_contracts = self.run_test(
+            "Contracts - Client Get Contracts",
+            "GET",
+            "/api/contracts",
+            200,
+            token=self.client_token
+        )
+        
+        if success and isinstance(client_contracts, list):
+            print(f"   ✓ Client can access contracts: {len(client_contracts)} found")
+            
+            # Verify client only sees their contracts
+            for contract in client_contracts:
+                if contract.get('client_id') != self.client_user['id']:
+                    print("   ❌ Client seeing contracts they're not part of")
+                    return False
+            print("   ✓ Client only sees their own contracts")
+        else:
+            print("   ❌ Client contract access failed")
+            return False
+        
+        # Test admin access
+        if self.admin_token:
+            success, admin_contracts = self.run_test(
+                "Contracts - Admin Get All Contracts",
+                "GET",
+                "/api/contracts",
+                200,
+                token=self.admin_token
+            )
+            
+            if success and isinstance(admin_contracts, list):
+                print(f"   ✓ Admin can access all contracts: {len(admin_contracts)} found")
+                
+                # Admin should see more contracts than individual users
+                if len(admin_contracts) >= len(freelancer_contracts):
+                    print("   ✓ Admin sees all contracts in system")
+                else:
+                    print("   ❌ Admin not seeing all contracts")
+                    return False
+            else:
+                print("   ❌ Admin contract access failed")
+                return False
+        
+        return True
+
+    def test_contract_detailed_view(self):
+        """Test GET /api/contracts/{contract_id} for detailed contract view"""
+        if not hasattr(self, 'test_contract_id'):
+            print("❌ No test contract available for detailed view test")
+            return False
+        
+        success, response = self.run_test(
+            "Contracts - Get Contract Details",
+            "GET",
+            f"/api/contracts/{self.test_contract_id}",
+            200,
+            token=self.client_token
+        )
+        
+        if success:
+            # Verify enriched contract data
+            required_fields = ['id', 'job_id', 'freelancer_id', 'client_id', 'amount', 'status']
+            enriched_fields = ['job_details', 'freelancer_details', 'client_details']
+            
+            missing_required = []
+            missing_enriched = []
+            
+            for field in required_fields:
+                if field not in response:
+                    missing_required.append(field)
+            
+            for field in enriched_fields:
+                if field not in response:
+                    missing_enriched.append(field)
+            
+            if missing_required:
+                print(f"   ❌ Contract missing required fields: {missing_required}")
+                return False
+            
+            if missing_enriched:
+                print(f"   ❌ Contract missing enriched fields: {missing_enriched}")
+                return False
+            
+            # Verify job details are included
+            job_details = response.get('job_details', {})
+            if 'title' in job_details and 'description' in job_details:
+                print("   ✓ Job details included in contract")
+            else:
+                print("   ❌ Job details not properly included")
+                return False
+            
+            # Verify freelancer details are included
+            freelancer_details = response.get('freelancer_details', {})
+            if 'full_name' in freelancer_details and 'email' in freelancer_details:
+                print("   ✓ Freelancer details included in contract")
+            else:
+                print("   ❌ Freelancer details not properly included")
+                return False
+            
+            # Verify client details are included
+            client_details = response.get('client_details', {})
+            if 'full_name' in client_details and 'email' in client_details:
+                print("   ✓ Client details included in contract")
+            else:
+                print("   ❌ Client details not properly included")
+                return False
+            
+            print("   ✅ Contract detailed view working correctly")
+            return True
+        
+        return False
+
+    def test_contract_status_update(self):
+        """Test PATCH /api/contracts/{contract_id}/status to update contract status"""
+        if not hasattr(self, 'test_contract_id'):
+            print("❌ No test contract available for status update test")
+            return False
+        
+        # Test updating to "Completed"
+        status_data = {"status": "Completed"}
+        
+        success, response = self.run_test(
+            "Contracts - Update Status to Completed",
+            "PATCH",
+            f"/api/contracts/{self.test_contract_id}/status",
+            200,
+            data=status_data,
+            token=self.client_token
+        )
+        
+        if not success:
+            print("   ❌ Failed to update contract status")
+            return False
+        
+        print("   ✓ Contract status updated successfully")
+        
+        # Verify the status was actually updated
+        success, contract_response = self.run_test(
+            "Contracts - Verify Status Update",
+            "GET",
+            f"/api/contracts/{self.test_contract_id}",
+            200,
+            token=self.client_token
+        )
+        
+        if success and contract_response.get('status') == 'Completed':
+            print("   ✓ Contract status verified as 'Completed'")
+            
+            # Check if job status was also updated
+            job_details = contract_response.get('job_details', {})
+            if job_details.get('status') == 'completed':
+                print("   ✓ Job status also updated to 'completed'")
+                return True
+            else:
+                print("   ❌ Job status not updated when contract completed")
+                return False
+        else:
+            print("   ❌ Contract status not properly updated")
+            return False
+
+    def test_contract_stats(self):
+        """Test GET /api/contracts/stats endpoint"""
+        print("\n📊 Testing Contract Stats...")
+        
+        # Test freelancer stats
+        success, freelancer_stats = self.run_test(
+            "Contracts - Freelancer Stats",
+            "GET",
+            "/api/contracts/stats",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            required_stats = ['total_contracts', 'total_amount', 'in_progress', 'completed', 'cancelled']
+            missing_stats = []
+            
+            for stat in required_stats:
+                if stat not in freelancer_stats:
+                    missing_stats.append(stat)
+            
+            if missing_stats:
+                print(f"   ❌ Freelancer stats missing fields: {missing_stats}")
+                return False
+            
+            print(f"   ✓ Freelancer stats: {freelancer_stats['total_contracts']} contracts, R{freelancer_stats['total_amount']:.2f} total")
+        else:
+            print("   ❌ Freelancer stats failed")
+            return False
+        
+        # Test client stats
+        success, client_stats = self.run_test(
+            "Contracts - Client Stats",
+            "GET",
+            "/api/contracts/stats",
+            200,
+            token=self.client_token
+        )
+        
+        if success:
+            print(f"   ✓ Client stats: {client_stats['total_contracts']} contracts, R{client_stats['total_amount']:.2f} total")
+        else:
+            print("   ❌ Client stats failed")
+            return False
+        
+        # Test admin stats (if admin token available)
+        if self.admin_token:
+            success, admin_stats = self.run_test(
+                "Contracts - Admin Stats",
+                "GET",
+                "/api/contracts/stats",
+                200,
+                token=self.admin_token
+            )
+            
+            if success:
+                print(f"   ✓ Admin stats: {admin_stats['total_contracts']} contracts, R{admin_stats['total_amount']:.2f} total")
+                
+                # Admin stats should be >= individual user stats
+                if admin_stats['total_contracts'] >= freelancer_stats['total_contracts']:
+                    print("   ✓ Admin sees system-wide contract stats")
+                    return True
+                else:
+                    print("   ❌ Admin stats inconsistent")
+                    return False
+            else:
+                print("   ❌ Admin stats failed")
+                return False
+        
+        return True
+
+    def test_contract_error_handling(self):
+        """Test contract system error handling"""
+        print("\n⚠️  Testing Contract Error Handling...")
+        
+        # Test accepting non-existent proposal
+        fake_acceptance = {
+            "job_id": "fake-job-id",
+            "freelancer_id": "fake-freelancer-id",
+            "proposal_id": "fake-proposal-id",
+            "bid_amount": 1000.0
+        }
+        
+        success, response = self.run_test(
+            "Error - Accept Non-existent Proposal",
+            "POST",
+            "/api/jobs/fake-job-id/accept-proposal",
+            404,
+            data=fake_acceptance,
+            token=self.client_token
+        )
+        
+        if not success:
+            print("   ❌ Non-existent proposal error handling failed")
+            return False
+        print("   ✓ Non-existent proposal properly rejected")
+        
+        # Test unauthorized access to contract details
+        if hasattr(self, 'test_contract_id'):
+            # Create a new user who shouldn't have access
+            timestamp = datetime.now().strftime('%H%M%S')
+            unauthorized_user_data = {
+                "email": f"unauthorized{timestamp}@test.com",
+                "password": "TestPass123!",
+                "role": "client",
+                "full_name": "Unauthorized User",
+                "phone": "+27123456789"
+            }
+            
+            success, response = self.run_test(
+                "Error - Create Unauthorized User",
+                "POST",
+                "/api/register",
+                200,
+                data=unauthorized_user_data
+            )
+            
+            if success and 'token' in response:
+                unauthorized_token = response['token']
+                
+                # Try to access contract with unauthorized token
+                success, response = self.run_test(
+                    "Error - Unauthorized Contract Access",
+                    "GET",
+                    f"/api/contracts/{self.test_contract_id}",
+                    403,
+                    token=unauthorized_token
+                )
+                
+                if success:
+                    print("   ✓ Unauthorized contract access properly blocked")
+                else:
+                    print("   ❌ Unauthorized contract access not properly blocked")
+                    return False
+            else:
+                print("   ❌ Could not create unauthorized user for testing")
+                return False
+        
+        # Test invalid contract status update
+        if hasattr(self, 'test_contract_id'):
+            invalid_status = {"status": "InvalidStatus"}
+            
+            success, response = self.run_test(
+                "Error - Invalid Status Update",
+                "PATCH",
+                f"/api/contracts/{self.test_contract_id}/status",
+                400,
+                data=invalid_status,
+                token=self.client_token
+            )
+            
+            if success:
+                print("   ✓ Invalid status update properly rejected")
+            else:
+                print("   ❌ Invalid status update not properly rejected")
+                return False
+        
+        print("   ✅ Contract error handling working correctly")
+        return True
+
+    def test_contract_integration_workflow(self):
+        """Test complete contract integration workflow"""
+        print("\n🔄 Testing Complete Contract Integration Workflow...")
+        
+        # This test verifies the entire workflow works end-to-end
+        # We'll create a new job, apply, accept, and manage the contract
+        
+        # Step 1: Create a new job for integration test
+        integration_job_data = {
+            "title": "E-commerce Website with Payment Gateway",
+            "description": "Build a complete e-commerce website with React frontend, Node.js backend, and integrated payment processing for South African market.",
+            "category": "Web Development",
+            "budget": 35000.0,
+            "budget_type": "fixed",
+            "requirements": ["React", "Node.js", "Payment Gateway", "E-commerce Experience"]
+        }
+        
+        success, response = self.run_test(
+            "Integration - Create Job",
+            "POST",
+            "/api/jobs",
+            200,
+            data=integration_job_data,
+            token=self.client_token
+        )
+        
+        if not success or 'job_id' not in response:
+            print("   ❌ Integration test job creation failed")
+            return False
+        
+        integration_job_id = response['job_id']
+        print(f"   ✓ Integration job created: {integration_job_id}")
+        
+        # Step 2: Apply as freelancer
+        integration_application = {
+            "job_id": integration_job_id,
+            "proposal": "I have extensive experience building e-commerce websites with South African payment integration. I can deliver this project within 8 weeks with PayFast and Stripe integration.",
+            "bid_amount": 33000.0
+        }
+        
+        success, response = self.run_test(
+            "Integration - Apply to Job",
+            "POST",
+            f"/api/jobs/{integration_job_id}/apply",
+            200,
+            data=integration_application,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("   ❌ Integration application failed")
+            return False
+        print("   ✓ Integration application submitted")
+        
+        # Step 3: Get applications and accept proposal
+        success, applications = self.run_test(
+            "Integration - Get Applications",
+            "GET",
+            f"/api/jobs/{integration_job_id}/applications",
+            200,
+            token=self.client_token
+        )
+        
+        if not success or not applications:
+            print("   ❌ Integration get applications failed")
+            return False
+        
+        application = applications[0]
+        acceptance_data = {
+            "job_id": integration_job_id,
+            "freelancer_id": self.freelancer_user['id'],
+            "proposal_id": application['id'],
+            "bid_amount": 33000.0
+        }
+        
+        success, response = self.run_test(
+            "Integration - Accept Proposal",
+            "POST",
+            f"/api/jobs/{integration_job_id}/accept-proposal",
+            200,
+            data=acceptance_data,
+            token=self.client_token
+        )
+        
+        if not success or 'contract_id' not in response:
+            print("   ❌ Integration proposal acceptance failed")
+            return False
+        
+        integration_contract_id = response['contract_id']
+        print(f"   ✓ Integration contract created: {integration_contract_id}")
+        
+        # Step 4: Verify all collections were updated properly
+        # Check contract exists and has correct data
+        success, contract = self.run_test(
+            "Integration - Verify Contract",
+            "GET",
+            f"/api/contracts/{integration_contract_id}",
+            200,
+            token=self.client_token
+        )
+        
+        if not success:
+            print("   ❌ Integration contract verification failed")
+            return False
+        
+        # Verify contract data
+        if (contract['job_id'] == integration_job_id and
+            contract['amount'] == 33000.0 and
+            contract['status'] == "In Progress"):
+            print("   ✓ Contract data verified")
+        else:
+            print("   ❌ Contract data incorrect")
+            return False
+        
+        # Check job was updated
+        job_details = contract.get('job_details', {})
+        if (job_details.get('status') == 'assigned' and
+            job_details.get('assigned_freelancer_id') == self.freelancer_user['id']):
+            print("   ✓ Job status and assignment verified")
+        else:
+            print("   ❌ Job not properly updated")
+            return False
+        
+        # Step 5: Test contract management
+        # Update contract status
+        success, response = self.run_test(
+            "Integration - Update Contract Status",
+            "PATCH",
+            f"/api/contracts/{integration_contract_id}/status",
+            200,
+            data={"status": "Completed"},
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("   ❌ Integration contract status update failed")
+            return False
+        print("   ✓ Contract status updated by freelancer")
+        
+        # Verify final state
+        success, final_contract = self.run_test(
+            "Integration - Verify Final State",
+            "GET",
+            f"/api/contracts/{integration_contract_id}",
+            200,
+            token=self.client_token
+        )
+        
+        if success and final_contract.get('status') == 'Completed':
+            job_details = final_contract.get('job_details', {})
+            if job_details.get('status') == 'completed':
+                print("   ✅ Complete integration workflow successful")
+                return True
+            else:
+                print("   ❌ Job status not updated to completed")
+                return False
+        else:
+            print("   ❌ Final contract state incorrect")
+            return False
+
 def main():
     print("🚀 Starting Afrilance Authentication System Tests")
     print("=" * 60)
