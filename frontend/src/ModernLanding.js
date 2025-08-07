@@ -159,8 +159,7 @@ const ModernLanding = ({
             </Button>
             <Button
               onClick={() => {
-                setAuthMode('register');
-                setCurrentPage('auth');
+                setCurrentPage('register');
               }}
               className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-6"
             >
