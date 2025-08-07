@@ -1285,9 +1285,5 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
     </div>
   );
 };
-      </div>
-    </div>
-  );
-};
 
 export default ClientDashboard;
