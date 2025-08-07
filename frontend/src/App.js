@@ -346,11 +346,12 @@ function App() {
       <div className="auth-modern min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md auth-card">
           <CardHeader className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
-                <span className="text-black font-bold text-xl">A</span>
-              </div>
-              <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
+            <div className="flex items-center justify-center mb-6">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/n2pyrvrg_4.png" 
+                alt="Afrilance" 
+                className="h-12 w-auto"
+              />
             </div>
             <CardTitle className="text-2xl text-white">
               {authMode === 'login' ? 'Welcome Back' : 'Join Afrilance'}
