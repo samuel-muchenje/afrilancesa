@@ -1,0 +1,717 @@
+import React from 'react';
+import { Button } from './components/ui/button';
+import { Card, CardContent } from './components/ui/card';
+import { Input } from './components/ui/input';
+import { Textarea } from './components/ui/textarea';
+import { 
+  Shield, Smartphone, Globe, CreditCard, Play, Star, Quote,
+  CheckCircle, Users, Briefcase, ArrowRight
+} from 'lucide-react';
+
+// Categories with real images
+const categories = [
+  {
+    title: "ICT & Digital Work",
+    image: "https://images.unsplash.com/photo-1622295023576-e4fb6e9e8ba2",
+    count: "2,500+ freelancers"
+  },
+  {
+    title: "Construction & Engineering", 
+    image: "https://images.unsplash.com/photo-1489514354504-1653aa90e34e",
+    count: "1,800+ freelancers"
+  },
+  {
+    title: "Creative & Media",
+    image: "https://images.unsplash.com/photo-1628682814461-c4461c974211",
+    count: "3,200+ freelancers"
+  },
+  {
+    title: "Admin & Office Support",
+    image: "https://images.unsplash.com/photo-1573496799515-eebbb63814f2",
+    count: "1,900+ freelancers"
+  },
+  {
+    title: "Health & Wellness",
+    image: "https://images.unsplash.com/photo-1666887360361-d4e8487f0026",
+    count: "950+ freelancers"
+  },
+  {
+    title: "Beauty & Fashion",
+    image: "https://images.unsplash.com/photo-1602728114068-25257aedd285",
+    count: "1,200+ freelancers"
+  },
+  {
+    title: "Logistics & Labour",
+    image: "https://images.unsplash.com/photo-1599984280836-d48d3eedee0b",
+    count: "2,100+ freelancers"
+  },
+  {
+    title: "Education & Training",
+    image: "https://images.unsplash.com/photo-1667844141324-61585c18b0df",
+    count: "1,500+ freelancers"
+  },
+  {
+    title: "Home & Domestic Services",
+    image: "https://images.pexels.com/photos/6969943/pexels-photo-6969943.jpeg",
+    count: "800+ freelancers"
+  }
+];
+
+// Featured freelancers
+const featuredFreelancers = [
+  {
+    name: "Thabo Mthembu",
+    profession: "Full-Stack Developer",
+    image: "https://images.unsplash.com/photo-1622295023576-e4fb6e9e8ba2",
+    rating: 4.9,
+    tagline: "I build fast, scalable web apps",
+    price: "R500",
+    reviews: 127
+  },
+  {
+    name: "Nomsa Dlamini",
+    profession: "Digital Marketing Expert",
+    image: "https://images.unsplash.com/photo-1623013736455-1b8d79cc0b5f",
+    rating: 4.8,
+    tagline: "Grow your business online",
+    price: "R350",
+    reviews: 98
+  },
+  {
+    name: "Sipho Ngubane",
+    profession: "Construction Project Manager",
+    image: "https://images.unsplash.com/photo-1489514354504-1653aa90e34e",
+    rating: 4.9,
+    tagline: "Quality builds, on time delivery",
+    price: "R800",
+    reviews: 156
+  },
+  {
+    name: "Keabetswe Mokoena",
+    profession: "Graphic Designer",
+    image: "https://images.unsplash.com/photo-1628682814461-c4461c974211",
+    rating: 4.7,
+    tagline: "Creative designs that convert",
+    price: "R300",
+    reviews: 89
+  },
+  {
+    name: "Lindiwe Zulu",
+    profession: "Healthcare Consultant",
+    image: "https://images.unsplash.com/photo-1666887360476-7eaa054d1abd",
+    rating: 4.9,
+    tagline: "Professional healthcare advice",
+    price: "R450",
+    reviews: 203
+  }
+];
+
+// Testimonials
+const testimonials = [
+  {
+    name: "David Chen",
+    role: "Small Business Owner",
+    image: "https://images.unsplash.com/photo-1581368076903-c20fee986735",
+    quote: "Found an amazing web developer through Afrilance. My online sales increased by 300% in just 3 months!"
+  },
+  {
+    name: "Sarah Williams",
+    role: "Marketing Manager",
+    image: "https://images.unsplash.com/photo-1551693886-e05efa0d1216",
+    quote: "The quality of freelancers on Afrilance is incredible. Always professional, always delivering on time."
+  },
+  {
+    name: "Mandla Sibeko",
+    role: "Civil Engineer",
+    image: "https://images.unsplash.com/photo-1552392820-6653a945a7b4",
+    quote: "As a freelancer, Afrilance connected me with clients I never would have reached. Game changer for my business."
+  }
+];
+
+const ModernLanding = ({ 
+  setCurrentPage, 
+  setAuthMode, 
+  setAuthForm, 
+  submitSupport, 
+  supportForm, 
+  setSupportForm, 
+  loading 
+}) => {
+  return (
+    <div className="modern-landing">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-gray-800 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
+              <span className="text-black font-bold text-xl">A</span>
+            </div>
+            <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentPage('auth')}
+              className="text-white hover:text-yellow-400 hover:bg-white/5"
+            >
+              Sign In
+            </Button>
+            <Button
+              onClick={() => {
+                setAuthMode('register');
+                setCurrentPage('auth');
+              }}
+              className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-6"
+            >
+              Get Started
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="hero-section min-h-screen bg-black flex items-center relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="floating-shape shape-1"></div>
+          <div className="floating-shape shape-2"></div>
+          <div className="floating-shape shape-3"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+          <div className="text-left">
+            <div className="mb-6">
+              <span className="text-yellow-400 font-semibold text-lg tracking-wider">INTRODUCING</span>
+            </div>
+            <h1 className="hero-title text-white mb-8">
+              SA'S FIRST<br />
+              FREE LANCING<br />
+              <span className="text-gradient">TOOL</span>
+            </h1>
+            <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+              The future of freelance in Africa starts here
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'client' }));
+                  setCurrentPage('auth');
+                }}
+                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all btn-glow"
+              >
+                Start Hiring
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
+                  setCurrentPage('auth');
+                }}
+                className="border-2 border-white/30 text-white hover:bg-white/5 hover:border-yellow-400 px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all"
+              >
+                Join as a Freelancer
+              </Button>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="animated-graphic">
+              <svg viewBox="0 0 400 400" className="w-full h-auto">
+                <defs>
+                  <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#F6E96B" />
+                    <stop offset="25%" stopColor="#BEDC74" />
+                    <stop offset="50%" stopColor="#A2CA71" />
+                    <stop offset="100%" stopColor="#387F39" />
+                  </linearGradient>
+                </defs>
+                <path className="floating-path" d="M100,200 Q200,100 300,200 T500,200" stroke="url(#gradient1)" strokeWidth="8" fill="none" opacity="0.6" />
+                <path className="floating-path delay-1" d="M80,220 Q180,120 280,220 T480,220" stroke="url(#gradient1)" strokeWidth="6" fill="none" opacity="0.4" />
+                <path className="floating-path delay-2" d="M120,180 Q220,80 320,180 T520,180" stroke="url(#gradient1)" strokeWidth="4" fill="none" opacity="0.3" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Dynamic Categories Section */}
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">Find Talent Across All Industries</h2>
+            <p className="text-xl text-gray-300">Real professionals, real results</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {categories.map((category, index) => (
+              <div
+                key={index}
+                className="category-card relative h-64 rounded-2xl overflow-hidden cursor-pointer group transform hover:scale-105 transition-all duration-300"
+                style={{
+                  backgroundImage: `linear-gradient(45deg, rgba(0,0,0,0.7), rgba(56,127,57,0.3)), url(${category.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="absolute bottom-6 left-6 right-6 text-white">
+                  <h3 className="text-xl font-bold mb-2">{category.title}</h3>
+                  <p className="text-yellow-400 text-sm">{category.count}</p>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Freelancers */}
+      <section className="py-20 bg-gray-900">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">Featured Freelancers</h2>
+            <p className="text-xl text-gray-300">Talent you can trust</p>
+          </div>
+          <div className="relative">
+            <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
+              {featuredFreelancers.map((freelancer, index) => (
+                <div key={index} className="flex-shrink-0 w-80">
+                  <Card className="bg-black/50 border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 card-hover-effect">
+                    <CardContent className="p-6">
+                      <div className="flex items-center mb-4">
+                        <img
+                          src={freelancer.image}
+                          alt={freelancer.name}
+                          className="w-16 h-16 rounded-full object-cover mr-4"
+                        />
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{freelancer.name}</h3>
+                          <p className="text-gray-400">{freelancer.profession}</p>
+                          <div className="flex items-center mt-1">
+                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <span className="text-yellow-400 ml-1">{freelancer.rating}</span>
+                            <span className="text-gray-500 ml-2">({freelancer.reviews} reviews)</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-gray-300 mb-4 italic">"{freelancer.tagline}"</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-green-400 font-semibold">From {freelancer.price}/hr</span>
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold btn-glow"
+                          onClick={() => {
+                            setAuthMode('register');
+                            setAuthForm(prev => ({ ...prev, role: 'client' }));
+                            setCurrentPage('auth');
+                          }}
+                        >
+                          View Profile
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 bg-black how-it-works-bg">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">How Afrilance Works</h2>
+            <p className="text-xl text-gray-300">Simple steps to success</p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* For Clients */}
+            <div className="section-animate">
+              <h3 className="text-2xl font-bold text-white mb-8 text-center">For Clients</h3>
+              <div className="space-y-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-green-500 rounded-full flex items-center justify-center font-bold text-black">1</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Post a Job or Browse Services</h4>
+                    <p className="text-gray-300">Describe your project and let talented freelancers come to you, or browse our service marketplace.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-green-500 rounded-full flex items-center justify-center font-bold text-black">2</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Choose a Verified Freelancer</h4>
+                    <p className="text-gray-300">Review proposals, check ratings and portfolios, then select the perfect freelancer for your project.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-green-500 rounded-full flex items-center justify-center font-bold text-black">3</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Pay via Escrow & Track Progress</h4>
+                    <p className="text-gray-300">Your payment is protected until work is completed to your satisfaction. Track progress in real-time.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* For Freelancers */}
+            <div className="section-animate">
+              <h3 className="text-2xl font-bold text-white mb-8 text-center">For Freelancers</h3>
+              <div className="space-y-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black">1</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Set up a Verified Profile</h4>
+                    <p className="text-gray-300">Showcase your skills, experience, and portfolio. Get verified to build trust with potential clients.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black">2</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Apply for Jobs or List Fixed Services</h4>
+                    <p className="text-gray-300">Browse thousands of projects or create service listings for clients to purchase directly.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black">3</div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Get Paid Securely</h4>
+                    <p className="text-gray-300">Complete your work and get paid through our secure payment system. Build your reputation with every project.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Afrilance Section */}
+      <section className="py-20 bg-gray-900">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">Why Afrilance</h2>
+            <p className="text-xl text-gray-300">Built for Africa</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center benefit-card">
+              <div className="mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1666887360476-7eaa054d1abd" 
+                  alt="Verified Talent" 
+                  className="benefit-image w-full mx-auto"
+                />
+              </div>
+              <div className="flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-green-400 mr-3" />
+                <h3 className="text-xl font-bold text-white">Verified Talent</h3>
+              </div>
+              <p className="text-gray-300">Every freelancer undergoes thorough verification including ID checks and skill assessments.</p>
+            </div>
+
+            <div className="text-center benefit-card">
+              <div className="mb-6">
+                <img 
+                  src="https://images.pexels.com/photos/6969943/pexels-photo-6969943.jpeg" 
+                  alt="Safe Payments" 
+                  className="benefit-image w-full mx-auto"
+                />
+              </div>
+              <div className="flex items-center justify-center mb-4">
+                <CreditCard className="w-8 h-8 text-yellow-400 mr-3" />
+                <h3 className="text-xl font-bold text-white">Safe Payments via Escrow</h3>
+              </div>
+              <p className="text-gray-300">Your money is protected with our escrow system and mobile money integration.</p>
+            </div>
+
+            <div className="text-center benefit-card">
+              <div className="mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1599984280836-d48d3eedee0b" 
+                  alt="Mobile Platform" 
+                  className="benefit-image w-full mx-auto"
+                />
+              </div>
+              <div className="flex items-center justify-center mb-4">
+                <Smartphone className="w-8 h-8 text-green-400 mr-3" />
+                <h3 className="text-xl font-bold text-white">Mobile-Friendly Platform</h3>
+              </div>
+              <p className="text-gray-300">Work on the go with our mobile-optimized platform designed for African connectivity.</p>
+            </div>
+
+            <div className="text-center benefit-card">
+              <div className="mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1628682814461-c4461c974211" 
+                  alt="All Industries" 
+                  className="benefit-image w-full mx-auto"
+                />
+              </div>
+              <div className="flex items-center justify-center mb-4">
+                <Globe className="w-8 h-8 text-yellow-400 mr-3" />
+                <h3 className="text-xl font-bold text-white">All Industries Welcome</h3>
+              </div>
+              <p className="text-gray-300">From tech to construction, creative to domestic - we support all types of freelance work.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">What Our Community Says</h2>
+            <p className="text-xl text-gray-300">Real stories from real users</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="testimonial-card p-6">
+                <Quote className="w-8 h-8 text-yellow-400 mb-4" />
+                <p className="text-gray-300 mb-6 italic">"{testimonial.quote}"</p>
+                <div className="flex items-center">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover mr-4"
+                  />
+                  <div>
+                    <h4 className="text-white font-semibold">{testimonial.name}</h4>
+                    <p className="text-gray-400 text-sm">{testimonial.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile App Promo */}
+      <section className="py-20 bg-gray-900 mobile-app-bg">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 section-animate">
+            <h2 className="text-4xl font-bold text-white mb-6">Take Afrilance Everywhere</h2>
+            <p className="text-xl text-gray-300">Download our mobile app for on-the-go freelancing</p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <CheckCircle className="w-6 h-6 text-green-400 mt-1" />
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Manage Projects On-the-Go</h3>
+                  <p className="text-gray-300">Stay connected with clients and manage your freelance business from anywhere.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <CheckCircle className="w-6 h-6 text-green-400 mt-1" />
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Instant Notifications</h3>
+                  <p className="text-gray-300">Get notified immediately when new opportunities match your skills.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <CheckCircle className="w-6 h-6 text-green-400 mt-1" />
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Offline Capability</h3>
+                  <p className="text-gray-300">Work on your profiles and proposals even when connectivity is limited.</p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-4 pt-6">
+                <Button
+                  className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold px-6 py-3"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Get it on Google Play
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-3"
+                  disabled
+                >
+                  Coming Soon on iOS
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex justify-center space-x-8">
+              <div className="phone-mockup p-4 w-48">
+                <div className="bg-gray-800 rounded-2xl h-96 flex items-center justify-center">
+                  <div className="text-center">
+                    <Users className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                    <p className="text-white text-sm">Freelancer Dashboard</p>
+                  </div>
+                </div>
+              </div>
+              <div className="phone-mockup p-4 w-48">
+                <div className="bg-gray-800 rounded-2xl h-96 flex items-center justify-center">
+                  <div className="text-center">
+                    <Briefcase className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                    <p className="text-white text-sm">Client Interface</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Support Form */}
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-12 section-animate">
+              <h2 className="text-4xl font-bold text-white mb-6">Get Support</h2>
+              <p className="text-xl text-gray-300">We're here to help you succeed</p>
+            </div>
+            <Card className="bg-black/50 border-gray-700">
+              <CardContent className="p-8">
+                <form onSubmit={submitSupport} className="space-y-6">
+                  <div>
+                    <Input
+                      placeholder="Your Name"
+                      value={supportForm.name}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
+                      className="auth-input"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="email"
+                      placeholder="Your Email"
+                      value={supportForm.email}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="auth-input"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Textarea
+                      placeholder="How can we help you?"
+                      value={supportForm.message}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
+                      rows={4}
+                      className="auth-input resize-none"
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow"
+                    disabled={loading}
+                  >
+                    {loading ? 'Sending...' : 'Send Message'}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Sticky CTA Footer */}
+      <div className="sticky-cta">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white font-semibold">Ready to Find Africa's Best Freelancers or Start Selling Your Skills?</p>
+            </div>
+            <div className="flex space-x-4">
+              <Button
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'client' }));
+                  setCurrentPage('auth');
+                }}
+                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+              >
+                Hire Now
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthForm(prev => ({ ...prev, role: 'freelancer' }));
+                  setCurrentPage('auth');
+                }}
+                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
+              >
+                Join Afrilance
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="footer-modern py-12">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
+                  <span className="text-black font-bold text-xl">A</span>
+                </div>
+                <span className="text-2xl font-bold text-white">AFRILANCE</span>
+              </div>
+              <p className="text-gray-400 mb-4">Connecting Africa's talent with opportunities worldwide.</p>
+              <div className="flex space-x-4">
+                {/* Social media icons would go here */}
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-white font-semibold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="footer-link">About</a></li>
+                <li><a href="#" className="footer-link">Careers</a></li>
+                <li><a href="#" className="footer-link">Contact</a></li>
+                <li><a href="#" className="footer-link">Press</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-white font-semibold mb-4">For Freelancers</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="footer-link">How to Join</a></li>
+                <li><a href="#" className="footer-link">Create a Profile</a></li>
+                <li><a href="#" className="footer-link">Get Verified</a></li>
+                <li><a href="#" className="footer-link">Success Stories</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-white font-semibold mb-4">For Clients</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="footer-link">How It Works</a></li>
+                <li><a href="#" className="footer-link">Browse Freelancers</a></li>
+                <li><a href="#" className="footer-link">Support</a></li>
+                <li><a href="#" className="footer-link">Enterprise</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 text-sm">© 2025 Afrilance. All rights reserved.</p>
+              <div className="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" className="footer-link text-sm">Privacy Policy</a>
+                <a href="#" className="footer-link text-sm">Terms of Service</a>
+                <a href="#" className="footer-link text-sm">Cookie Policy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default ModernLanding;
