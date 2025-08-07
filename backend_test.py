@@ -951,6 +951,278 @@ Senior Full-Stack Developer""",
             print("❌ Client verification requirements not properly set")
             return False
 
+    def test_job_filtering_by_category(self):
+        """Test job filtering by category"""
+        success, response = self.run_test(
+            "Get Jobs Filtered by Category",
+            "GET",
+            "/api/jobs?category=Web Development",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} Web Development jobs")
+            # Verify all jobs are in the correct category
+            for job in response:
+                if job.get('category') != 'Web Development':
+                    print(f"   ❌ Job {job.get('title', 'Unknown')} has wrong category: {job.get('category')}")
+                    return False
+            print("   ✓ All jobs have correct category filter")
+            return True
+        return False
+
+    def test_comprehensive_job_data(self):
+        """Test that job responses contain all necessary enhanced data"""
+        success, response = self.run_test(
+            "Get Jobs with Enhanced Data",
+            "GET",
+            "/api/jobs",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            job = response[0]  # Check first job
+            required_fields = ['id', 'title', 'description', 'category', 'budget', 'budget_type', 'requirements', 'client_id', 'status', 'created_at', 'applications_count']
+            
+            missing_fields = []
+            for field in required_fields:
+                if field not in job:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Missing fields in job data: {missing_fields}")
+                return False
+            
+            print("   ✓ Job contains all required enhanced fields")
+            print(f"   ✓ Job has {job.get('applications_count', 0)} applications")
+            print(f"   ✓ Job requirements: {job.get('requirements', [])}")
+            return True
+        return False
+
+    def test_freelancer_profile_completion_tracking(self):
+        """Test freelancer profile completion tracking"""
+        success, response = self.run_test(
+            "Get Profile with Completion Tracking",
+            "GET",
+            "/api/profile",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            profile_completed = response.get('profile_completed', False)
+            profile_data = response.get('profile', {})
+            
+            print(f"   Profile completed: {profile_completed}")
+            print(f"   Profile data keys: {list(profile_data.keys())}")
+            
+            # After updating profile, it should be marked as completed
+            if profile_completed and profile_data:
+                print("   ✓ Profile completion tracking working correctly")
+                return True
+            else:
+                print("   ❌ Profile completion not properly tracked")
+                return False
+        return False
+
+    def test_admin_dashboard_data(self):
+        """Test admin dashboard access and data retrieval"""
+        if not self.admin_token:
+            print("❌ No admin token available for dashboard test")
+            return False
+            
+        success, response = self.run_test(
+            "Admin Dashboard - Get All Users",
+            "GET",
+            "/api/admin/users",
+            200,
+            token=self.admin_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Admin can access user data: {len(response)} users")
+            
+            # Check user data structure
+            if len(response) > 0:
+                user = response[0]
+                admin_required_fields = ['id', 'email', 'role', 'full_name', 'is_verified', 'created_at']
+                
+                missing_fields = []
+                for field in admin_required_fields:
+                    if field not in user:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Missing admin dashboard fields: {missing_fields}")
+                    return False
+                
+                print("   ✓ Admin dashboard contains all required user fields")
+                
+                # Count users by role
+                role_counts = {}
+                for user in response:
+                    role = user.get('role', 'unknown')
+                    role_counts[role] = role_counts.get(role, 0) + 1
+                
+                print(f"   ✓ User distribution: {role_counts}")
+                return True
+        return False
+
+    def test_user_verification_workflow(self):
+        """Test complete user verification workflow"""
+        if not self.admin_token or not self.freelancer_user:
+            print("❌ Missing admin token or freelancer user for verification workflow")
+            return False
+        
+        # Step 1: Verify the freelancer
+        verification_data = {
+            "user_id": self.freelancer_user['id'],
+            "verification_status": True
+        }
+        
+        success, response = self.run_test(
+            "Admin Verify Freelancer",
+            "POST",
+            "/api/admin/verify-user",
+            200,
+            data=verification_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        # Step 2: Check if freelancer can now bid (get updated profile)
+        success, response = self.run_test(
+            "Check Freelancer Can Bid After Verification",
+            "GET",
+            "/api/profile",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            is_verified = response.get('is_verified', False)
+            can_bid = response.get('can_bid', False)
+            verification_required = response.get('verification_required', True)
+            
+            print(f"   Freelancer verified: {is_verified}")
+            print(f"   Freelancer can bid: {can_bid}")
+            print(f"   Verification required: {verification_required}")
+            
+            if is_verified and can_bid and not verification_required:
+                print("   ✓ Verification workflow completed successfully")
+                return True
+            else:
+                print("   ❌ Verification workflow not working properly")
+                return False
+        return False
+
+    def test_enhanced_messaging_system(self):
+        """Test enhanced messaging system with job context"""
+        if not self.test_job_id or not self.client_user:
+            print("❌ Missing job ID or client user for enhanced messaging test")
+            return False
+            
+        # Send a detailed project message
+        message_data = {
+            "job_id": self.test_job_id,
+            "receiver_id": self.client_user['id'],
+            "content": """Hello,
+
+Thank you for considering my proposal for the E-commerce Platform project. I have a few questions to ensure I deliver exactly what you need:
+
+1. **Payment Integration**: Do you have a preference for payment gateways? I recommend Stripe for international payments and PayFast for South African customers.
+
+2. **Admin Dashboard**: What specific analytics and reporting features would you like in the admin dashboard?
+
+3. **Mobile Responsiveness**: Should the platform be fully responsive for mobile devices, or do you plan a separate mobile app?
+
+4. **Timeline**: Are there any specific milestones or deadlines I should be aware of?
+
+I'm excited to work on this project and deliver a high-quality e-commerce solution.
+
+Best regards,
+Thabo"""
+        }
+        
+        success, response = self.run_test(
+            "Send Enhanced Project Message",
+            "POST",
+            "/api/messages",
+            200,
+            data=message_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            return False
+        
+        # Get messages to verify content
+        success, response = self.run_test(
+            "Get Enhanced Messages",
+            "GET",
+            f"/api/messages/{self.test_job_id}",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            message = response[-1]  # Get latest message
+            if len(message.get('content', '')) > 100:  # Check for detailed content
+                print("   ✓ Enhanced messaging system working with detailed content")
+                return True
+        return False
+
+    def test_support_system_comprehensive(self):
+        """Test comprehensive support ticket system"""
+        support_data = {
+            "name": "Sipho Ndlovu",
+            "email": "sipho.ndlovu@gmail.com",
+            "message": """Hello Afrilance Support Team,
+
+I am experiencing an issue with my freelancer profile verification. I uploaded my South African ID document 3 days ago, but my account is still showing as unverified.
+
+**Issue Details:**
+- Account: sipho.ndlovu@gmail.com
+- Role: Freelancer
+- ID Document: Uploaded on 2025-01-08
+- Current Status: Pending verification
+
+**Impact:**
+I am unable to bid on projects, which is affecting my ability to earn income through the platform.
+
+**Request:**
+Could you please expedite the verification process or let me know if there are any issues with my submitted documents?
+
+**Additional Information:**
+- Location: Johannesburg, South Africa
+- Phone: +27 11 123 4567
+- Preferred contact method: Email
+
+Thank you for your assistance. I look forward to your prompt response.
+
+Best regards,
+Sipho Ndlovu
+Freelance Web Developer"""
+        }
+        
+        success, response = self.run_test(
+            "Submit Comprehensive Support Ticket",
+            "POST",
+            "/api/support",
+            200,
+            data=support_data
+        )
+        
+        if success and 'ticket_id' in response:
+            print(f"   ✓ Support ticket created: {response['ticket_id']}")
+            print(f"   ✓ Email notification sent: {response.get('email_sent', 'Unknown')}")
+            return True
+        return False
+
 def main():
     print("🚀 Starting Afrilance Authentication System Tests")
     print("=" * 60)
