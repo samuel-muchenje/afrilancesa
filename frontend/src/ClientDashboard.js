@@ -16,6 +16,7 @@ import {
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const ClientDashboard = ({ user, onNavigate, onLogout }) => {
+  const [currentTab, setCurrentTab] = useState('dashboard');
   const [stats, setStats] = useState({
     activeJobs: 0,
     totalApplications: 0,
@@ -25,7 +26,29 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
   });
   
   const [recentJobs, setRecentJobs] = useState([]);
+  const [myJobs, setMyJobs] = useState([]);
+  const [freelancers, setFreelancers] = useState([]);
+  const [jobApplications, setJobApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedFreelancer, setSelectedFreelancer] = useState(null);
+  
+  // Search and filter states
+  const [jobSearch, setJobSearch] = useState('');
+  const [freelancerSearch, setFreelancerSearch] = useState('');
+  const [skillFilter, setSkillFilter] = useState('all');
+  const [experienceFilter, setExperienceFilter] = useState('all');
+  
+  // Job posting form
+  const [jobForm, setJobForm] = useState({
+    title: '',
+    description: '',
+    category: '',
+    budget: '',
+    budget_type: 'fixed',
+    requirements: ''
+  });
 
   useEffect(() => {
     fetchDashboardData();
