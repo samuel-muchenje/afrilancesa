@@ -29,6 +29,7 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
   const [myJobs, setMyJobs] = useState([]);
   const [freelancers, setFreelancers] = useState([]);
   const [jobApplications, setJobApplications] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
