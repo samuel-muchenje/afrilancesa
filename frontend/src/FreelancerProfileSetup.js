@@ -234,7 +234,7 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
 
   return (
     <div className="min-h-screen bg-black py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <img 
@@ -245,6 +245,43 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
           <h1 className="text-3xl font-bold text-white mb-2">Complete Your Freelancer Profile</h1>
           <p className="text-gray-400">Stand out to potential clients with a detailed profile</p>
         </div>
+
+        {/* Progress Bar */}
+        <Card className="auth-card mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-gray-400">Profile Completion</div>
+              <div className="text-sm text-white font-semibold">{calculateProgress()}%</div>
+            </div>
+            <Progress value={calculateProgress()} className="h-2 mb-4" />
+            
+            {/* Step Indicators */}
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                const isActive = index === currentStep;
+                const isCompleted = index < currentStep || calculateProgress() === 100;
+                
+                return (
+                  <div key={index} className="flex flex-col items-center flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                      isCompleted ? 'bg-green-600 text-white' :
+                      isActive ? 'bg-yellow-400 text-black' : 'bg-gray-700 text-gray-400'
+                    }`}>
+                      {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    <div className={`text-xs text-center ${
+                      isActive ? 'text-white font-semibold' : 'text-gray-400'
+                    }`}>
+                      <div>{step.title}</div>
+                      <div className="text-gray-500">{step.description}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Verification Status */}
         <Card className="auth-card mb-6">
@@ -277,9 +314,16 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   <span>ID document required</span>
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 mb-3">
                   You'll need to upload your ID document for verification before applying to jobs.
                 </p>
+                <Button
+                  size="sm"
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload ID Document
+                </Button>
               </div>
             )}
           </CardContent>
@@ -302,184 +346,439 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
                 </Alert>
               )}
 
-              {/* Skills */}
-              <div>
-                <Label className="text-white text-sm font-medium flex items-center mb-2">
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Skills *
-                </Label>
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={currentSkill}
-                      onChange={(e) => setCurrentSkill(e.target.value)}
-                      placeholder="Add a skill (e.g., React, Python, Graphic Design)"
-                      className="auth-input"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    />
-                    <Button
-                      type="button"
-                      onClick={addSkill}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-4"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
+              {/* Step 1: Skills & Expertise */}
+              {currentStep === 0 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <Briefcase className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Skills & Expertise</h2>
+                    <p className="text-gray-400">What services can you provide to clients?</p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {profileData.skills.map((skill, index) => (
-                      <Badge key={index} className="bg-green-600 text-white pr-1">
-                        {skill}
-                        <button
-                          type="button"
-                          onClick={() => removeSkill(skill)}
-                          className="ml-2 hover:text-red-300"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                  {profileData.skills.length === 0 && (
-                    <p className="text-gray-400 text-sm">Add your key skills to attract relevant clients</p>
-                  )}
-                </div>
-              </div>
 
-              {/* Experience */}
-              <div>
-                <Label className="text-white text-sm font-medium flex items-center mb-2">
-                  <User className="w-4 h-4 mr-2" />
-                  Experience Description *
-                </Label>
-                <Textarea
-                  name="experience"
-                  value={profileData.experience}
-                  onChange={handleInputChange}
-                  placeholder="Describe your professional experience, previous projects, and achievements..."
-                  className="auth-input resize-none"
-                  rows={4}
-                  required
-                />
-                <p className="text-gray-400 text-xs mt-1">
-                  {profileData.experience.length}/500 characters
-                </p>
-              </div>
-
-              {/* Hourly Rate */}
-              <div>
-                <Label className="text-white text-sm font-medium flex items-center mb-2">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Hourly Rate (ZAR) *
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">R</span>
-                  <Input
-                    name="hourly_rate"
-                    type="number"
-                    min="50"
-                    max="5000"
-                    step="10"
-                    value={profileData.hourly_rate}
-                    onChange={handleInputChange}
-                    placeholder="250"
-                    className="auth-input pl-8"
-                    required
-                  />
-                </div>
-                <p className="text-gray-400 text-xs mt-1">
-                  Set a competitive rate. You can always adjust this later.
-                </p>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <Label className="text-white text-sm font-medium flex items-center mb-2">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Professional Bio *
-                </Label>
-                <Textarea
-                  name="bio"
-                  value={profileData.bio}
-                  onChange={handleInputChange}
-                  placeholder="Write a compelling bio that showcases your expertise and what makes you unique..."
-                  className="auth-input resize-none"
-                  rows={5}
-                  required
-                />
-                <p className="text-gray-400 text-xs mt-1">
-                  {profileData.bio.length}/1000 characters
-                </p>
-              </div>
-
-              {/* Portfolio Links */}
-              <div>
-                <Label className="text-white text-sm font-medium mb-2 block">
-                  Portfolio Links (Optional)
-                </Label>
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={currentLink}
-                      onChange={(e) => setCurrentLink(e.target.value)}
-                      placeholder="https://yourportfolio.com or https://github.com/username"
-                      className="auth-input"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPortfolioLink())}
-                    />
-                    <Button
-                      type="button"
-                      onClick={addPortfolioLink}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-4"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {profileData.portfolio_links.length > 0 && (
-                    <div className="space-y-2">
-                      {profileData.portfolio_links.map((link, index) => (
-                        <div key={index} className="flex items-center justify-between bg-gray-800 p-2 rounded">
-                          <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-yellow-400 hover:underline text-sm truncate flex-1 mr-2"
-                          >
-                            {link}
-                          </a>
-                          <button
+                  {/* Skills */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-3">
+                      <Star className="w-4 h-4 mr-2" />
+                      Your Skills *
+                    </Label>
+                    
+                    {/* Popular Skills */}
+                    <div className="mb-4">
+                      <p className="text-gray-400 text-sm mb-2">Popular skills (click to add):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {popularSkills.filter(skill => !profileData.skills.includes(skill)).slice(0, 8).map((skill, index) => (
+                          <Button
+                            key={index}
                             type="button"
-                            onClick={() => removePortfolioLink(link)}
-                            className="text-red-400 hover:text-red-300"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addSkill(skill)}
+                            className="border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-black"
                           >
-                            <X className="w-4 h-4" />
-                          </button>
+                            <Plus className="w-3 h-3 mr-1" />
+                            {skill}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          value={currentSkill}
+                          onChange={(e) => setCurrentSkill(e.target.value)}
+                          placeholder="Add a custom skill"
+                          className="auth-input"
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => addSkill()}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-black px-4"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {profileData.skills.map((skill, index) => (
+                          <Badge key={index} className="bg-green-600 text-white pr-1">
+                            {skill}
+                            <button
+                              type="button"
+                              onClick={() => removeSkill(skill)}
+                              className="ml-2 hover:text-red-300"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <p className="text-gray-400 text-xs">
+                        {profileData.skills.length}/10 skills added
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Specializations */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <Target className="w-4 h-4 mr-2" />
+                      Specializations (Optional)
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          value={currentSpecialization}
+                          onChange={(e) => setCurrentSpecialization(e.target.value)}
+                          placeholder="e.g., E-commerce websites, Mobile app design"
+                          className="auth-input"
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialization())}
+                        />
+                        <Button
+                          type="button"
+                          onClick={addSpecialization}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-black px-4"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {profileData.specializations.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {profileData.specializations.map((spec, index) => (
+                            <Badge key={index} className="bg-blue-600 text-white pr-1">
+                              {spec}
+                              <button
+                                type="button"
+                                onClick={() => removeSpecialization(spec)}
+                                className="ml-2 hover:text-red-300"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </Badge>
+                          ))}
                         </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Experience & Rate */}
+              {currentStep === 1 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <DollarSign className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Experience & Pricing</h2>
+                    <p className="text-gray-400">Tell us about your background and set your rate</p>
+                  </div>
+
+                  {/* Experience Level */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <Award className="w-4 h-4 mr-2" />
+                      Experience Level *
+                    </Label>
+                    <select
+                      name="experience_level"
+                      value={profileData.experience_level}
+                      onChange={handleInputChange}
+                      className="w-full auth-input"
+                      required
+                    >
+                      <option value="beginner">Beginner (0-2 years)</option>
+                      <option value="intermediate">Intermediate (2-5 years)</option>
+                      <option value="expert">Expert (5+ years)</option>
+                    </select>
+                  </div>
+
+                  {/* Experience Description */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <User className="w-4 h-4 mr-2" />
+                      Experience Description *
+                    </Label>
+                    <Textarea
+                      name="experience"
+                      value={profileData.experience}
+                      onChange={handleInputChange}
+                      placeholder="Describe your professional experience, key projects, and notable achievements..."
+                      className="auth-input resize-none"
+                      rows={4}
+                      required
+                    />
+                    <p className="text-gray-400 text-xs mt-1">
+                      {profileData.experience.length}/500 characters
+                    </p>
+                  </div>
+
+                  {/* Hourly Rate */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Hourly Rate (ZAR) *
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">R</span>
+                      <Input
+                        name="hourly_rate"
+                        type="number"
+                        min="50"
+                        max="5000"
+                        step="10"
+                        value={profileData.hourly_rate}
+                        onChange={handleInputChange}
+                        placeholder="250"
+                        className="auth-input pl-8"
+                        required
+                      />
+                    </div>
+                    <div className="mt-2 p-3 bg-gray-800 rounded-lg">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Suggested rates:</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs mt-1">
+                        <span className="text-gray-500">Beginner: R50-150/hr</span>
+                        <span className="text-gray-500">Intermediate: R150-400/hr</span>
+                        <span className="text-gray-500">Expert: R400+/hr</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Availability */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <Clock className="w-4 h-4 mr-2" />
+                      Availability *
+                    </Label>
+                    <select
+                      name="availability"
+                      value={profileData.availability}
+                      onChange={handleInputChange}
+                      className="w-full auth-input"
+                      required
+                    >
+                      <option value="full-time">Full-time (40+ hours/week)</option>
+                      <option value="part-time">Part-time (20-39 hours/week)</option>
+                      <option value="weekends">Weekends only</option>
+                      <option value="project-based">Project-based</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Professional Profile */}
+              {currentStep === 2 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <User className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Professional Profile</h2>
+                    <p className="text-gray-400">Create your compelling professional story</p>
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Professional Bio * (minimum 50 characters)
+                    </Label>
+                    <Textarea
+                      name="bio"
+                      value={profileData.bio}
+                      onChange={handleInputChange}
+                      placeholder="Write a compelling bio that showcases your expertise, personality, and what makes you unique. Mention your passion, key achievements, and what clients can expect when working with you..."
+                      className="auth-input resize-none"
+                      rows={6}
+                      required
+                    />
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-gray-400 text-xs">
+                        {profileData.bio.length}/1000 characters
+                      </p>
+                      <p className={`text-xs ${profileData.bio.length >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                        {profileData.bio.length >= 50 ? '✓ Minimum met' : `${50 - profileData.bio.length} more needed`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Languages */}
+                  <div>
+                    <Label className="text-white text-sm font-medium flex items-center mb-2">
+                      <Globe className="w-4 h-4 mr-2" />
+                      Languages
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {profileData.languages.map((lang, index) => (
+                        <Badge key={index} className="bg-purple-600 text-white">
+                          {lang}
+                        </Badge>
                       ))}
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
-                    Saving Profile...
+                    <p className="text-gray-400 text-xs mt-1">
+                      Language selection will be enhanced in future updates
+                    </p>
                   </div>
-                ) : (
-                  'Complete Profile & Continue'
-                )}
-              </Button>
 
-              <div className="text-center">
-                <p className="text-gray-400 text-sm">
-                  You can always update your profile later from your dashboard
-                </p>
+                  {/* Portfolio Links */}
+                  <div>
+                    <Label className="text-white text-sm font-medium mb-2 block">
+                      Portfolio Links (Optional)
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          value={currentLink}
+                          onChange={(e) => setCurrentLink(e.target.value)}
+                          placeholder="https://yourportfolio.com or https://github.com/username"
+                          className="auth-input"
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPortfolioLink())}
+                        />
+                        <Button
+                          type="button"
+                          onClick={addPortfolioLink}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-black px-4"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {profileData.portfolio_links.length > 0 && (
+                        <div className="space-y-2">
+                          {profileData.portfolio_links.map((link, index) => (
+                            <div key={index} className="flex items-center justify-between bg-gray-800 p-2 rounded">
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-yellow-400 hover:underline text-sm truncate flex-1 mr-2"
+                              >
+                                {link}
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => removePortfolioLink(link)}
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Final Details */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Ready to Get Started!</h2>
+                    <p className="text-gray-400">Review your profile and complete setup</p>
+                  </div>
+
+                  {/* Profile Preview */}
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white">Profile Preview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-green-500 rounded-full flex items-center justify-center text-black text-2xl font-bold">
+                          {user?.full_name?.charAt(0) || 'F'}
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold text-lg">{user?.full_name}</h3>
+                          <p className="text-yellow-400">R{profileData.hourly_rate}/hour • {profileData.experience_level}</p>
+                          <p className="text-gray-400 text-sm">{profileData.availability}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-white font-medium mb-2">Skills ({profileData.skills.length})</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {profileData.skills.slice(0, 8).map((skill, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {profileData.skills.length > 8 && (
+                            <Badge variant="outline" className="text-xs text-gray-400">
+                              +{profileData.skills.length - 8} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-white font-medium mb-2">Bio</h4>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {profileData.bio.substring(0, 200)}{profileData.bio.length > 200 && '...'}
+                        </p>
+                      </div>
+
+                      <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-3">
+                        <div className="flex items-center text-green-400 mb-2">
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          <span className="font-medium">Profile Strength: Strong</span>
+                        </div>
+                        <p className="text-green-300 text-sm">
+                          Your profile is well-optimized to attract quality clients!
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between">
+                {currentStep > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                  >
+                    Previous
+                  </Button>
+                )}
+
+                {currentStep < steps.length - 1 ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!validateStep(currentStep)}
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold ml-auto"
+                  >
+                    Next Step
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow ml-auto"
+                    disabled={loading || !validateStep(currentStep)}
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
+                        Saving Profile...
+                      </div>
+                    ) : (
+                      'Complete Profile & Start Freelancing!'
+                    )}
+                  </Button>
+                )}
               </div>
+
+              {currentStep === steps.length - 1 && (
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">
+                    You can always update your profile later from your dashboard
+                  </p>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>
