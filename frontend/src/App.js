@@ -321,6 +321,15 @@ function App() {
     }
   };
 
+  const fetchMessages = async (jobId) => {
+    try {
+      const data = await apiCall(`/api/messages/${jobId}`);
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
   // Handle register page navigation
   const handleRegisterNavigation = (destination) => {
     if (destination === 'login') {
