@@ -341,6 +341,15 @@ function App() {
     }
   };
 
+  // Handle register page navigation
+  const handleRegisterNavigation = (destination) => {
+    if (destination === 'login') {
+      setCurrentPage('login');
+    } else if (destination === 'landing') {
+      setCurrentPage('landing');
+    }
+  };
+
   // Handle login page navigation
   const handleLoginNavigation = (destination) => {
     if (destination === 'register') {
@@ -353,10 +362,6 @@ function App() {
   // Handle successful login
   const handleLoginSuccess = (userData, role) => {
     setUser(userData);
-    
-    // Store user data
-    localStorage.setItem('token', userData.token);
-    localStorage.setItem('user', JSON.stringify(userData));
     
     // Redirect based on role to appropriate dashboard
     if (role === 'freelancer') {
