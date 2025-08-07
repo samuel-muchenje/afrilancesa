@@ -444,36 +444,36 @@ function App() {
 
   // Main Dashboard
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="dashboard-modern">
       {/* Navigation */}
-      <nav className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className="dashboard-nav sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
+                <span className="text-black font-bold text-xl">A</span>
               </div>
-              <span className="text-xl font-bold text-green-800">Afrilance</span>
+              <span className="text-xl font-bold text-white tracking-tight">AFRILANCE</span>
             </div>
             <div className="flex space-x-4">
               <Button
                 variant={currentPage === 'dashboard' ? 'default' : 'ghost'}
                 onClick={() => setCurrentPage('dashboard')}
-                className={currentPage === 'dashboard' ? 'bg-green-600 text-white' : 'text-gray-600'}
+                className={currentPage === 'dashboard' ? 'bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold' : 'text-gray-300 hover:text-white hover:bg-white/5'}
               >
                 Dashboard
               </Button>
               <Button
                 variant={currentPage === 'jobs' ? 'default' : 'ghost'}
                 onClick={() => setCurrentPage('jobs')}
-                className={currentPage === 'jobs' ? 'bg-green-600 text-white' : 'text-gray-600'}
+                className={currentPage === 'jobs' ? 'bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold' : 'text-gray-300 hover:text-white hover:bg-white/5'}
               >
                 {user?.role === 'client' ? 'Browse Freelancers' : 'Browse Jobs'}
               </Button>
               <Button
                 variant={currentPage === 'profile' ? 'default' : 'ghost'}
                 onClick={() => setCurrentPage('profile')}
-                className={currentPage === 'profile' ? 'bg-green-600 text-white' : 'text-gray-600'}
+                className={currentPage === 'profile' ? 'bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold' : 'text-gray-300 hover:text-white hover:bg-white/5'}
               >
                 Profile
               </Button>
@@ -484,25 +484,26 @@ function App() {
               variant="ghost"
               size="icon"
               onClick={() => setCurrentPage('messages')}
-              className="text-gray-600 hover:text-green-600"
+              className="text-gray-300 hover:text-yellow-400 hover:bg-white/5"
             >
               <MessageCircle className="w-5 h-5" />
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-gray-600 hover:text-green-600">
+                <Button variant="ghost" size="icon" className="text-gray-300 hover:text-yellow-400 hover:bg-white/5">
                   <HelpCircle className="w-5 h-5" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="bg-black/90 border-gray-700">
                 <DialogHeader>
-                  <DialogTitle>Contact Support</DialogTitle>
+                  <DialogTitle className="text-white">Contact Support</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={submitSupport} className="space-y-4">
                   <Input
                     placeholder="Your Name"
                     value={supportForm.name}
                     onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="auth-input"
                     required
                   />
                   <Input
@@ -510,28 +511,30 @@ function App() {
                     placeholder="Your Email"
                     value={supportForm.email}
                     onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="auth-input"
                     required
                   />
                   <Textarea
                     placeholder="How can we help?"
                     value={supportForm.message}
                     onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
+                    className="auth-input resize-none"
                     required
                   />
-                  <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold btn-glow" disabled={loading}>
                     {loading ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Avatar>
-                <AvatarFallback className="bg-green-100 text-green-600">
+                <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold">
                   {user?.full_name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium text-gray-700">{user?.full_name}</span>
-              <Button variant="ghost" size="icon" onClick={logout} className="text-gray-600 hover:text-red-600">
+              <span className="text-sm font-medium text-white">{user?.full_name}</span>
+              <Button variant="ghost" size="icon" onClick={logout} className="text-gray-300 hover:text-red-400 hover:bg-white/5">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
