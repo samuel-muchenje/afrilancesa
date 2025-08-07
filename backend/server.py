@@ -573,18 +573,27 @@ async def submit_support_ticket(ticket: SupportTicket):
     
     db.support_tickets.insert_one(ticket_data)
     
-    # Send email
-    subject = f"New Support Request from {ticket.name}"
-    body = f"""
-    <h2>New Support Request</h2>
-    <p><strong>From:</strong> {ticket.name}</p>
-    <p><strong>Email:</strong> {ticket.email}</p>
-    <p><strong>Message:</strong></p>
-    <p>{ticket.message}</p>
-    <p><strong>Submitted:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
-    """
-    
-    email_sent = send_email("sam@afrilance.co.za", subject, body)
+    # Try to send email but don't block if it fails
+    email_sent = False
+    try:
+        subject = f"New Support Request from {ticket.name}"
+        body = f"""
+        <h2>New Support Request</h2>
+        <p><strong>From:</strong> {ticket.name}</p>
+        <p><strong>Email:</strong> {ticket.email}</p>
+        <p><strong>Message:</strong></p>
+        <p>{ticket.message}</p>
+        <p><strong>Submitted:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
+        """
+        
+        # Only try to send email if EMAIL_PASSWORD is configured
+        if EMAIL_PASS:
+            email_sent = send_email("sam@afrilance.co.za", subject, body)
+        else:
+            print("Email not configured, skipping email notification")
+    except Exception as e:
+        print(f"Email sending failed: {e}")
+        email_sent = False
     
     return {
         "message": "Support ticket submitted successfully",
