@@ -497,7 +497,7 @@ function App() {
             <div className="text-center mt-4">
               <button
                 type="button"
-                onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                onClick={() => setCurrentPage('register')}
                 className="text-yellow-400 hover:underline font-medium"
               >
                 {authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
