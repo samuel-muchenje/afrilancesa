@@ -594,6 +594,10 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                 </Card>
               </div>
             </div>
+            </div>
+          </>
+        )}
+
         {/* Post Job Tab */}
         {currentTab === 'post-job' && (
           <div className="max-w-4xl mx-auto">
