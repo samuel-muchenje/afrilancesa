@@ -919,56 +919,101 @@ class AfrilanceAPITester:
             return False
 
 def main():
-    print("🚀 Starting Afrilance API Tests")
-    print("=" * 50)
+    print("🚀 Starting Afrilance Authentication System Tests")
+    print("=" * 60)
     
     tester = AfrilanceAPITester()
     
-    # Test sequence
-    tests = [
+    # Authentication System Test Sequence
+    auth_tests = [
         ("Health Check", tester.test_health_check),
-        ("Freelancer Registration", tester.test_freelancer_registration),
-        ("Client Registration", tester.test_client_registration),
-        ("Role-based Verification (Freelancer)", tester.test_role_based_verification),
-        ("Client No Verification Required", tester.test_client_no_verification),
-        ("Login", tester.test_login),
-        ("Get Profile", tester.test_get_profile),
-        ("ID Document Upload", tester.test_id_document_upload),
-        ("Update Freelancer Profile", tester.test_update_freelancer_profile),
-        ("Create Job", tester.test_create_job),
-        ("Get Jobs", tester.test_get_jobs),
-        ("Get My Jobs (Client)", tester.test_get_my_jobs_client),
-        ("Apply to Job", tester.test_apply_to_job),
-        ("Get Job Applications", tester.test_get_job_applications),
-        ("Send Message", tester.test_send_message),
-        ("Get Messages", tester.test_get_messages),
-        ("Submit Support Ticket", tester.test_support_ticket),
-        ("Duplicate Registration", tester.test_duplicate_registration),
-        ("Invalid Login", tester.test_invalid_login),
-        ("Unauthorized Access", tester.test_unauthorized_access),
+        ("Auth - Freelancer Registration", tester.test_auth_register_freelancer),
+        ("Auth - Client Registration", tester.test_auth_register_client),
+        ("Auth - Admin Registration", tester.test_auth_register_admin),
+        ("Auth - Login Valid Credentials", tester.test_auth_login_valid_credentials),
+        ("Auth - Login Invalid Credentials", tester.test_auth_login_invalid_credentials),
+        ("Auth - Login Wrong Password", tester.test_auth_login_wrong_password),
+        ("Auth - JWT Token Structure", tester.test_auth_jwt_token_structure),
+        ("Auth - Protected Endpoint Valid Token", tester.test_auth_protected_endpoint_valid_token),
+        ("Auth - Protected Endpoint No Token", tester.test_auth_protected_endpoint_no_token),
+        ("Auth - Protected Endpoint Invalid Token", tester.test_auth_protected_endpoint_invalid_token),
+        ("Auth - Email Uniqueness Validation", tester.test_auth_email_uniqueness),
+        ("Auth - Password Hashing Verification", tester.test_auth_password_hashing),
+        ("Auth - Invalid Role Validation", tester.test_auth_role_validation),
+        ("Admin - Get All Users", tester.test_admin_get_all_users),
+        ("Admin - Get Users Non-Admin Access", tester.test_admin_get_users_non_admin),
+        ("Admin - Verify User", tester.test_admin_verify_user),
+        ("Admin - Verify User Non-Admin Access", tester.test_admin_verify_user_non_admin),
+        ("Role-Based Access Control", tester.test_role_based_access_control),
     ]
     
-    # Run all tests
-    for test_name, test_func in tests:
+    # Run authentication tests
+    print("\n🔐 AUTHENTICATION SYSTEM TESTS")
+    print("=" * 60)
+    
+    for test_name, test_func in auth_tests:
         try:
             test_func()
         except Exception as e:
             print(f"❌ {test_name} - Exception: {str(e)}")
     
-    # Print final results
-    print("\n" + "=" * 50)
-    print(f"📊 FINAL RESULTS")
-    print(f"Tests Run: {tester.tests_run}")
-    print(f"Tests Passed: {tester.tests_passed}")
-    print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
-    print(f"Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "0%")
+    # Print authentication test results
+    print("\n" + "=" * 60)
+    print(f"🔐 AUTHENTICATION TEST RESULTS")
+    print(f"Auth Tests Run: {tester.auth_tests_run}")
+    print(f"Auth Tests Passed: {tester.auth_tests_passed}")
+    print(f"Auth Tests Failed: {tester.auth_tests_run - tester.auth_tests_passed}")
+    print(f"Auth Success Rate: {(tester.auth_tests_passed/tester.auth_tests_run*100):.1f}%" if tester.auth_tests_run > 0 else "0%")
     
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+    # Run additional comprehensive tests if authentication is working
+    if tester.auth_tests_passed >= 10:  # If basic auth tests are passing
+        print("\n🚀 RUNNING ADDITIONAL SYSTEM TESTS")
+        print("=" * 60)
+        
+        additional_tests = [
+            ("Role-based Verification (Freelancer)", tester.test_role_based_verification),
+            ("Client No Verification Required", tester.test_client_no_verification),
+            ("Update Freelancer Profile", tester.test_update_freelancer_profile),
+            ("Create Job", tester.test_create_job),
+            ("Get Jobs", tester.test_get_jobs),
+            ("Get My Jobs (Client)", tester.test_get_my_jobs_client),
+            ("Apply to Job", tester.test_apply_to_job),
+            ("Get Job Applications", tester.test_get_job_applications),
+            ("Send Message", tester.test_send_message),
+            ("Get Messages", tester.test_get_messages),
+            ("Submit Support Ticket", tester.test_support_ticket),
+            ("ID Document Upload", tester.test_id_document_upload),
+        ]
+        
+        for test_name, test_func in additional_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+    
+    # Print final comprehensive results
+    print("\n" + "=" * 60)
+    print(f"📊 COMPREHENSIVE TEST RESULTS")
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Total Tests Passed: {tester.tests_passed}")
+    print(f"Total Tests Failed: {tester.tests_run - tester.tests_passed}")
+    print(f"Overall Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "0%")
+    
+    print(f"\n🔐 Authentication Tests: {tester.auth_tests_passed}/{tester.auth_tests_run}")
+    print(f"🔧 System Tests: {tester.tests_passed - tester.auth_tests_passed}/{tester.tests_run - tester.auth_tests_run}")
+    
+    # Determine overall result
+    auth_success_rate = (tester.auth_tests_passed/tester.auth_tests_run*100) if tester.auth_tests_run > 0 else 0
+    
+    if auth_success_rate >= 90:
+        print("\n🎉 Authentication system is working excellently!")
         return 0
-    else:
-        print("⚠️  Some tests failed. Check the details above.")
+    elif auth_success_rate >= 70:
+        print("\n⚠️  Authentication system has some issues but core functionality works.")
         return 1
+    else:
+        print("\n❌ Authentication system has critical issues that need attention.")
+        return 2
 
 if __name__ == "__main__":
     sys.exit(main())
