@@ -883,8 +883,8 @@ function App() {
         )}
       </div>
 
-      {/* Job Application Modal */}
-      {selectedJob && user?.role === 'freelancer' && (
+      {/* Job Application Modal - Only show when NOT on landing page */}
+      {selectedJob && user?.role === 'freelancer' && currentPage !== 'landing' && (
         <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -931,8 +931,8 @@ function App() {
         </Dialog>
       )}
 
-      {/* Applications Modal */}
-      {selectedJob && user?.role === 'client' && applications.length > 0 && (
+      {/* Applications Modal - Only show when NOT on landing page */}
+      {selectedJob && user?.role === 'client' && applications.length > 0 && currentPage !== 'landing' && (
         <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
