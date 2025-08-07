@@ -34,6 +34,7 @@ function App() {
     email: '',
     password: '',
     full_name: '',
+    phone: '',
     role: 'freelancer'
   });
 
