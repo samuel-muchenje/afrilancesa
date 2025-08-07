@@ -454,7 +454,7 @@ function App() {
               <img 
                 src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/1hnbql0v_5.png" 
                 alt="Afrilance" 
-                className="h-10 w-10"
+                className="afrilance-icon"
               />
               <span className="text-xl font-bold text-white tracking-tight">AFRILANCE</span>
             </div>
