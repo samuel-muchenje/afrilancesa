@@ -12,6 +12,7 @@ import {
   Send, LogOut, User, Plus, Shield, Smartphone, Globe, CreditCard, Play,
   ChevronLeft, ChevronRight, ArrowRight, Check, Quote
 } from 'lucide-react';
+import ModernLanding from './ModernLanding';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
