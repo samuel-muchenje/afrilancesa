@@ -376,6 +376,19 @@ async def apply_to_job(job_id: str, application: JobApplication, current_user = 
     if current_user["role"] != "freelancer":
         raise HTTPException(status_code=403, detail="Only freelancers can apply to jobs")
     
+    # Get user details to check verification status
+    user = db.users.find_one({"id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if freelancer is verified and can bid
+    if not user.get("can_bid", False):
+        if user.get("verification_required", False) and not user.get("is_verified", False):
+            raise HTTPException(
+                status_code=403, 
+                detail="You must be verified before applying to jobs. Please upload your ID document and wait for admin verification."
+            )
+    
     # Check if already applied
     existing = db.applications.find_one({
         "job_id": job_id,
