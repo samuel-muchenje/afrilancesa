@@ -3,10 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
 import { Avatar, AvatarFallback } from './components/ui/avatar';
+import { Input } from './components/ui/input';
+import { Textarea } from './components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { 
   Briefcase, DollarSign, Star, Clock, Users, TrendingUp, 
   MessageCircle, Settings, LogOut, CheckCircle, AlertTriangle,
-  FileText, Award, Calendar
+  FileText, Award, Calendar, Search, Filter, Eye, Edit,
+  Upload, Plus, BookOpen, Target, ChevronRight, Mail,
+  Phone, MapPin, Globe, Heart, ExternalLink
 } from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
