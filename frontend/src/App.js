@@ -162,6 +162,13 @@ function App() {
     setCurrentPage('landing');
   };
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setCurrentPage('landing');
+  };
+
   const fetchJobs = async () => {
     try {
       const data = await apiCall('/api/jobs');
