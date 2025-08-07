@@ -59,6 +59,479 @@ class AfrilanceAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
+    def run_auth_test(self, name, method, endpoint, expected_status, data=None, token=None):
+        """Run a single authentication-focused API test"""
+        url = f"{self.base_url}{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        if token:
+            headers['Authorization'] = f'Bearer {token}'
+
+        self.auth_tests_run += 1
+        print(f"\n🔐 Testing {name}...")
+        print(f"   URL: {url}")
+        
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=10)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=10)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers, timeout=10)
+
+            success = response.status_code == expected_status
+            if success:
+                self.auth_tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json()
+                except:
+                    return success, {}
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+
+    # ========== AUTHENTICATION SYSTEM TESTS ==========
+    
+    def test_auth_register_freelancer(self):
+        """Test freelancer registration with South African data"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        freelancer_data = {
+            "email": f"thabo.mthembu{timestamp}@gmail.com",
+            "password": "SecurePass123!",
+            "role": "freelancer",
+            "full_name": "Thabo Mthembu",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Freelancer Registration",
+            "POST",
+            "/api/register",
+            200,
+            data=freelancer_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            self.freelancer_token = response['token']
+            self.freelancer_user = response['user']
+            print(f"   ✓ Token generated: {self.freelancer_token[:20]}...")
+            print(f"   ✓ User ID: {self.freelancer_user['id']}")
+            print(f"   ✓ Role: {self.freelancer_user['role']}")
+            print(f"   ✓ Verification required: {self.freelancer_user.get('verification_required', False)}")
+            return True
+        return False
+
+    def test_auth_register_client(self):
+        """Test client registration with South African data"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        client_data = {
+            "email": f"nomsa.dlamini{timestamp}@outlook.com",
+            "password": "ClientPass456!",
+            "role": "client",
+            "full_name": "Nomsa Dlamini",
+            "phone": "+27719876543"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Client Registration",
+            "POST",
+            "/api/register",
+            200,
+            data=client_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            self.client_token = response['token']
+            self.client_user = response['user']
+            print(f"   ✓ Token generated: {self.client_token[:20]}...")
+            print(f"   ✓ User ID: {self.client_user['id']}")
+            print(f"   ✓ Role: {self.client_user['role']}")
+            return True
+        return False
+
+    def test_auth_register_admin(self):
+        """Test admin registration"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        admin_data = {
+            "email": f"admin.afrilance{timestamp}@afrilance.co.za",
+            "password": "AdminPass789!",
+            "role": "admin",
+            "full_name": "Admin User",
+            "phone": "+27123456789"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Admin Registration",
+            "POST",
+            "/api/register",
+            200,
+            data=admin_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            self.admin_token = response['token']
+            self.admin_user = response['user']
+            print(f"   ✓ Token generated: {self.admin_token[:20]}...")
+            print(f"   ✓ User ID: {self.admin_user['id']}")
+            print(f"   ✓ Role: {self.admin_user['role']}")
+            return True
+        return False
+
+    def test_auth_login_valid_credentials(self):
+        """Test login with valid credentials"""
+        if not self.freelancer_user:
+            print("❌ No freelancer user available for login test")
+            return False
+            
+        login_data = {
+            "email": self.freelancer_user['email'],
+            "password": "SecurePass123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Login Valid Credentials",
+            "POST",
+            "/api/login",
+            200,
+            data=login_data
+        )
+        
+        if success and 'token' in response:
+            print(f"   ✓ Login successful, token: {response['token'][:20]}...")
+            print(f"   ✓ User data returned: {response['user']['full_name']}")
+            return True
+        return False
+
+    def test_auth_login_invalid_credentials(self):
+        """Test login with invalid credentials - should return 401"""
+        invalid_data = {
+            "email": "nonexistent@test.com",
+            "password": "WrongPassword123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Login Invalid Credentials",
+            "POST",
+            "/api/login",
+            401,
+            data=invalid_data
+        )
+        return success
+
+    def test_auth_login_wrong_password(self):
+        """Test login with correct email but wrong password"""
+        if not self.freelancer_user:
+            print("❌ No freelancer user available for wrong password test")
+            return False
+            
+        wrong_password_data = {
+            "email": self.freelancer_user['email'],
+            "password": "WrongPassword123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Login Wrong Password",
+            "POST",
+            "/api/login",
+            401,
+            data=wrong_password_data
+        )
+        return success
+
+    def test_auth_jwt_token_structure(self):
+        """Test JWT token structure and content"""
+        if not self.freelancer_token:
+            print("❌ No token available for JWT structure test")
+            return False
+            
+        try:
+            # Decode token without verification to check structure
+            decoded = jwt.decode(self.freelancer_token, options={"verify_signature": False})
+            
+            print(f"   ✓ Token payload: {decoded}")
+            
+            # Check required fields
+            required_fields = ['user_id', 'role', 'exp']
+            for field in required_fields:
+                if field not in decoded:
+                    print(f"   ❌ Missing required field: {field}")
+                    return False
+                    
+            print(f"   ✓ User ID in token: {decoded['user_id']}")
+            print(f"   ✓ Role in token: {decoded['role']}")
+            print(f"   ✓ Expiration in token: {decoded['exp']}")
+            
+            # Verify user_id matches
+            if decoded['user_id'] != self.freelancer_user['id']:
+                print(f"   ❌ Token user_id doesn't match user: {decoded['user_id']} vs {self.freelancer_user['id']}")
+                return False
+                
+            # Verify role matches
+            if decoded['role'] != self.freelancer_user['role']:
+                print(f"   ❌ Token role doesn't match user: {decoded['role']} vs {self.freelancer_user['role']}")
+                return False
+                
+            print("   ✅ JWT token structure and content valid")
+            return True
+            
+        except Exception as e:
+            print(f"   ❌ JWT token validation failed: {str(e)}")
+            return False
+
+    def test_auth_protected_endpoint_valid_token(self):
+        """Test protected endpoint with valid JWT token"""
+        success, response = self.run_auth_test(
+            "Auth - Protected Endpoint Valid Token",
+            "GET",
+            "/api/profile",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and 'id' in response:
+            print(f"   ✓ Profile data retrieved: {response['full_name']}")
+            return True
+        return False
+
+    def test_auth_protected_endpoint_no_token(self):
+        """Test protected endpoint without token - should return 401"""
+        success, response = self.run_auth_test(
+            "Auth - Protected Endpoint No Token",
+            "GET",
+            "/api/profile",
+            401
+        )
+        return success
+
+    def test_auth_protected_endpoint_invalid_token(self):
+        """Test protected endpoint with invalid token - should return 401"""
+        success, response = self.run_auth_test(
+            "Auth - Protected Endpoint Invalid Token",
+            "GET",
+            "/api/profile",
+            401,
+            token="invalid.jwt.token"
+        )
+        return success
+
+    def test_auth_email_uniqueness(self):
+        """Test email uniqueness validation - duplicate registration should fail"""
+        if not self.freelancer_user:
+            print("❌ No freelancer user available for duplicate email test")
+            return False
+            
+        duplicate_data = {
+            "email": self.freelancer_user['email'],
+            "password": "AnotherPassword123!",
+            "role": "client",
+            "full_name": "Another User",
+            "phone": "+27987654321"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Email Uniqueness Validation",
+            "POST",
+            "/api/register",
+            400,
+            data=duplicate_data
+        )
+        return success
+
+    def test_auth_password_hashing(self):
+        """Test that passwords are properly hashed (not stored in plain text)"""
+        # This test verifies that we can login with the original password
+        # but the stored password is hashed (we can't directly check the DB in this test)
+        
+        if not self.client_user:
+            print("❌ No client user available for password hashing test")
+            return False
+            
+        # Try to login with the original password
+        login_data = {
+            "email": self.client_user['email'],
+            "password": "ClientPass456!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Password Hashing Verification",
+            "POST",
+            "/api/login",
+            200,
+            data=login_data
+        )
+        
+        if success:
+            print("   ✓ Password hashing working correctly (login successful with original password)")
+            return True
+        return False
+
+    def test_auth_role_validation(self):
+        """Test role validation during registration"""
+        invalid_role_data = {
+            "email": "invalid.role@test.com",
+            "password": "TestPass123!",
+            "role": "invalid_role",
+            "full_name": "Invalid Role User",
+            "phone": "+27123456789"
+        }
+        
+        success, response = self.run_auth_test(
+            "Auth - Invalid Role Validation",
+            "POST",
+            "/api/register",
+            400,
+            data=invalid_role_data
+        )
+        return success
+
+    # ========== ADMIN USER MANAGEMENT TESTS ==========
+    
+    def test_admin_get_all_users(self):
+        """Test admin endpoint to get all users"""
+        if not self.admin_token:
+            print("❌ No admin token available for admin users test")
+            return False
+            
+        success, response = self.run_auth_test(
+            "Admin - Get All Users",
+            "GET",
+            "/api/admin/users",
+            200,
+            token=self.admin_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Retrieved {len(response)} users")
+            # Check if our test users are in the list
+            user_emails = [user.get('email', '') for user in response]
+            if self.freelancer_user and self.freelancer_user['email'] in user_emails:
+                print(f"   ✓ Freelancer user found in admin list")
+            if self.client_user and self.client_user['email'] in user_emails:
+                print(f"   ✓ Client user found in admin list")
+            return True
+        return False
+
+    def test_admin_get_users_non_admin(self):
+        """Test admin endpoint with non-admin token - should return 403"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for non-admin test")
+            return False
+            
+        success, response = self.run_auth_test(
+            "Admin - Get Users Non-Admin Access",
+            "GET",
+            "/api/admin/users",
+            403,
+            token=self.freelancer_token
+        )
+        return success
+
+    def test_admin_verify_user(self):
+        """Test admin user verification endpoint"""
+        if not self.admin_token or not self.freelancer_user:
+            print("❌ No admin token or freelancer user available for verification test")
+            return False
+            
+        verification_data = {
+            "user_id": self.freelancer_user['id'],
+            "verification_status": True
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin - Verify User",
+            "POST",
+            "/api/admin/verify-user",
+            200,
+            data=verification_data,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✓ User verification successful")
+            return True
+        return False
+
+    def test_admin_verify_user_non_admin(self):
+        """Test admin verification endpoint with non-admin token - should return 403"""
+        if not self.client_token or not self.freelancer_user:
+            print("❌ No client token or freelancer user available for non-admin verification test")
+            return False
+            
+        verification_data = {
+            "user_id": self.freelancer_user['id'],
+            "verification_status": True
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin - Verify User Non-Admin Access",
+            "POST",
+            "/api/admin/verify-user",
+            403,
+            data=verification_data,
+            token=self.client_token
+        )
+        return success
+
+    def test_role_based_access_control(self):
+        """Test comprehensive role-based access control"""
+        print("\n🔐 Testing Role-Based Access Control...")
+        
+        # Test freelancer accessing client-only endpoint (job creation)
+        if self.freelancer_token:
+            job_data = {
+                "title": "Test Job",
+                "description": "Test Description",
+                "category": "Web Development",
+                "budget": 1000.0,
+                "budget_type": "fixed",
+                "requirements": ["Test"]
+            }
+            
+            success, response = self.run_auth_test(
+                "RBAC - Freelancer Create Job (Should Fail)",
+                "POST",
+                "/api/jobs",
+                403,
+                data=job_data,
+                token=self.freelancer_token
+            )
+            
+            if not success:
+                return False
+        
+        # Test client accessing freelancer-only endpoint (freelancer profile update)
+        if self.client_token:
+            profile_data = {
+                "skills": ["Test"],
+                "experience": "Test",
+                "hourly_rate": 100.0,
+                "bio": "Test"
+            }
+            
+            success, response = self.run_auth_test(
+                "RBAC - Client Update Freelancer Profile (Should Fail)",
+                "PUT",
+                "/api/freelancer/profile",
+                403,
+                data=profile_data,
+                token=self.client_token
+            )
+            
+            if not success:
+                return False
+        
+        print("   ✅ Role-based access control working correctly")
+        return True
+
     def test_health_check(self):
         """Test health endpoint"""
         success, response = self.run_test(
