@@ -146,7 +146,7 @@ const ModernLanding = ({
             <img 
               src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/n2pyrvrg_4.png" 
               alt="Afrilance" 
-              className="h-10 w-auto"
+              className="h-10 w-auto afrilance-logo"
             />
           </div>
           <div className="flex items-center space-x-4">
