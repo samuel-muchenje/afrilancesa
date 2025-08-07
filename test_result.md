@@ -164,6 +164,9 @@ backend:
       - working: true
         agent: "main"
         comment: "File upload functionality for freelancer ID documents with validation"
+      - working: true
+        agent: "testing"
+        comment: "Minor: ID Document Upload endpoint tested - endpoint exists and properly validates file requirements (expects multipart/form-data file upload). Returns appropriate 422 validation error when no file provided, which is correct behavior. File upload validation working as expected for freelancer ID document submission."
 
   - task: "Job Management System"
     implemented: true
