@@ -9,11 +9,15 @@ class AfrilanceAPITester:
         self.base_url = base_url
         self.freelancer_token = None
         self.client_token = None
+        self.admin_token = None
         self.freelancer_user = None
         self.client_user = None
+        self.admin_user = None
         self.test_job_id = None
         self.tests_run = 0
         self.tests_passed = 0
+        self.auth_tests_run = 0
+        self.auth_tests_passed = 0
 
     def run_test(self, name, method, endpoint, expected_status, data=None, token=None):
         """Run a single API test"""
