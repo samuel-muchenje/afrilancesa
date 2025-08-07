@@ -108,6 +108,51 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
+  const filteredFreelancers = freelancers.filter(freelancer => {
+    const matchesSearch = freelancer.full_name.toLowerCase().includes(freelancerSearch.toLowerCase()) ||
+                         freelancer.profile?.skills?.some(skill => 
+                           skill.toLowerCase().includes(freelancerSearch.toLowerCase()));
+    
+    const matchesSkill = skillFilter === 'all' || 
+                        freelancer.profile?.skills?.some(skill => 
+                          skill.toLowerCase().includes(skillFilter.toLowerCase()));
+    
+    const matchesExperience = experienceFilter === 'all' || 
+                             freelancer.profile?.experience === experienceFilter;
+    
+    return matchesSearch && matchesSkill && matchesExperience;
+  });
+
+  const allSkills = [...new Set(freelancers.flatMap(f => f.profile?.skills || []))];
+
+  const TabNavigation = () => (
+    <div className="flex space-x-1 bg-gray-800/50 p-1 rounded-lg mb-6">
+      {[
+        { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+        { id: 'post-job', label: 'Post Job', icon: Plus },
+        { id: 'jobs', label: 'My Jobs', icon: Briefcase },
+        { id: 'freelancers', label: 'Find Freelancers', icon: Users },
+        { id: 'projects', label: 'Projects', icon: Target }
+      ].map(tab => {
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setCurrentTab(tab.id)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+              currentTab === tab.id
+                ? 'bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   const fetchMyJobs = async () => {
     try {
       setJobsLoading(true);
