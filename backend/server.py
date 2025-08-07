@@ -558,6 +558,39 @@ async def submit_support_ticket(ticket: SupportTicket):
         "email_sent": email_sent
     }
 
+@app.post("/api/support")
+async def submit_support_ticket(ticket: SupportTicket):
+    # Save to database
+    ticket_data = {
+        "id": str(uuid.uuid4()),
+        "name": ticket.name,
+        "email": ticket.email,
+        "message": ticket.message,
+        "status": "open",
+        "created_at": datetime.utcnow()
+    }
+    
+    db.support_tickets.insert_one(ticket_data)
+    
+    # Send email
+    subject = f"New Support Request from {ticket.name}"
+    body = f"""
+    <h2>New Support Request</h2>
+    <p><strong>From:</strong> {ticket.name}</p>
+    <p><strong>Email:</strong> {ticket.email}</p>
+    <p><strong>Message:</strong></p>
+    <p>{ticket.message}</p>
+    <p><strong>Submitted:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
+    """
+    
+    email_sent = send_email("sam@afrilance.co.za", subject, body)
+    
+    return {
+        "message": "Support ticket submitted successfully",
+        "ticket_id": ticket_data["id"],
+        "email_sent": email_sent
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
