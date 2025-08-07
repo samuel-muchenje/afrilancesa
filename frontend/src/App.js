@@ -27,6 +27,13 @@ function App() {
   const [myJobs, setMyJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+
+  // Ensure no modals auto-open on landing page
+  useEffect(() => {
+    if (currentPage === 'landing') {
+      setSelectedJob(null);
+    }
+  }, [currentPage]);
   const [applications, setApplications] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
