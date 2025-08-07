@@ -321,13 +321,38 @@ function App() {
     }
   };
 
-  const fetchMessages = async (jobId) => {
-    try {
-      const data = await apiCall(`/api/messages/${jobId}`);
-      setMessages(data);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+  // Handle register page navigation
+  const handleRegisterNavigation = (destination) => {
+    if (destination === 'login') {
+      setAuthMode('login');
+      setCurrentPage('auth');
+    } else if (destination === 'landing') {
+      setCurrentPage('landing');
     }
+  };
+
+  // Handle successful registration
+  const handleRegisterSuccess = (userData, role) => {
+    setUser(userData);
+    
+    // Redirect based on role
+    if (role === 'freelancer') {
+      setCurrentPage('freelancer-profile-setup');
+    } else if (role === 'client') {
+      setCurrentPage('post-job');
+    } else {
+      setCurrentPage('dashboard');
+    }
+  };
+
+  // Handle profile setup completion
+  const handleProfileSetupComplete = () => {
+    setCurrentPage('dashboard');
+  };
+
+  // Handle post job completion
+  const handlePostJobComplete = () => {
+    setCurrentPage('dashboard');
   };
 
   // Modern Landing Page
