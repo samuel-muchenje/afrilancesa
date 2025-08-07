@@ -489,6 +489,275 @@ async def get_messages(job_id: str, current_user = Depends(verify_token)):
     
     return messages
 
+# CONTRACTS MANAGEMENT
+@app.post("/api/jobs/{job_id}/accept-proposal")
+async def accept_proposal(job_id: str, acceptance: ProposalAcceptance, current_user = Depends(verify_token)):
+    # Verify user is client and owns the job
+    job = db.jobs.find_one({"id": job_id, "client_id": current_user["user_id"]})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or access denied")
+    
+    if job.get("status") != "open":
+        raise HTTPException(status_code=400, detail="Job is not open for proposals")
+    
+    # Verify the proposal exists
+    proposal = db.applications.find_one({
+        "job_id": job_id,
+        "freelancer_id": acceptance.freelancer_id,
+        "status": "pending"
+    })
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found or already processed")
+    
+    # Verify freelancer exists and is verified
+    freelancer = db.users.find_one({"id": acceptance.freelancer_id})
+    if not freelancer:
+        raise HTTPException(status_code=404, detail="Freelancer not found")
+    
+    if not freelancer.get("is_verified", False):
+        raise HTTPException(status_code=400, detail="Cannot hire unverified freelancer")
+    
+    # Create contract
+    contract_data = {
+        "id": str(uuid.uuid4()),
+        "job_id": job_id,
+        "freelancer_id": acceptance.freelancer_id,
+        "client_id": current_user["user_id"],
+        "amount": acceptance.bid_amount,
+        "status": "In Progress",
+        "created_at": datetime.utcnow(),
+        "proposal_id": acceptance.proposal_id,
+        # Additional fields for contract management
+        "start_date": datetime.utcnow(),
+        "milestones": [],
+        "payments": []
+    }
+    
+    try:
+        # Insert contract
+        db.contracts.insert_one(contract_data)
+        
+        # Update job status to 'assigned'
+        db.jobs.update_one(
+            {"id": job_id},
+            {"$set": {
+                "status": "assigned",
+                "assigned_freelancer_id": acceptance.freelancer_id,
+                "contract_id": contract_data["id"],
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        # Update accepted proposal status
+        db.applications.update_one(
+            {"job_id": job_id, "freelancer_id": acceptance.freelancer_id},
+            {"$set": {
+                "status": "accepted",
+                "accepted_at": datetime.utcnow()
+            }}
+        )
+        
+        # Reject all other pending proposals for this job
+        db.applications.update_many(
+            {
+                "job_id": job_id,
+                "freelancer_id": {"$ne": acceptance.freelancer_id},
+                "status": "pending"
+            },
+            {"$set": {
+                "status": "rejected",
+                "rejected_at": datetime.utcnow()
+            }}
+        )
+        
+        return {
+            "message": "Proposal accepted and contract created successfully",
+            "contract_id": contract_data["id"],
+            "freelancer_name": freelancer["full_name"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating contract: {str(e)}")
+
+@app.get("/api/contracts")
+async def get_contracts(current_user = Depends(verify_token)):
+    # Get contracts based on user role
+    if current_user["role"] == "freelancer":
+        contracts = list(db.contracts.find({"freelancer_id": current_user["user_id"]}).sort("created_at", -1))
+    elif current_user["role"] == "client":
+        contracts = list(db.contracts.find({"client_id": current_user["user_id"]}).sort("created_at", -1))
+    elif current_user["role"] == "admin":
+        contracts = list(db.contracts.find({}).sort("created_at", -1))
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Enrich contracts with additional data
+    for contract in contracts:
+        # Get job details
+        job = db.jobs.find_one({"id": contract["job_id"]})
+        if job:
+            contract["job_title"] = job["title"]
+            contract["job_category"] = job["category"]
+        
+        # Get freelancer details
+        freelancer = db.users.find_one({"id": contract["freelancer_id"]})
+        if freelancer:
+            contract["freelancer_name"] = freelancer["full_name"]
+            contract["freelancer_profile"] = freelancer.get("profile", {})
+        
+        # Get client details
+        client = db.users.find_one({"id": contract["client_id"]})
+        if client:
+            contract["client_name"] = client["full_name"]
+        
+        contract["_id"] = str(contract["_id"])
+    
+    return contracts
+
+@app.get("/api/contracts/{contract_id}")
+async def get_contract(contract_id: str, current_user = Depends(verify_token)):
+    contract = db.contracts.find_one({"id": contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Check access permissions
+    if current_user["role"] not in ["admin"] and current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Enrich contract with additional data
+    job = db.jobs.find_one({"id": contract["job_id"]})
+    if job:
+        contract["job_details"] = job
+    
+    freelancer = db.users.find_one({"id": contract["freelancer_id"]})
+    if freelancer:
+        contract["freelancer_details"] = {
+            "full_name": freelancer["full_name"],
+            "email": freelancer["email"],
+            "profile": freelancer.get("profile", {}),
+            "is_verified": freelancer.get("is_verified", False)
+        }
+    
+    client = db.users.find_one({"id": contract["client_id"]})
+    if client:
+        contract["client_details"] = {
+            "full_name": client["full_name"],
+            "email": client["email"]
+        }
+    
+    contract["_id"] = str(contract["_id"])
+    return contract
+
+@app.patch("/api/contracts/{contract_id}/status")
+async def update_contract_status(contract_id: str, status_data: dict, current_user = Depends(verify_token)):
+    new_status = status_data.get("status")
+    if new_status not in ["In Progress", "Completed", "Cancelled"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    contract = db.contracts.find_one({"id": contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Check permissions - only client or freelancer involved in contract can update
+    if current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Update contract status
+    db.contracts.update_one(
+        {"id": contract_id},
+        {"$set": {
+            "status": new_status,
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user["user_id"]
+        }}
+    )
+    
+    # If completed, also update job status
+    if new_status == "Completed":
+        db.jobs.update_one(
+            {"id": contract["job_id"]},
+            {"$set": {
+                "status": "completed",
+                "completed_at": datetime.utcnow()
+            }}
+        )
+    elif new_status == "Cancelled":
+        db.jobs.update_one(
+            {"id": contract["job_id"]},
+            {"$set": {
+                "status": "cancelled",
+                "cancelled_at": datetime.utcnow()
+            }}
+        )
+    
+    return {"message": f"Contract status updated to {new_status}"}
+
+@app.get("/api/contracts/stats")
+async def get_contract_stats(current_user = Depends(verify_token)):
+    # Get contract statistics based on user role
+    if current_user["role"] == "freelancer":
+        pipeline = [
+            {"$match": {"freelancer_id": current_user["user_id"]}},
+            {"$group": {
+                "_id": "$status",
+                "count": {"$sum": 1},
+                "total_amount": {"$sum": "$amount"}
+            }}
+        ]
+    elif current_user["role"] == "client":
+        pipeline = [
+            {"$match": {"client_id": current_user["user_id"]}},
+            {"$group": {
+                "_id": "$status",
+                "count": {"$sum": 1},
+                "total_amount": {"$sum": "$amount"}
+            }}
+        ]
+    elif current_user["role"] == "admin":
+        pipeline = [
+            {"$group": {
+                "_id": "$status",
+                "count": {"$sum": 1},
+                "total_amount": {"$sum": "$amount"}
+            }}
+        ]
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    stats = list(db.contracts.aggregate(pipeline))
+    
+    # Format response
+    result = {
+        "total_contracts": 0,
+        "total_amount": 0,
+        "in_progress": 0,
+        "completed": 0,
+        "cancelled": 0,
+        "in_progress_amount": 0,
+        "completed_amount": 0,
+        "cancelled_amount": 0
+    }
+    
+    for stat in stats:
+        status = stat["_id"]
+        count = stat["count"]
+        amount = stat["total_amount"]
+        
+        result["total_contracts"] += count
+        result["total_amount"] += amount
+        
+        if status == "In Progress":
+            result["in_progress"] = count
+            result["in_progress_amount"] = amount
+        elif status == "Completed":
+            result["completed"] = count
+            result["completed_amount"] = amount
+        elif status == "Cancelled":
+            result["cancelled"] = count
+            result["cancelled_amount"] = amount
+    
+    return result
+
 @app.post("/api/upload-id-document")
 async def upload_id_document(
     file: UploadFile = File(...),
