@@ -454,7 +454,36 @@ function App() {
     );
   }
 
-  if (currentPage === 'auth') {
+  // Role-based Dashboards
+  if (currentPage === 'freelancer-dashboard') {
+    return (
+      <FreelancerDashboard
+        user={user}
+        onNavigate={setCurrentPage}
+        onLogout={logout}
+      />
+    );
+  }
+
+  if (currentPage === 'client-dashboard') {
+    return (
+      <ClientDashboard
+        user={user}
+        onNavigate={setCurrentPage}
+        onLogout={logout}
+      />
+    );
+  }
+
+  if (currentPage === 'admin-dashboard') {
+    return (
+      <AdminDashboard
+        user={user}
+        onNavigate={setCurrentPage}
+        onLogout={logout}
+      />
+    );
+  }
     return (
       <div className="auth-modern min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md auth-card">
