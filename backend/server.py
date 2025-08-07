@@ -46,10 +46,20 @@ class UserRegister(BaseModel):
     password: str
     role: str  # freelancer, client, admin
     full_name: str
+    phone: str
     
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UserProfile(BaseModel):
+    full_name: str
+    phone: str
+    email: EmailStr
+
+class VerificationRequest(BaseModel):
+    user_id: str
+    verification_status: bool
 
 class FreelancerProfile(BaseModel):
     skills: List[str]
