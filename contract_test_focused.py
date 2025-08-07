@@ -4,7 +4,7 @@ from datetime import datetime
 
 class ContractTester:
     def __init__(self):
-        self.base_url = "https://e1488ef0-488b-4f1e-9158-db786f616a3a.preview.emergentagent.com"
+        self.base_url = "https://08321d4d-2463-412a-978f-4530109b6c73.preview.emergentagent.com"
         self.freelancer_token = None
         self.client_token = None
         self.admin_token = None
