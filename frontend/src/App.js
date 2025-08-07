@@ -341,13 +341,32 @@ function App() {
     }
   };
 
-  // Handle register page navigation
-  const handleRegisterNavigation = (destination) => {
-    if (destination === 'login') {
-      setAuthMode('login');
-      setCurrentPage('auth');
+  // Handle login page navigation
+  const handleLoginNavigation = (destination) => {
+    if (destination === 'register') {
+      setCurrentPage('register');
     } else if (destination === 'landing') {
       setCurrentPage('landing');
+    }
+  };
+
+  // Handle successful login
+  const handleLoginSuccess = (userData, role) => {
+    setUser(userData);
+    
+    // Store user data
+    localStorage.setItem('token', userData.token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    // Redirect based on role to appropriate dashboard
+    if (role === 'freelancer') {
+      setCurrentPage('freelancer-dashboard');
+    } else if (role === 'client') {
+      setCurrentPage('client-dashboard');
+    } else if (role === 'admin') {
+      setCurrentPage('admin-dashboard');
+    } else {
+      setCurrentPage('dashboard');
     }
   };
 
