@@ -144,7 +144,7 @@ function App() {
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         setCurrentPage('dashboard');
-        setAuthForm({ email: '', password: '', full_name: '', role: 'freelancer' });
+        setAuthForm({ email: '', password: '', full_name: '', phone: '', role: 'freelancer' });
       } else {
         throw new Error('Invalid response from server');
       }
