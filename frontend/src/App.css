@@ -14,6 +14,41 @@ body {
   overflow-x: hidden;
 }
 
+/* Logo Styling */
+.afrilance-logo {
+  height: auto;
+  max-width: 100%;
+  transition: all 0.3s ease;
+}
+
+.afrilance-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 8px 16px rgba(246, 233, 107, 0.3));
+}
+
+.afrilance-icon {
+  width: 40px;
+  height: 40px;
+  transition: all 0.3s ease;
+}
+
+.afrilance-icon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(246, 233, 107, 0.4));
+}
+
+/* Navigation Logo Responsive */
+@media (max-width: 768px) {
+  .afrilance-logo {
+    height: 32px;
+  }
+  
+  .afrilance-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 /* Modern Landing Page Styles */
 .modern-landing {
   background-color: #000000;
