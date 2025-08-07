@@ -624,9 +624,13 @@ async def get_contract(contract_id: str, current_user = Depends(verify_token)):
     if current_user["role"] not in ["admin"] and current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]]:
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Convert ObjectId to string for JSON serialization
+    contract["_id"] = str(contract["_id"])
+    
     # Enrich contract with additional data
     job = db.jobs.find_one({"id": contract["job_id"]})
     if job:
+        job["_id"] = str(job["_id"])  # Convert ObjectId to string
         contract["job_details"] = job
     
     freelancer = db.users.find_one({"id": contract["freelancer_id"]})
@@ -645,7 +649,6 @@ async def get_contract(contract_id: str, current_user = Depends(verify_token)):
             "email": client["email"]
         }
     
-    contract["_id"] = str(contract["_id"])
     return contract
 
 @app.patch("/api/contracts/{contract_id}/status")
