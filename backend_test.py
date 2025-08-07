@@ -645,18 +645,18 @@ class AfrilanceAPITester:
         return success
 
     def test_create_job(self):
-        """Test job creation by client"""
+        """Test job creation by client with enhanced fields"""
         job_data = {
-            "title": "Test Web Development Project",
-            "description": "Need a full-stack developer to build a web application with React and Python backend",
+            "title": "Senior Full-Stack Developer for E-commerce Platform",
+            "description": "We need an experienced full-stack developer to build a comprehensive e-commerce platform with React frontend, Python FastAPI backend, and MongoDB database. The project includes user authentication, product catalog, shopping cart, payment integration, and admin dashboard.",
             "category": "Web Development",
-            "budget": 15000.0,
+            "budget": 25000.0,
             "budget_type": "fixed",
-            "requirements": ["React", "Python", "FastAPI", "MongoDB"]
+            "requirements": ["React", "Python", "FastAPI", "MongoDB", "Payment Integration", "5+ years experience"]
         }
         
         success, response = self.run_test(
-            "Create Job",
+            "Create Job with Enhanced Fields",
             "POST",
             "/api/jobs",
             200,
