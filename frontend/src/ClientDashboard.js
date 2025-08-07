@@ -762,8 +762,492 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                 </form>
               </CardContent>
             </Card>
+        {/* My Jobs Tab */}
+        {currentTab === 'jobs' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">My Posted Jobs</h2>
+              <Button
+                onClick={() => setCurrentTab('post-job')}
+                className="bg-gradient-to-r from-yellow-400 to-green-500 text-black"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Post New Job
+              </Button>
+            </div>
+
+            {jobsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="dashboard-card animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                      <div className="h-16 bg-gray-700 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : myJobs.length > 0 ? (
+              <div className="space-y-4">
+                {myJobs.map((job) => (
+                  <Card key={job.id} className="dashboard-card">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-semibold text-white">{job.title}</h3>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
+                                {job.status}
+                              </Badge>
+                              <Badge variant="outline">{job.category}</Badge>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-300 mb-4 leading-relaxed">{job.description}</p>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                            <div>
+                              <span className="text-gray-400">Budget:</span>
+                              <p className="text-white font-medium">
+                                R{job.budget?.toLocaleString()} ({job.budget_type})
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Applications:</span>
+                              <p className="text-white font-medium">{job.applications_count}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Posted:</span>
+                              <p className="text-white font-medium">
+                                {new Date(job.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Status:</span>
+                              <p className={`font-medium ${
+                                job.status === 'open' ? 'text-green-400' : 
+                                job.status === 'closed' ? 'text-red-400' : 'text-yellow-400'
+                              }`}>
+                                {job.status === 'open' ? 'Active' : 
+                                 job.status === 'closed' ? 'Closed' : 'In Progress'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {job.requirements && job.requirements.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {job.requirements.map((req, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {req}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="ml-6 flex flex-col space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                            onClick={() => {
+                              setSelectedJob(job);
+                              fetchJobApplications(job.id);
+                            }}
+                          >
+                            <Users className="w-4 h-4 mr-1" />
+                            View Applications ({job.applications_count})
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit Job
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-red-600 text-red-300 hover:bg-red-800/20"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Close Job
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="dashboard-card">
+                <CardContent className="p-12 text-center">
+                  <Briefcase className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-white font-medium mb-2">No jobs posted yet</h3>
+                  <p className="text-gray-400 mb-6">
+                    Create your first job posting to start connecting with talented freelancers.
+                  </p>
+                  <Button
+                    onClick={() => setCurrentTab('post-job')}
+                    className="bg-gradient-to-r from-yellow-400 to-green-500 text-black"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Post Your First Job
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
+
+        {/* Find Freelancers Tab */}
+        {currentTab === 'freelancers' && (
+          <div className="space-y-6">
+            {/* Search and Filter Controls */}
+            <Card className="dashboard-card">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search freelancers..."
+                      value={freelancerSearch}
+                      onChange={(e) => setFreelancerSearch(e.target.value)}
+                      className="pl-10 bg-gray-800 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <select
+                    value={skillFilter}
+                    onChange={(e) => setSkillFilter(e.target.value)}
+                    className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value="all">All Skills</option>
+                    {allSkills.map(skill => (
+                      <option key={skill} value={skill.toLowerCase()}>{skill}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={experienceFilter}
+                    onChange={(e) => setExperienceFilter(e.target.value)}
+                    className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value="all">All Experience</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="expert">Expert</option>
+                  </select>
+
+                  <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-400 text-sm">
+                      {filteredFreelancers.length} freelancers
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Freelancers List */}
+            {jobsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="dashboard-card animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-20 bg-gray-700 rounded mb-4"></div>
+                      <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredFreelancers.map((freelancer) => (
+                  <Card key={freelancer.id} className="dashboard-card hover:border-yellow-400/50 transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black text-xl font-bold">
+                            {freelancer.full_name?.charAt(0) || 'F'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="text-white font-semibold text-lg">{freelancer.full_name}</h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`w-3 h-3 ${
+                                    i < Math.floor(freelancer.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'
+                                  }`} 
+                                />
+                              ))}
+                              <span className="text-yellow-400 text-sm ml-1">{freelancer.rating}</span>
+                            </div>
+                            {freelancer.isVerified && (
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                        {freelancer.profile?.bio || 'No bio available'}
+                      </p>
+
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-gray-400">Hourly Rate:</span>
+                          <span className="text-white font-semibold">R{freelancer.profile?.hourly_rate}/hr</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-gray-400">Experience:</span>
+                          <span className="text-white capitalize">{freelancer.profile?.experience}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">Jobs Completed:</span>
+                          <span className="text-white">{freelancer.completedJobs}</span>
+                        </div>
+                      </div>
+
+                      {freelancer.profile?.skills && (
+                        <div className="mb-4">
+                          <div className="flex flex-wrap gap-1">
+                            {freelancer.profile.skills.slice(0, 4).map((skill, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {skill}
+                              </Badge>
+                            ))}
+                            {freelancer.profile.skills.length > 4 && (
+                              <Badge variant="outline" className="text-xs text-gray-400">
+                                +{freelancer.profile.skills.length - 4} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                          onClick={() => setSelectedFreelancer(freelancer)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View Profile
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          Message
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Projects Tab */}
+        {currentTab === 'projects' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Project Management</h2>
+              <Badge variant="secondary">Coming Soon</Badge>
+            </div>
+
+            <Card className="dashboard-card">
+              <CardContent className="p-12 text-center">
+                <Target className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-white font-medium mb-2">Project Management</h3>
+                <p className="text-gray-400 mb-6">
+                  Track hired freelancers, manage project milestones, and oversee deliverables.
+                </p>
+                <p className="text-gray-500 text-sm">
+                  This feature is coming soon. You'll be able to manage all your active projects from here.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Job Applications Modal */}
+        {selectedJob && (
+          <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+            <DialogContent className="max-w-4xl bg-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  Applications for: {selectedJob.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                {jobApplications.length > 0 ? (
+                  jobApplications.map((application, index) => (
+                    <Card key={index} className="bg-gray-800 border-gray-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-start space-x-4">
+                          <Avatar>
+                            <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black">
+                              {application.freelancer_name?.charAt(0) || 'F'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-white font-semibold">
+                                {application.freelancer_name}
+                              </h4>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-green-400 font-bold">
+                                  R{application.bid_amount?.toLocaleString()}
+                                </span>
+                                <Badge variant="outline">
+                                  {application.status}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-gray-300 text-sm mb-3">
+                              {application.proposal}
+                            </p>
+                            <div className="flex space-x-2">
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                Accept
+                              </Button>
+                              <Button size="sm" variant="outline" className="border-gray-600">
+                                Message
+                              </Button>
+                              <Button size="sm" variant="outline" className="border-gray-600">
+                                View Profile
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">No applications received yet</p>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Freelancer Profile Modal */}
+        {selectedFreelancer && (
+          <Dialog open={!!selectedFreelancer} onOpenChange={() => setSelectedFreelancer(null)}>
+            <DialogContent className="max-w-3xl bg-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  {selectedFreelancer.full_name}'s Profile
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                <div className="flex items-center space-x-6">
+                  <Avatar className="h-24 w-24">
+                    <AvatarFallback className="bg-gradient-to-r from-yellow-400 to-green-500 text-black text-3xl font-bold">
+                      {selectedFreelancer.full_name?.charAt(0) || 'F'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white mb-2">
+                      {selectedFreelancer.full_name}
+                    </h3>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`w-4 h-4 ${
+                              i < Math.floor(selectedFreelancer.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'
+                            }`} 
+                          />
+                        ))}
+                        <span className="text-yellow-400 ml-2">{selectedFreelancer.rating}</span>
+                      </div>
+                      <span className="text-green-400 font-semibold">
+                        R{selectedFreelancer.profile?.hourly_rate}/hr
+                      </span>
+                      {selectedFreelancer.isVerified && (
+                        <div className="flex items-center text-green-400">
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Verified
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h4 className="text-white font-medium mb-2">About</h4>
+                  <p className="text-gray-300 leading-relaxed">
+                    {selectedFreelancer.profile?.bio || 'No bio available'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h4 className="text-white font-medium mb-2">Experience</h4>
+                    <p className="text-gray-300 capitalize">
+                      {selectedFreelancer.profile?.experience || 'Not specified'}
+                    </p>
+                  </div>
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h4 className="text-white font-medium mb-2">Jobs Completed</h4>
+                    <p className="text-gray-300">{selectedFreelancer.completedJobs}</p>
+                  </div>
+                </div>
+
+                {selectedFreelancer.profile?.skills && (
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h4 className="text-white font-medium mb-3">Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedFreelancer.profile.skills.map((skill, index) => (
+                        <Badge key={index} variant="outline">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex space-x-4">
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Message
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Add to Favorites
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </div>
+  );
+};
       </div>
     </div>
   );
