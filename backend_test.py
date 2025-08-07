@@ -91,13 +91,14 @@ class AfrilanceAPITester:
         return False
 
     def test_client_registration(self):
-        """Test client registration"""
+        """Test client registration with enhanced fields"""
         timestamp = datetime.now().strftime('%H%M%S')
         client_data = {
             "email": f"client_{timestamp}@test.com",
             "password": "TestPass123!",
             "role": "client",
-            "full_name": f"Test Client {timestamp}"
+            "full_name": f"Test Client {timestamp}",
+            "phone": f"+27987654{timestamp[-3:]}"
         }
         
         success, response = self.run_test(
