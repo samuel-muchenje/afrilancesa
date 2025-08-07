@@ -1281,6 +1281,85 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
       </div>
+
+      {/* Job Application Dialog */}
+      <Dialog open={selectedJob !== null} onOpenChange={() => setSelectedJob(null)}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">
+              Apply for: {selectedJob?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedJob && (
+            <form onSubmit={applyToJob} className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Job Details</h3>
+                <p className="text-gray-300 text-sm mb-3">{selectedJob.description}</p>
+                <div className="flex items-center space-x-4 text-sm text-gray-400">
+                  <span className="flex items-center">
+                    <DollarSign className="w-4 h-4 mr-1" />
+                    R{selectedJob.budget?.toLocaleString()} ({selectedJob.budget_type})
+                  </span>
+                  <span className="flex items-center">
+                    <Users className="w-4 h-4 mr-1" />
+                    {selectedJob.applications_count} proposals
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Your Proposal *
+                </label>
+                <Textarea
+                  value={applicationForm.proposal}
+                  onChange={(e) => setApplicationForm(prev => ({ ...prev, proposal: e.target.value }))}
+                  placeholder="Describe your approach, relevant experience, and why you're the best fit for this project..."
+                  rows={6}
+                  className="bg-gray-800 border-gray-600 text-white resize-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Your Bid Amount (R) *
+                </label>
+                <Input
+                  type="number"
+                  value={applicationForm.bid_amount}
+                  onChange={(e) => setApplicationForm(prev => ({ ...prev, bid_amount: e.target.value }))}
+                  placeholder="Enter your bid amount"
+                  className="bg-gray-800 border-gray-600 text-white"
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Client's budget: R{selectedJob.budget?.toLocaleString()}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedJob(null)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                  disabled={!applicationForm.proposal || !applicationForm.bid_amount}
+                >
+                  Submit Application
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
