@@ -78,11 +78,14 @@ function App() {
   });
 
   // Support form
-  const [supportForm, setSupportForm] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  // Update navigation for role-based landing
+  const handleLandingNavigation = (page) => {
+    if (page === 'login' || page === 'register') {
+      setCurrentPage(page);
+    } else {
+      setCurrentPage('landing');
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
