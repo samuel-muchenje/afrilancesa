@@ -1309,13 +1309,25 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
                               {application.proposal}
                             </p>
                             <div className="flex space-x-2">
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                                Accept
+                              <Button 
+                                size="sm" 
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => acceptProposal(
+                                  selectedJob.id,
+                                  application.freelancer_id || application.userId,
+                                  application.id,
+                                  application.bid_amount
+                                )}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Accept Proposal
                               </Button>
                               <Button size="sm" variant="outline" className="border-gray-600">
+                                <MessageCircle className="w-4 h-4 mr-1" />
                                 Message
                               </Button>
                               <Button size="sm" variant="outline" className="border-gray-600">
+                                <Eye className="w-4 h-4 mr-1" />
                                 View Profile
                               </Button>
                             </div>
