@@ -133,12 +133,18 @@ const PostJob = ({ onComplete, user }) => {
     setError('');
 
     try {
-      // Validate required fields
+      // Comprehensive validation
       if (!jobData.title.trim()) {
         throw new Error('Please enter a job title');
       }
+      if (jobData.title.length < 10) {
+        throw new Error('Job title should be at least 10 characters');
+      }
       if (!jobData.description.trim()) {
         throw new Error('Please provide a job description');
+      }
+      if (jobData.description.length < 50) {
+        throw new Error('Job description should be at least 50 characters');
       }
       if (!jobData.category) {
         throw new Error('Please select a category');
@@ -164,7 +170,12 @@ const PostJob = ({ onComplete, user }) => {
           category: jobData.category,
           budget: parseFloat(jobData.budget),
           budget_type: jobData.budget_type,
-          requirements: jobData.requirements
+          requirements: jobData.requirements,
+          timeline: jobData.timeline,
+          experience_required: jobData.experience_required,
+          location_preference: jobData.location_preference,
+          project_duration: jobData.project_duration,
+          additional_info: jobData.additional_info
         })
       });
 
@@ -174,11 +185,11 @@ const PostJob = ({ onComplete, user }) => {
       }
 
       const result = await response.json();
-      setSuccess('Job posted successfully! Freelancers can now apply.');
+      setSuccess('🎉 Job posted successfully! Freelancers can now apply and you\'ll start receiving proposals soon.');
 
       setTimeout(() => {
-        onComplete();
-      }, 2000);
+        onComplete(result);
+      }, 3000);
 
     } catch (error) {
       setError(error.message);
