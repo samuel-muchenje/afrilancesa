@@ -275,10 +275,22 @@ body {
   z-index: 40;
   transform: translateY(100%);
   animation: slideUpSticky 0.5s ease-out 2s forwards;
+  transition: transform 0.3s ease-out;
+}
+
+.sticky-cta.hiding {
+  transform: translateY(100%);
 }
 
 @keyframes slideUpSticky {
   to { transform: translateY(0); }
+}
+
+/* Close button hover effect */
+.sticky-cta .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #F6E96B;
+  transform: scale(1.1);
 }
 
 /* Button Animations */
