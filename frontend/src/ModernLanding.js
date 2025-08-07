@@ -170,8 +170,8 @@ const ModernLanding = ({
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero-section min-h-screen bg-black flex items-center relative overflow-hidden">
+      {/* Hero Section - Full Screen */}
+      <section className="hero-section min-h-screen bg-black flex items-center relative overflow-hidden pt-0">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
           <div className="floating-shape shape-1"></div>
