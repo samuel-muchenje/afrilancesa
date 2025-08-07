@@ -89,17 +89,37 @@ function App() {
       ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers,
-      ...options
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'An error occurred');
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers,
+        signal: controller.signal,
+        ...options
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorDetail = 'An error occurred';
+        try {
+          const error = await response.json();
+          errorDetail = error.detail || errorDetail;
+        } catch (e) {
+          errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorDetail);
+      }
+
+      return response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout - please try again');
+      }
+      throw error;
     }
-
-    return response.json();
   };
 
   const handleAuth = async (e) => {
