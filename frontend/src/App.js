@@ -343,20 +343,20 @@ function App() {
 
   if (currentPage === 'auth') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="auth-modern min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md auth-card">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
+                <span className="text-black font-bold text-xl">A</span>
               </div>
-              <span className="text-2xl font-bold text-green-800">Afrilance</span>
+              <span className="text-2xl font-bold text-white tracking-tight">AFRILANCE</span>
             </div>
-            <CardTitle className="text-2xl text-green-800">
+            <CardTitle className="text-2xl text-white">
               {authMode === 'login' ? 'Welcome Back' : 'Join Afrilance'}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <form onSubmit={handleAuth} className="space-y-4">
               {authMode === 'register' && (
                 <>
@@ -364,28 +364,29 @@ function App() {
                     placeholder="Full Name"
                     value={authForm.full_name}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, full_name: e.target.value }))}
+                    className="auth-input"
                     required
                   />
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">I am a:</label>
+                    <label className="block text-sm font-medium text-white mb-2">I am a:</label>
                     <div className="flex space-x-4">
-                      <label className="flex items-center">
+                      <label className="flex items-center text-white">
                         <input
                           type="radio"
                           value="freelancer"
                           checked={authForm.role === 'freelancer'}
                           onChange={(e) => setAuthForm(prev => ({ ...prev, role: e.target.value }))}
-                          className="mr-2"
+                          className="mr-2 accent-yellow-400"
                         />
                         Freelancer
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center text-white">
                         <input
                           type="radio"
                           value="client"
                           checked={authForm.role === 'client'}
                           onChange={(e) => setAuthForm(prev => ({ ...prev, role: e.target.value }))}
-                          className="mr-2"
+                          className="mr-2 accent-yellow-400"
                         />
                         Client
                       </label>
@@ -398,6 +399,7 @@ function App() {
                 placeholder="Email"
                 value={authForm.email}
                 onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
+                className="auth-input"
                 required
               />
               <Input
@@ -405,11 +407,12 @@ function App() {
                 placeholder="Password"
                 value={authForm.password}
                 onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
+                className="auth-input"
                 required
               />
               <Button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow"
                 disabled={loading}
               >
                 {loading ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
@@ -419,16 +422,16 @@ function App() {
               <button
                 type="button"
                 onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-                className="text-green-600 hover:underline"
+                className="text-yellow-400 hover:underline font-medium"
               >
                 {authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
               </button>
             </div>
             <div className="text-center mt-4">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setCurrentPage('landing')}
-                className="text-gray-600"
+                className="text-gray-300 hover:text-white hover:bg-white/5"
               >
                 Back to Home
               </Button>
