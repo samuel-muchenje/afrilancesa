@@ -379,6 +379,36 @@ function App() {
     );
   }
 
+  // Register Page
+  if (currentPage === 'register') {
+    return (
+      <Register
+        onNavigate={handleRegisterNavigation}
+        onRegisterSuccess={handleRegisterSuccess}
+      />
+    );
+  }
+
+  // Freelancer Profile Setup Page
+  if (currentPage === 'freelancer-profile-setup') {
+    return (
+      <FreelancerProfileSetup
+        onComplete={handleProfileSetupComplete}
+        user={user}
+      />
+    );
+  }
+
+  // Post Job Page
+  if (currentPage === 'post-job') {
+    return (
+      <PostJob
+        onComplete={handlePostJobComplete}
+        user={user}
+      />
+    );
+  }
+
   if (currentPage === 'auth') {
     return (
       <div className="auth-modern min-h-screen flex items-center justify-center p-4">
