@@ -135,7 +135,7 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
         { id: 'post-job', label: 'Post Job', icon: Plus },
         { id: 'jobs', label: 'My Jobs', icon: Briefcase },
         { id: 'freelancers', label: 'Find Freelancers', icon: Users },
-        { id: 'projects', label: 'Projects', icon: Target }
+        { id: 'contracts', label: 'Contracts', icon: FileText }
       ].map(tab => {
         const Icon = tab.icon;
         return (
