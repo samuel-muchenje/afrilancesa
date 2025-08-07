@@ -151,13 +151,28 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
     }));
   };
 
+  const validateStep = (step) => {
+    switch (step) {
+      case 0:
+        return profileData.skills.length > 0;
+      case 1:
+        return profileData.experience.trim() && profileData.hourly_rate > 0;
+      case 2:
+        return profileData.bio.trim().length >= 50;
+      case 3:
+        return true;
+      default:
+        return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Validate required fields
+      // Comprehensive validation
       if (profileData.skills.length === 0) {
         throw new Error('Please add at least one skill');
       }
@@ -167,8 +182,8 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
       if (!profileData.hourly_rate || profileData.hourly_rate <= 0) {
         throw new Error('Please enter a valid hourly rate');
       }
-      if (!profileData.bio.trim()) {
-        throw new Error('Please write a professional bio');
+      if (profileData.bio.trim().length < 50) {
+        throw new Error('Professional bio must be at least 50 characters');
       }
 
       const token = localStorage.getItem('token');
@@ -185,9 +200,13 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
         body: JSON.stringify({
           skills: profileData.skills,
           experience: profileData.experience,
+          experience_level: profileData.experience_level,
           hourly_rate: parseFloat(profileData.hourly_rate),
           bio: profileData.bio,
-          portfolio_links: profileData.portfolio_links
+          portfolio_links: profileData.portfolio_links,
+          specializations: profileData.specializations,
+          languages: profileData.languages,
+          availability: profileData.availability
         })
       });
 
@@ -196,7 +215,7 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
         throw new Error(errorData.detail || 'Failed to save profile');
       }
 
-      setSuccess('Profile saved successfully!');
+      setSuccess('Profile saved successfully! Welcome to Afrilance!');
       
       // Update user data
       const updatedUser = { ...user, profile_completed: true };
