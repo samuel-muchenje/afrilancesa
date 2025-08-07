@@ -1356,6 +1356,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                   Submit Application
                 </Button>
               </div>
+            </form>
           )}
         </DialogContent>
       </Dialog>
