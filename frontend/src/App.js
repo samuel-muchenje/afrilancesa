@@ -451,9 +451,11 @@ function App() {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
-                <span className="text-black font-bold text-xl">A</span>
-              </div>
+              <img 
+                src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/1hnbql0v_5.png" 
+                alt="Afrilance" 
+                className="h-10 w-10"
+              />
               <span className="text-xl font-bold text-white tracking-tight">AFRILANCE</span>
             </div>
             <div className="flex space-x-4">
