@@ -16,16 +16,22 @@ import {
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const FreelancerProfileSetup = ({ onComplete, user }) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [profileData, setProfileData] = useState({
     skills: [],
     experience: '',
+    experience_level: 'intermediate',
     hourly_rate: '',
     bio: '',
-    portfolio_links: []
+    portfolio_links: [],
+    specializations: [],
+    languages: ['English'],
+    availability: 'full-time'
   });
   
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentLink, setCurrentLink] = useState('');
+  const [currentSpecialization, setCurrentSpecialization] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -35,6 +41,36 @@ const FreelancerProfileSetup = ({ onComplete, user }) => {
     isVerified: user?.is_verified || false,
     documentSubmitted: user?.id_document ? true : false
   });
+
+  // Popular skills suggestions
+  const popularSkills = [
+    'React', 'Node.js', 'Python', 'JavaScript', 'PHP', 'WordPress',
+    'Graphic Design', 'UI/UX Design', 'Digital Marketing', 'Content Writing',
+    'Data Analysis', 'Mobile Development', 'SEO', 'Video Editing'
+  ];
+
+  // Steps configuration
+  const steps = [
+    { title: 'Skills & Expertise', icon: Briefcase, description: 'What you excel at' },
+    { title: 'Experience & Rate', icon: DollarSign, description: 'Your background & pricing' },
+    { title: 'Professional Profile', icon: User, description: 'Bio & portfolio' },
+    { title: 'Final Details', icon: CheckCircle, description: 'Complete your setup' }
+  ];
+
+  const calculateProgress = () => {
+    const totalFields = 7;
+    let completedFields = 0;
+    
+    if (profileData.skills.length > 0) completedFields++;
+    if (profileData.experience.trim()) completedFields++;
+    if (profileData.hourly_rate) completedFields++;
+    if (profileData.bio.trim()) completedFields++;
+    if (profileData.experience_level) completedFields++;
+    if (profileData.availability) completedFields++;
+    if (profileData.languages.length > 0) completedFields++;
+    
+    return Math.round((completedFields / totalFields) * 100);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
