@@ -657,10 +657,11 @@ const ModernLanding = ({
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center">
-                  <span className="text-black font-bold text-xl">A</span>
-                </div>
-                <span className="text-2xl font-bold text-white">AFRILANCE</span>
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_sa-freelancers/artifacts/n2pyrvrg_4.png" 
+                  alt="Afrilance" 
+                  className="h-12 w-auto"
+                />
               </div>
               <p className="text-gray-400 mb-4">Connecting Africa's talent with opportunities worldwide.</p>
               <div className="flex space-x-4">
