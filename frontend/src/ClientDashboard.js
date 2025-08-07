@@ -220,7 +220,40 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
-  const createJob = async (e) => {
+  const fetchContracts = async () => {
+    try {
+      setJobsLoading(true);
+      const contractsData = await apiCall('/api/contracts');
+      setContracts(contractsData);
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const acceptProposal = async (jobId, freelancerId, proposalId, bidAmount) => {
+    try {
+      const response = await apiCall(`/api/jobs/${jobId}/accept-proposal`, {
+        method: 'POST',
+        body: JSON.stringify({
+          job_id: jobId,
+          freelancer_id: freelancerId,
+          proposal_id: proposalId,
+          bid_amount: bidAmount
+        })
+      });
+
+      alert(`🎉 ${response.message}`);
+      
+      // Refresh data
+      fetchMyJobs();
+      fetchContracts();
+      setSelectedJob(null);
+    } catch (error) {
+      alert(`Error accepting proposal: ${error.message}`);
+    }
+  };
     e.preventDefault();
     setLoading(true);
 
