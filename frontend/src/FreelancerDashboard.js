@@ -56,32 +56,133 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+    if (currentTab === 'jobs') {
+      fetchAvailableJobs();
+    } else if (currentTab === 'applications') {
+      fetchMyApplications();
+    }
+  }, [currentTab]);
+
+  const apiCall = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers,
+        ...options
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Request failed');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      setLoading(true);
       
       // Fetch recent job applications
-      const jobsResponse = await fetch(`${API_BASE}/api/jobs/my`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const jobsData = await apiCall('/api/jobs/my');
+      setRecentJobs(jobsData.slice(0, 5));
       
-      if (jobsResponse.ok) {
-        const jobsData = await jobsResponse.json();
-        setRecentJobs(jobsData.slice(0, 5)); // Show only recent 5
-        setStats(prev => ({
-          ...prev,
-          activeApplications: jobsData.filter(job => job.status === 'pending').length
-        }));
-      }
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        activeApplications: jobsData.filter(job => job.status === 'pending').length,
+        completedJobs: jobsData.filter(job => job.status === 'completed').length
+      }));
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAvailableJobs = async () => {
+    try {
+      setJobsLoading(true);
+      const jobsData = await apiCall('/api/jobs');
+      setAvailableJobs(jobsData);
+    } catch (error) {
+      console.error('Error fetching available jobs:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const fetchMyApplications = async () => {
+    try {
+      setJobsLoading(true);
+      const applicationsData = await apiCall('/api/jobs/my');
+      setMyApplications(applicationsData);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const applyToJob = async (e) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+
+    try {
+      await apiCall(`/api/jobs/${selectedJob.id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify({
+          job_id: selectedJob.id,
+          proposal: applicationForm.proposal,
+          bid_amount: parseFloat(applicationForm.bid_amount)
+        })
+      });
+
+      alert('Application submitted successfully!');
+      setApplicationForm({ proposal: '', bid_amount: '' });
+      setSelectedJob(null);
+      fetchAvailableJobs();
+      fetchDashboardData();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const updateProfile = async () => {
+    try {
+      const profileData = {
+        skills: typeof profileForm.skills === 'string' 
+          ? profileForm.skills.split(',').map(s => s.trim()).filter(s => s)
+          : profileForm.skills,
+        experience: profileForm.experience,
+        hourly_rate: parseFloat(profileForm.hourly_rate),
+        bio: profileForm.bio,
+        portfolio_links: typeof profileForm.portfolio_links === 'string'
+          ? profileForm.portfolio_links.split(',').map(s => s.trim()).filter(s => s)
+          : profileForm.portfolio_links
+      };
+
+      await apiCall('/api/freelancer/profile', {
+        method: 'PUT',
+        body: JSON.stringify(profileData)
+      });
+
+      alert('Profile updated successfully!');
+      // Update user object
+      const updatedUser = { ...user, profile: profileData, profile_completed: true };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      alert(error.message);
     }
   };
 
