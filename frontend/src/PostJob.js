@@ -16,13 +16,19 @@ import {
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PostJob = ({ onComplete, user }) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [jobData, setJobData] = useState({
     title: '',
     description: '',
     category: '',
     budget: '',
     budget_type: 'fixed',
-    requirements: []
+    requirements: [],
+    timeline: '',
+    experience_required: 'intermediate',
+    location_preference: 'remote',
+    project_duration: '',
+    additional_info: ''
   });
 
   const [currentRequirement, setCurrentRequirement] = useState('');
@@ -31,17 +37,69 @@ const PostJob = ({ onComplete, user }) => {
   const [success, setSuccess] = useState('');
 
   const categories = [
-    'ICT & Digital Work',
-    'Construction & Engineering',
-    'Creative & Media',
-    'Admin & Office Support',
-    'Health & Wellness',
-    'Beauty & Fashion',
-    'Logistics & Labour',
-    'Education & Training',
-    'Home & Domestic Services',
+    'Web Development',
+    'Mobile Development', 
+    'UI/UX Design',
+    'Graphic Design',
+    'Digital Marketing',
+    'Content Writing',
+    'Data Analysis',
+    'SEO Services',
+    'Video Editing',
+    'Photography',
+    'Translation',
+    'Virtual Assistant',
     'Other'
   ];
+
+  // Steps configuration
+  const steps = [
+    { title: 'Job Basics', icon: FileText, description: 'Title, category & description' },
+    { title: 'Budget & Timeline', icon: DollarSign, description: 'Pricing & project schedule' },
+    { title: 'Requirements', icon: Target, description: 'Skills & experience needed' },
+    { title: 'Review & Post', icon: CheckCircle, description: 'Final review & publish' }
+  ];
+
+  const calculateProgress = () => {
+    const totalFields = 6;
+    let completedFields = 0;
+    
+    if (jobData.title.trim()) completedFields++;
+    if (jobData.description.trim()) completedFields++;
+    if (jobData.category) completedFields++;
+    if (jobData.budget) completedFields++;
+    if (jobData.timeline) completedFields++;
+    if (jobData.experience_required) completedFields++;
+    
+    return Math.round((completedFields / totalFields) * 100);
+  };
+
+  const validateStep = (step) => {
+    switch (step) {
+      case 0:
+        return jobData.title.trim() && jobData.description.trim() && jobData.category;
+      case 1:
+        return jobData.budget > 0 && jobData.timeline;
+      case 2:
+        return jobData.experience_required && jobData.location_preference;
+      case 3:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
