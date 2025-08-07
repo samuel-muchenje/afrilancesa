@@ -140,8 +140,8 @@ const ModernLanding = ({
   const [ctaBarVisible, setCtaBarVisible] = useState(false); // Start hidden by default
   return (
     <div className="modern-landing">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-black/80 backdrop-blur-lg border-b border-gray-800 z-50">
+      {/* Navigation - HIDDEN */}
+      <nav className="hidden">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
