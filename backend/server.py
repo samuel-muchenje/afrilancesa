@@ -15,9 +15,16 @@ from email.mime.multipart import MIMEMultipart
 import shutil
 from pathlib import Path
 
-# Create uploads directory
+# Create uploads directory structure
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+# Create subdirectories for different file types
+(UPLOAD_DIR / "id_documents").mkdir(exist_ok=True)
+(UPLOAD_DIR / "profile_pictures").mkdir(exist_ok=True)
+(UPLOAD_DIR / "portfolios").mkdir(exist_ok=True)
+(UPLOAD_DIR / "project_gallery").mkdir(exist_ok=True)
+(UPLOAD_DIR / "resumes").mkdir(exist_ok=True)
 
 app = FastAPI()
 
