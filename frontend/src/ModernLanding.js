@@ -710,9 +710,9 @@ const ModernLanding = ({
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-400 text-sm">© 2025 Afrilance. All rights reserved.</p>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <a href="#" className="footer-link text-sm">Privacy Policy</a>
-                <a href="#" className="footer-link text-sm">Terms of Service</a>
-                <a href="#" className="footer-link text-sm">Cookie Policy</a>
+                <button onClick={() => setCurrentPage('contact')} className="footer-link text-sm">Privacy Policy</button>
+                <button onClick={() => setCurrentPage('contact')} className="footer-link text-sm">Terms of Service</button>
+                <button onClick={() => setCurrentPage('contact')} className="footer-link text-sm">Cookie Policy</button>
               </div>
             </div>
           </div>
