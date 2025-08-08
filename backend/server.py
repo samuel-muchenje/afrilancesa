@@ -30,6 +30,9 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 app = FastAPI()
 
+# Mount static files for uploads
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
