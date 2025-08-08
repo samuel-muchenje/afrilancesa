@@ -535,6 +535,13 @@ function App() {
     );
   }
 
+  // Enterprise Page
+  if (currentPage === 'enterprise') {
+    return (
+      <Enterprise onNavigate={setCurrentPage} />
+    );
+  }
+
   // Main Dashboard
   return (
     <div className="dashboard-modern">
