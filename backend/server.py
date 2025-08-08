@@ -899,6 +899,150 @@ async def submit_support_ticket(ticket: SupportTicket):
         "email_sent": email_sent
     }
 
+# Wallet Management Endpoints
+
+@app.get("/api/wallet")
+async def get_wallet(current_user = Depends(verify_token)):
+    """Get wallet information for current user"""
+    wallet = db.wallets.find_one({"user_id": current_user["user_id"]})
+    
+    if not wallet:
+        # Create wallet if it doesn't exist (for backward compatibility)
+        if current_user["role"] == "freelancer":
+            wallet_data = {
+                "id": str(uuid.uuid4()),
+                "user_id": current_user["user_id"],
+                "available_balance": 0.0,
+                "escrow_balance": 0.0,
+                "transaction_history": [],
+                "created_at": datetime.utcnow()
+            }
+            db.wallets.insert_one(wallet_data)
+            wallet = wallet_data
+        else:
+            raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    # Remove MongoDB _id and return clean data
+    wallet.pop("_id", None)
+    return wallet
+
+@app.post("/api/wallet/withdraw")
+async def withdraw_funds(withdrawal: WithdrawalRequest, current_user = Depends(verify_token)):
+    """Withdraw funds from available balance (Freelancer only)"""
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can withdraw funds")
+    
+    wallet = db.wallets.find_one({"user_id": current_user["user_id"]})
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    if wallet["available_balance"] < withdrawal.amount:
+        raise HTTPException(status_code=400, detail="Insufficient available balance")
+    
+    if withdrawal.amount <= 0:
+        raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
+    
+    # Create withdrawal transaction
+    transaction = {
+        "type": "Debit",
+        "amount": withdrawal.amount,
+        "date": datetime.utcnow(),
+        "note": "Freelancer withdrawal"
+    }
+    
+    # Update wallet
+    db.wallets.update_one(
+        {"user_id": current_user["user_id"]},
+        {
+            "$inc": {"available_balance": -withdrawal.amount},
+            "$push": {"transaction_history": transaction}
+        }
+    )
+    
+    return {
+        "message": "Withdrawal processed",
+        "amount": withdrawal.amount,
+        "remaining_balance": wallet["available_balance"] - withdrawal.amount
+    }
+
+@app.post("/api/wallet/release-escrow")
+async def release_escrow(release: EscrowRelease, current_user = Depends(verify_token)):
+    """Release escrow funds to available balance (Admin or Contract completion)"""
+    # Only admin can manually release escrow OR system-triggered contract completion
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can manually release escrow")
+    
+    # Find the contract
+    contract = db.contracts.find_one({"id": release.contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    if contract["status"] == "Completed":
+        raise HTTPException(status_code=400, detail="Escrow already released for this contract")
+    
+    # Find freelancer wallet
+    wallet = db.wallets.find_one({"user_id": contract["freelancer_id"]})
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Freelancer wallet not found")
+    
+    contract_amount = contract["amount"]
+    if wallet["escrow_balance"] < contract_amount:
+        raise HTTPException(status_code=400, detail="Insufficient escrow balance")
+    
+    # Create escrow release transaction
+    transaction = {
+        "type": "Credit",
+        "amount": contract_amount,
+        "date": datetime.utcnow(),
+        "note": "Escrow released for job completion"
+    }
+    
+    # Move funds from escrow to available balance
+    db.wallets.update_one(
+        {"user_id": contract["freelancer_id"]},
+        {
+            "$inc": {
+                "escrow_balance": -contract_amount,
+                "available_balance": contract_amount
+            },
+            "$push": {"transaction_history": transaction}
+        }
+    )
+    
+    # Update contract status
+    db.contracts.update_one(
+        {"id": release.contract_id},
+        {
+            "$set": {
+                "status": "Completed",
+                "completed_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    return {
+        "message": "Escrow released successfully",
+        "amount": contract_amount,
+        "contract_id": release.contract_id
+    }
+
+@app.get("/api/wallet/transactions")
+async def get_transaction_history(current_user = Depends(verify_token)):
+    """Get transaction history for current user's wallet"""
+    wallet = db.wallets.find_one({"user_id": current_user["user_id"]})
+    
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    # Return transaction history sorted by date (newest first)
+    transactions = wallet.get("transaction_history", [])
+    transactions.sort(key=lambda x: x.get("date", datetime.min), reverse=True)
+    
+    return {
+        "transactions": transactions,
+        "total_transactions": len(transactions)
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
