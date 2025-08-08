@@ -1105,6 +1105,103 @@ async def upload_project_gallery(
         "file_url": f"/uploads/project_gallery/{file_info['filename']}"
     }
 
+@app.get("/api/user-files")
+async def get_user_files(current_user = Depends(verify_token)):
+    """Get all uploaded files for the current user"""
+    
+    user = db.users.find_one({"id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    files_info = {
+        "profile_picture": user.get("profile_picture"),
+        "id_document": user.get("id_document"),
+        "resume": user.get("resume") if current_user["role"] == "freelancer" else None,
+        "portfolio_files": user.get("portfolio_files", []) if current_user["role"] == "freelancer" else [],
+        "project_gallery": user.get("project_gallery", []) if current_user["role"] == "freelancer" else []
+    }
+    
+    return files_info
+
+@app.delete("/api/delete-portfolio-file/{filename}")
+async def delete_portfolio_file(
+    filename: str,
+    current_user = Depends(verify_token)
+):
+    """Delete a specific portfolio file"""
+    
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can delete portfolio files")
+    
+    # Remove from database
+    result = db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$pull": {
+                "portfolio_files": {"filename": filename}
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Try to delete physical file
+    try:
+        file_path = UPLOAD_DIR / "portfolios" / filename
+        if file_path.exists():
+            file_path.unlink()
+    except Exception as e:
+        print(f"Warning: Could not delete physical file {filename}: {e}")
+    
+    return {"message": "Portfolio file deleted successfully"}
+
+@app.delete("/api/delete-project-gallery/{project_id}")
+async def delete_project_gallery_item(
+    project_id: str,
+    current_user = Depends(verify_token)
+):
+    """Delete a specific project gallery item"""
+    
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can delete project gallery items")
+    
+    # Find and remove from database
+    user = db.users.find_one({"id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Find the project to get filename for deletion
+    project_to_delete = None
+    for project in user.get("project_gallery", []):
+        if project["id"] == project_id:
+            project_to_delete = project
+            break
+    
+    if not project_to_delete:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Remove from database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$pull": {
+                "project_gallery": {"id": project_id}
+            }
+        }
+    )
+    
+    # Try to delete physical file
+    try:
+        filename = project_to_delete["file_info"]["filename"]
+        file_path = UPLOAD_DIR / "project_gallery" / filename
+        if file_path.exists():
+            file_path.unlink()
+    except Exception as e:
+        print(f"Warning: Could not delete physical file: {e}")
+    
+    return {"message": "Project gallery item deleted successfully"}
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
