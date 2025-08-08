@@ -678,30 +678,30 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="footer-link">About</a></li>
-                <li><a href="#" className="footer-link">Careers</a></li>
-                <li><a href="#" className="footer-link">Contact</a></li>
-                <li><a href="#" className="footer-link">Press</a></li>
+                <li><button onClick={() => setCurrentPage('about')} className="footer-link text-left">About</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Careers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Contact</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Press</button></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">For Freelancers</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="footer-link">How to Join</a></li>
-                <li><a href="#" className="footer-link">Create a Profile</a></li>
-                <li><a href="#" className="footer-link">Get Verified</a></li>
-                <li><a href="#" className="footer-link">Success Stories</a></li>
+                <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left">How to Join</button></li>
+                <li><button onClick={() => setCurrentPage('register')} className="footer-link text-left">Create a Profile</button></li>
+                <li><button onClick={() => setCurrentPage('register')} className="footer-link text-left">Get Verified</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Success Stories</button></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-white font-semibold mb-4">For Clients</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="footer-link">How It Works</a></li>
-                <li><a href="#" className="footer-link">Browse Freelancers</a></li>
-                <li><a href="#" className="footer-link">Support</a></li>
-                <li><a href="#" className="footer-link">Enterprise</a></li>
+                <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left">How It Works</button></li>
+                <li><button onClick={() => setCurrentPage('browse-jobs')} className="footer-link text-left">Browse Freelancers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Support</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Enterprise</button></li>
               </ul>
             </div>
           </div>
