@@ -332,6 +332,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
         { id: 'jobs', label: 'Browse Jobs', icon: Search },
         { id: 'applications', label: 'My Applications', icon: FileText },
         { id: 'wallet', label: 'Wallet', icon: Wallet },
+        { id: 'files', label: 'Files', icon: FolderOpen },
         { id: 'profile', label: 'Profile', icon: Users },
         { id: 'earnings', label: 'Earnings', icon: DollarSign }
       ].map(tab => {
