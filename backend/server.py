@@ -998,6 +998,51 @@ async def upload_resume(
         "file_url": f"/uploads/resumes/{file_info['filename']}"
     }
 
+@app.post("/api/upload-portfolio-file")
+async def upload_portfolio_file(
+    file: UploadFile = File(...),
+    current_user = Depends(verify_token)
+):
+    """Upload portfolio files for freelancers"""
+    
+    # Check if user is freelancer
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can upload portfolio files")
+    
+    # Define allowed file types for portfolio
+    allowed_types = [
+        "image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif",
+        "application/pdf", 
+        "video/mp4", "video/mpeg", "video/quicktime",
+        "application/zip", "application/x-zip-compressed"
+    ]
+    
+    # Save file using utility function
+    file_info = await save_uploaded_file(
+        file=file,
+        user_id=current_user["user_id"],
+        file_type="portfolio",
+        subdirectory="portfolios",
+        allowed_types=allowed_types,
+        max_size_mb=50  # Larger size for portfolio files
+    )
+    
+    # Add to user's portfolio files in database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$push": {
+                "portfolio_files": file_info
+            }
+        }
+    )
+    
+    return {
+        "message": "Portfolio file uploaded successfully",
+        "filename": file_info["filename"],
+        "file_url": f"/uploads/portfolios/{file_info['filename']}"
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
