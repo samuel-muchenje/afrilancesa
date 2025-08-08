@@ -20,6 +20,10 @@ import PostJob from './PostJob';
 import FreelancerDashboard from './FreelancerDashboard';
 import ClientDashboard from './ClientDashboard';
 import AdminDashboard from './AdminDashboard';
+import About from './About';
+import Contact from './Contact';
+import BrowseJobs from './BrowseJobs';
+import HowItWorks from './HowItWorks';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
