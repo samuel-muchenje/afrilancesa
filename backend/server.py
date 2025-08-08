@@ -110,6 +110,18 @@ class ProposalAcceptance(BaseModel):
     proposal_id: str
     bid_amount: float
 
+class WalletTransaction(BaseModel):
+    type: str  # Credit/Debit
+    amount: float
+    date: datetime = None
+    note: str
+
+class WithdrawalRequest(BaseModel):
+    amount: float
+
+class EscrowRelease(BaseModel):
+    contract_id: str
+
 # Utility functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
