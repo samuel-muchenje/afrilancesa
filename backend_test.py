@@ -3597,6 +3597,39 @@ def main():
             except Exception as e:
                 print(f"❌ {test_name} - Exception: {str(e)}")
         
+        # Add File Upload System Tests
+        print("\n📁 FILE UPLOAD SYSTEM TESTS")
+        print("=" * 60)
+        
+        file_upload_tests = [
+            ("Profile Picture Upload - Valid", tester.test_profile_picture_upload_valid),
+            ("Profile Picture Upload - Invalid Type", tester.test_profile_picture_upload_invalid_type),
+            ("Profile Picture Upload - No Auth", tester.test_profile_picture_upload_no_auth),
+            ("Resume Upload - Valid", tester.test_resume_upload_valid),
+            ("Resume Upload - Client Access", tester.test_resume_upload_client_access),
+            ("Resume Upload - Invalid Type", tester.test_resume_upload_invalid_type),
+            ("Portfolio File Upload - Valid", tester.test_portfolio_file_upload_valid),
+            ("Portfolio File Upload - Client Access", tester.test_portfolio_file_upload_client_access),
+            ("Project Gallery Upload - Valid", tester.test_project_gallery_upload_valid),
+            ("Project Gallery Upload - Missing Metadata", tester.test_project_gallery_upload_missing_metadata),
+            ("Project Gallery Upload - Client Access", tester.test_project_gallery_upload_client_access),
+            ("User Files - Get Freelancer", tester.test_user_files_get_freelancer),
+            ("User Files - Get Client", tester.test_user_files_get_client),
+            ("User Files - No Auth", tester.test_user_files_no_auth),
+            ("Delete Portfolio File", tester.test_delete_portfolio_file),
+            ("Delete Portfolio File - Client Access", tester.test_delete_portfolio_file_client_access),
+            ("Delete Project Gallery Item", tester.test_delete_project_gallery_item),
+            ("Delete Project Gallery - Client Access", tester.test_delete_project_gallery_client_access),
+            ("File Size Validation", tester.test_file_size_validation),
+            ("Static File Serving", tester.test_static_file_serving),
+        ]
+        
+        for test_name, test_func in file_upload_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
         for test_name, test_func in additional_tests:
             try:
                 test_func()
