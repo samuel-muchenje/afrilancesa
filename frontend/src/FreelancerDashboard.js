@@ -219,6 +219,72 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
+  // Wallet management functions
+  const fetchWallet = async () => {
+    try {
+      setWalletLoading(true);
+      const walletData = await apiCall('/api/wallet');
+      setWallet(walletData);
+      
+      // Also fetch transaction history
+      const transactionsData = await apiCall('/api/wallet/transactions');
+      setTransactionHistory(transactionsData.transactions || []);
+      
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+      // Don't show error if wallet doesn't exist - this is expected for new users
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      alert('Please enter a valid withdrawal amount');
+      return;
+    }
+
+    if (parseFloat(withdrawAmount) > wallet.available_balance) {
+      alert('Insufficient available balance');
+      return;
+    }
+
+    try {
+      await apiCall('/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: parseFloat(withdrawAmount)
+        })
+      });
+
+      // Refresh wallet data
+      await fetchWallet();
+      setWithdrawAmount('');
+      setShowWithdrawDialog(false);
+      alert('Withdrawal processed successfully!');
+      
+    } catch (error) {
+      alert(`Withdrawal failed: ${error.message}`);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR'
+    }).format(amount);
+  };
+
+  const getTransactionIcon = (type) => {
+    return type === 'Credit' ? 
+      <ArrowUpRight className="w-4 h-4 text-green-400" /> : 
+      <ArrowDownLeft className="w-4 h-4 text-red-400" />;
+  };
+
+  const getTransactionColor = (type) => {
+    return type === 'Credit' ? 'text-green-400' : 'text-red-400';
+  };
+
   const filteredJobs = availableJobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
                          job.description.toLowerCase().includes(jobSearch.toLowerCase());
