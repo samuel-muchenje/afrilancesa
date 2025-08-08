@@ -716,7 +716,7 @@ const ModernLanding = ({
                 <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left">How It Works</button></li>
                 <li><button onClick={() => setCurrentPage('browse-freelancers')} className="footer-link text-left">Browse Freelancers</button></li>
                 <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Support</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Enterprise</button></li>
+                <li><button onClick={() => setCurrentPage('enterprise')} className="footer-link text-left">Enterprise</button></li>
               </ul>
             </div>
           </div>
