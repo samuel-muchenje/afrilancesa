@@ -104,6 +104,18 @@ class SupportTicket(BaseModel):
     email: EmailStr
     message: str
 
+class FileUploadResponse(BaseModel):
+    message: str
+    filename: str
+    file_url: str
+    file_type: str
+
+class ProjectGalleryItem(BaseModel):
+    title: str
+    description: str
+    technologies: List[str] = []
+    project_url: Optional[str] = None
+
 class ContractCreate(BaseModel):
     job_id: str
     freelancer_id: str
