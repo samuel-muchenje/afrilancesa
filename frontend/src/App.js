@@ -498,6 +498,34 @@ function App() {
     );
   }
 
+  // About Page
+  if (currentPage === 'about') {
+    return (
+      <About onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Contact Page
+  if (currentPage === 'contact') {
+    return (
+      <Contact onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Browse Jobs Page
+  if (currentPage === 'browse-jobs') {
+    return (
+      <BrowseJobs onNavigate={setCurrentPage} />
+    );
+  }
+
+  // How It Works Page
+  if (currentPage === 'how-it-works') {
+    return (
+      <HowItWorks onNavigate={setCurrentPage} />
+    );
+  }
+
   // Main Dashboard
   return (
     <div className="dashboard-modern">
