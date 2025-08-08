@@ -520,6 +520,13 @@ function App() {
     );
   }
 
+  // Browse Freelancers Page
+  if (currentPage === 'browse-freelancers') {
+    return (
+      <BrowseFreelancers onNavigate={setCurrentPage} />
+    );
+  }
+
   // How It Works Page
   if (currentPage === 'how-it-works') {
     return (
