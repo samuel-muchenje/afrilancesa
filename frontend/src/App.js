@@ -23,6 +23,7 @@ import AdminDashboard from './AdminDashboard';
 import About from './About';
 import Contact from './Contact';
 import BrowseJobs from './BrowseJobs';
+import BrowseFreelancers from './BrowseFreelancers';
 import HowItWorks from './HowItWorks';
 import './App.css';
 
