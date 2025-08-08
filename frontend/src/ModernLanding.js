@@ -136,22 +136,28 @@ const featuredFreelancers = [
 // Testimonials
 const testimonials = [
   {
-    name: "David Chen",
-    role: "Small Business Owner",
-    image: "https://images.unsplash.com/photo-1581368076903-c20fee986735",
-    quote: "Found an amazing web developer through Afrilance. My online sales increased by 300% in just 3 months!"
+    name: "Pieter van der Merwe",
+    role: "CEO, Cape Town Logistics",
+    image: "https://images.unsplash.com/photo-1581368076903-c20fee986735?w=150&h=150&fit=crop&crop=face",
+    quote: "Found an exceptional mobile app developer through Afrilance. Our delivery tracking system increased efficiency by 40% and customer satisfaction is at an all-time high."
   },
   {
-    name: "Sarah Williams",
-    role: "Marketing Manager",
-    image: "https://images.unsplash.com/photo-1551693886-e05efa0d1216",
-    quote: "The quality of freelancers on Afrilance is incredible. Always professional, always delivering on time."
+    name: "Priya Patel",
+    role: "Marketing Director, Durban Tourism",
+    image: "https://images.unsplash.com/photo-1551693886-e05efa0d1216?w=150&h=150&fit=crop&crop=face",
+    quote: "The digital marketing specialist we hired through Afrilance transformed our online presence. Tourist inquiries increased by 250% in just 6 months."
   },
   {
-    name: "Mandla Sibeko",
-    role: "Civil Engineer",
-    image: "https://images.unsplash.com/photo-1552392820-6653a945a7b4",
-    quote: "As a freelancer, Afrilance connected me with clients I never would have reached. Game changer for my business."
+    name: "Lebohang Motsepe",
+    role: "Founder, Johannesburg Tech Hub",
+    image: "https://images.unsplash.com/photo-1552392820-6653a945a7b4?w=150&h=150&fit=crop&crop=face",
+    quote: "As a client, Afrilance connected me with top-tier South African developers. The quality and professionalism exceeded all expectations."
+  },
+  {
+    name: "Amara Okafor",
+    role: "Restaurant Owner, Lagos",
+    image: "https://images.unsplash.com/photo-1594736797933-d0201ba2fe65?w=150&h=150&fit=crop&crop=face",
+    quote: "The graphic designer I hired created an amazing brand identity for my restaurant. Revenue increased by 180% after our rebrand launch."
   }
 ];
 
