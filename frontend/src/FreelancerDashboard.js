@@ -7,13 +7,16 @@ import { Input } from './components/ui/input';
 import { Textarea } from './components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import FileUpload from './components/FileUpload';
+import FileGallery from './components/FileGallery';
 import { 
   Briefcase, DollarSign, Star, Clock, Users, TrendingUp, 
   MessageCircle, Settings, LogOut, CheckCircle, AlertTriangle,
   FileText, Award, Calendar, Search, Filter, Eye, Edit,
   Upload, Plus, BookOpen, Target, ChevronRight, Mail,
   Phone, MapPin, Globe, Heart, ExternalLink, Wallet,
-  CreditCard, ArrowUpRight, ArrowDownLeft, History
+  CreditCard, ArrowUpRight, ArrowDownLeft, History, Camera,
+  File, Image, FolderOpen
 } from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
