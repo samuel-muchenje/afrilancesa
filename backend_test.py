@@ -1939,6 +1939,682 @@ Thabo Mthembu""",
             print("   ❌ Final contract state incorrect")
             return False
 
+    # ========== WALLET SYSTEM TESTS ==========
+    
+    def test_wallet_auto_creation_freelancer(self):
+        """Test that wallets are automatically created when freelancers register"""
+        print("\n💰 Testing Wallet Auto-Creation for Freelancer...")
+        
+        # Register a new freelancer
+        timestamp = datetime.now().strftime('%H%M%S')
+        freelancer_data = {
+            "email": f"wallet.freelancer{timestamp}@gmail.com",
+            "password": "WalletTest123!",
+            "role": "freelancer",
+            "full_name": "Wallet Test Freelancer",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "Wallet - Register Freelancer for Auto-Creation Test",
+            "POST",
+            "/api/register",
+            200,
+            data=freelancer_data
+        )
+        
+        if not success or 'token' not in response:
+            print("❌ Failed to register freelancer for wallet test")
+            return False
+            
+        freelancer_token = response['token']
+        freelancer_user = response['user']
+        
+        # Check if wallet was auto-created
+        success, wallet_response = self.run_test(
+            "Wallet - Check Auto-Created Wallet",
+            "GET",
+            "/api/wallet",
+            200,
+            token=freelancer_token
+        )
+        
+        if success:
+            # Verify wallet structure
+            required_fields = ['id', 'user_id', 'available_balance', 'escrow_balance', 'transaction_history', 'created_at']
+            missing_fields = []
+            
+            for field in required_fields:
+                if field not in wallet_response:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Wallet missing required fields: {missing_fields}")
+                return False
+            
+            # Verify initial balances are zero
+            if (wallet_response['available_balance'] == 0.0 and 
+                wallet_response['escrow_balance'] == 0.0 and
+                wallet_response['user_id'] == freelancer_user['id']):
+                print("   ✅ Wallet auto-created with correct initial state")
+                print(f"   ✓ Available balance: R{wallet_response['available_balance']}")
+                print(f"   ✓ Escrow balance: R{wallet_response['escrow_balance']}")
+                print(f"   ✓ Transaction history: {len(wallet_response['transaction_history'])} transactions")
+                return True
+            else:
+                print("   ❌ Wallet not created with correct initial state")
+                return False
+        else:
+            print("   ❌ Wallet not auto-created for freelancer")
+            return False
+
+    def test_wallet_not_created_for_client(self):
+        """Test that wallets are NOT created for clients"""
+        print("\n💰 Testing Wallet NOT Created for Client...")
+        
+        # Register a new client
+        timestamp = datetime.now().strftime('%H%M%S')
+        client_data = {
+            "email": f"wallet.client{timestamp}@gmail.com",
+            "password": "WalletTest123!",
+            "role": "client",
+            "full_name": "Wallet Test Client",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "Wallet - Register Client (No Wallet Expected)",
+            "POST",
+            "/api/register",
+            200,
+            data=client_data
+        )
+        
+        if not success or 'token' not in response:
+            print("❌ Failed to register client for wallet test")
+            return False
+            
+        client_token = response['token']
+        
+        # Try to get wallet (should fail)
+        success, wallet_response = self.run_test(
+            "Wallet - Check Client Has No Wallet",
+            "GET",
+            "/api/wallet",
+            404,  # Should return 404 - wallet not found
+            token=client_token
+        )
+        
+        if success:
+            print("   ✅ Client correctly has no wallet (404 returned)")
+            return True
+        else:
+            print("   ❌ Client unexpectedly has a wallet or wrong error code")
+            return False
+
+    def test_wallet_not_created_for_admin(self):
+        """Test that wallets are NOT created for admins"""
+        print("\n💰 Testing Wallet NOT Created for Admin...")
+        
+        # Register a new admin
+        timestamp = datetime.now().strftime('%H%M%S')
+        admin_data = {
+            "email": f"wallet.admin{timestamp}@gmail.com",
+            "password": "WalletTest123!",
+            "role": "admin",
+            "full_name": "Wallet Test Admin",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "Wallet - Register Admin (No Wallet Expected)",
+            "POST",
+            "/api/register",
+            200,
+            data=admin_data
+        )
+        
+        if not success or 'token' not in response:
+            print("❌ Failed to register admin for wallet test")
+            return False
+            
+        admin_token = response['token']
+        
+        # Try to get wallet (should fail)
+        success, wallet_response = self.run_test(
+            "Wallet - Check Admin Has No Wallet",
+            "GET",
+            "/api/wallet",
+            404,  # Should return 404 - wallet not found
+            token=admin_token
+        )
+        
+        if success:
+            print("   ✅ Admin correctly has no wallet (404 returned)")
+            return True
+        else:
+            print("   ❌ Admin unexpectedly has a wallet or wrong error code")
+            return False
+
+    def test_contract_escrow_integration(self):
+        """Test that contract acceptance moves funds to escrow with transaction logging"""
+        print("\n💰 Testing Contract-Escrow Integration...")
+        
+        # First, ensure we have a verified freelancer with a wallet
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for escrow test")
+            return False
+        
+        # Get initial wallet state
+        success, initial_wallet = self.run_test(
+            "Escrow - Get Initial Wallet State",
+            "GET",
+            "/api/wallet",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("❌ Failed to get initial wallet state")
+            return False
+        
+        initial_escrow = initial_wallet['escrow_balance']
+        initial_transactions = len(initial_wallet['transaction_history'])
+        
+        print(f"   Initial escrow balance: R{initial_escrow}")
+        print(f"   Initial transactions: {initial_transactions}")
+        
+        # Create a job and application for escrow test
+        job_data = {
+            "title": "Escrow Test Job - Website Development",
+            "description": "Test job for escrow functionality testing",
+            "category": "Web Development",
+            "budget": 15000.0,
+            "budget_type": "fixed",
+            "requirements": ["React", "Node.js"]
+        }
+        
+        success, job_response = self.run_test(
+            "Escrow - Create Test Job",
+            "POST",
+            "/api/jobs",
+            200,
+            data=job_data,
+            token=self.client_token
+        )
+        
+        if not success or 'job_id' not in job_response:
+            print("❌ Failed to create job for escrow test")
+            return False
+        
+        escrow_job_id = job_response['job_id']
+        
+        # Apply to the job
+        application_data = {
+            "job_id": escrow_job_id,
+            "proposal": "I am interested in this escrow test project and can deliver high-quality work.",
+            "bid_amount": 14000.0
+        }
+        
+        success, app_response = self.run_test(
+            "Escrow - Apply to Test Job",
+            "POST",
+            f"/api/jobs/{escrow_job_id}/apply",
+            200,
+            data=application_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("❌ Failed to apply to job for escrow test")
+            return False
+        
+        # Get applications to find proposal ID
+        success, applications = self.run_test(
+            "Escrow - Get Applications",
+            "GET",
+            f"/api/jobs/{escrow_job_id}/applications",
+            200,
+            token=self.client_token
+        )
+        
+        if not success or not applications:
+            print("❌ Failed to get applications for escrow test")
+            return False
+        
+        proposal_id = applications[0]['id']
+        
+        # Accept the proposal (this should trigger escrow)
+        acceptance_data = {
+            "job_id": escrow_job_id,
+            "freelancer_id": self.freelancer_user['id'],
+            "proposal_id": proposal_id,
+            "bid_amount": 14000.0
+        }
+        
+        success, acceptance_response = self.run_test(
+            "Escrow - Accept Proposal (Trigger Escrow)",
+            "POST",
+            f"/api/jobs/{escrow_job_id}/accept-proposal",
+            200,
+            data=acceptance_data,
+            token=self.client_token
+        )
+        
+        if not success or 'contract_id' not in acceptance_response:
+            print("❌ Failed to accept proposal for escrow test")
+            return False
+        
+        contract_id = acceptance_response['contract_id']
+        print(f"   Contract created: {contract_id}")
+        
+        # Check wallet after escrow
+        success, updated_wallet = self.run_test(
+            "Escrow - Check Wallet After Escrow",
+            "GET",
+            "/api/wallet",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            new_escrow = updated_wallet['escrow_balance']
+            new_transactions = len(updated_wallet['transaction_history'])
+            
+            # Verify escrow balance increased
+            expected_escrow = initial_escrow + 14000.0
+            if new_escrow == expected_escrow:
+                print(f"   ✅ Escrow balance correctly updated: R{initial_escrow} → R{new_escrow}")
+            else:
+                print(f"   ❌ Escrow balance not updated correctly: expected R{expected_escrow}, got R{new_escrow}")
+                return False
+            
+            # Verify transaction was logged
+            if new_transactions == initial_transactions + 1:
+                print(f"   ✅ Transaction logged: {initial_transactions} → {new_transactions}")
+                
+                # Check the latest transaction
+                latest_transaction = updated_wallet['transaction_history'][-1]
+                if (latest_transaction['type'] == 'Credit' and 
+                    latest_transaction['amount'] == 14000.0 and
+                    'escrow' in latest_transaction['note'].lower()):
+                    print("   ✅ Transaction details correct")
+                    print(f"   ✓ Type: {latest_transaction['type']}")
+                    print(f"   ✓ Amount: R{latest_transaction['amount']}")
+                    print(f"   ✓ Note: {latest_transaction['note']}")
+                    return True
+                else:
+                    print("   ❌ Transaction details incorrect")
+                    return False
+            else:
+                print(f"   ❌ Transaction not logged correctly: expected {initial_transactions + 1}, got {new_transactions}")
+                return False
+        else:
+            print("   ❌ Failed to get updated wallet state")
+            return False
+
+    def test_wallet_get_endpoint(self):
+        """Test GET /api/wallet endpoint"""
+        print("\n💰 Testing Wallet GET Endpoint...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for wallet GET test")
+            return False
+        
+        success, response = self.run_test(
+            "Wallet - GET Wallet Info",
+            "GET",
+            "/api/wallet",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            # Verify wallet structure
+            required_fields = ['id', 'user_id', 'available_balance', 'escrow_balance', 'transaction_history', 'created_at']
+            missing_fields = []
+            
+            for field in required_fields:
+                if field not in response:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Wallet response missing fields: {missing_fields}")
+                return False
+            
+            print("   ✅ Wallet GET endpoint working correctly")
+            print(f"   ✓ User ID: {response['user_id']}")
+            print(f"   ✓ Available balance: R{response['available_balance']}")
+            print(f"   ✓ Escrow balance: R{response['escrow_balance']}")
+            print(f"   ✓ Transaction count: {len(response['transaction_history'])}")
+            return True
+        else:
+            print("   ❌ Wallet GET endpoint failed")
+            return False
+
+    def test_wallet_withdraw_sufficient_balance(self):
+        """Test POST /api/wallet/withdraw with sufficient balance"""
+        print("\n💰 Testing Wallet Withdrawal - Sufficient Balance...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for withdrawal test")
+            return False
+        
+        # First, get current wallet state
+        success, wallet = self.run_test(
+            "Withdraw - Get Current Wallet State",
+            "GET",
+            "/api/wallet",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("❌ Failed to get wallet state for withdrawal test")
+            return False
+        
+        available_balance = wallet['available_balance']
+        print(f"   Current available balance: R{available_balance}")
+        
+        # If no available balance, we need to simulate having some
+        if available_balance <= 0:
+            print("   ⚠️  No available balance for withdrawal test - this is expected in fresh test")
+            # Test withdrawal with zero balance (should fail)
+            withdrawal_data = {"amount": 100.0}
+            
+            success, response = self.run_test(
+                "Withdraw - Insufficient Balance Test",
+                "POST",
+                "/api/wallet/withdraw",
+                400,  # Should return 400 for insufficient balance
+                data=withdrawal_data,
+                token=self.freelancer_token
+            )
+            
+            if success:
+                print("   ✅ Insufficient balance correctly rejected")
+                return True
+            else:
+                print("   ❌ Insufficient balance not handled correctly")
+                return False
+        else:
+            # Test withdrawal with sufficient balance
+            withdrawal_amount = min(100.0, available_balance / 2)  # Withdraw half or 100, whichever is smaller
+            withdrawal_data = {"amount": withdrawal_amount}
+            
+            success, response = self.run_test(
+                "Withdraw - Sufficient Balance Test",
+                "POST",
+                "/api/wallet/withdraw",
+                200,
+                data=withdrawal_data,
+                token=self.freelancer_token
+            )
+            
+            if success and 'remaining_balance' in response:
+                expected_remaining = available_balance - withdrawal_amount
+                actual_remaining = response['remaining_balance']
+                
+                if abs(actual_remaining - expected_remaining) < 0.01:  # Allow for floating point precision
+                    print(f"   ✅ Withdrawal successful: R{withdrawal_amount}")
+                    print(f"   ✓ Remaining balance: R{actual_remaining}")
+                    return True
+                else:
+                    print(f"   ❌ Remaining balance incorrect: expected R{expected_remaining}, got R{actual_remaining}")
+                    return False
+            else:
+                print("   ❌ Withdrawal failed or missing response data")
+                return False
+
+    def test_wallet_withdraw_insufficient_balance(self):
+        """Test POST /api/wallet/withdraw with insufficient balance"""
+        print("\n💰 Testing Wallet Withdrawal - Insufficient Balance...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for withdrawal test")
+            return False
+        
+        # Try to withdraw more than available
+        withdrawal_data = {"amount": 999999.0}  # Large amount
+        
+        success, response = self.run_test(
+            "Withdraw - Insufficient Balance",
+            "POST",
+            "/api/wallet/withdraw",
+            400,  # Should return 400 for insufficient balance
+            data=withdrawal_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✅ Insufficient balance withdrawal correctly rejected")
+            return True
+        else:
+            print("   ❌ Insufficient balance withdrawal not handled correctly")
+            return False
+
+    def test_wallet_withdraw_invalid_amount(self):
+        """Test POST /api/wallet/withdraw with invalid amounts"""
+        print("\n💰 Testing Wallet Withdrawal - Invalid Amounts...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for withdrawal test")
+            return False
+        
+        # Test negative amount
+        withdrawal_data = {"amount": -100.0}
+        
+        success, response = self.run_test(
+            "Withdraw - Negative Amount",
+            "POST",
+            "/api/wallet/withdraw",
+            400,  # Should return 400 for invalid amount
+            data=withdrawal_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("   ❌ Negative amount withdrawal not rejected")
+            return False
+        
+        # Test zero amount
+        withdrawal_data = {"amount": 0.0}
+        
+        success, response = self.run_test(
+            "Withdraw - Zero Amount",
+            "POST",
+            "/api/wallet/withdraw",
+            400,  # Should return 400 for invalid amount
+            data=withdrawal_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✅ Invalid withdrawal amounts correctly rejected")
+            return True
+        else:
+            print("   ❌ Invalid withdrawal amounts not handled correctly")
+            return False
+
+    def test_wallet_withdraw_non_freelancer(self):
+        """Test that only freelancers can withdraw funds"""
+        print("\n💰 Testing Wallet Withdrawal - Non-Freelancer Access...")
+        
+        if not self.client_token:
+            print("❌ No client token available for non-freelancer withdrawal test")
+            return False
+        
+        withdrawal_data = {"amount": 100.0}
+        
+        success, response = self.run_test(
+            "Withdraw - Client Access (Should Fail)",
+            "POST",
+            "/api/wallet/withdraw",
+            403,  # Should return 403 for non-freelancer
+            data=withdrawal_data,
+            token=self.client_token
+        )
+        
+        if success:
+            print("   ✅ Non-freelancer withdrawal correctly rejected")
+            return True
+        else:
+            print("   ❌ Non-freelancer withdrawal not handled correctly")
+            return False
+
+    def test_wallet_release_escrow_admin(self):
+        """Test POST /api/wallet/release-escrow (admin only)"""
+        print("\n💰 Testing Escrow Release - Admin Access...")
+        
+        if not self.admin_token:
+            print("❌ No admin token available for escrow release test")
+            return False
+        
+        # We need a contract with escrow to test release
+        # For now, test with a fake contract ID to verify admin access control
+        release_data = {"contract_id": "fake-contract-id"}
+        
+        success, response = self.run_test(
+            "Escrow Release - Admin Access Test",
+            "POST",
+            "/api/wallet/release-escrow",
+            404,  # Should return 404 for non-existent contract (but not 403)
+            data=release_data,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✅ Admin can access escrow release endpoint (404 for fake contract is expected)")
+            return True
+        else:
+            print("   ❌ Admin escrow release access failed")
+            return False
+
+    def test_wallet_release_escrow_non_admin(self):
+        """Test that only admins can release escrow"""
+        print("\n💰 Testing Escrow Release - Non-Admin Access...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for non-admin escrow release test")
+            return False
+        
+        release_data = {"contract_id": "fake-contract-id"}
+        
+        success, response = self.run_test(
+            "Escrow Release - Non-Admin Access (Should Fail)",
+            "POST",
+            "/api/wallet/release-escrow",
+            403,  # Should return 403 for non-admin
+            data=release_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✅ Non-admin escrow release correctly rejected")
+            return True
+        else:
+            print("   ❌ Non-admin escrow release not handled correctly")
+            return False
+
+    def test_wallet_transaction_history(self):
+        """Test GET /api/wallet/transactions endpoint"""
+        print("\n💰 Testing Wallet Transaction History...")
+        
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for transaction history test")
+            return False
+        
+        success, response = self.run_test(
+            "Wallet - Get Transaction History",
+            "GET",
+            "/api/wallet/transactions",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            # Verify response structure
+            if 'transactions' not in response or 'total_transactions' not in response:
+                print("   ❌ Transaction history response missing required fields")
+                return False
+            
+            transactions = response['transactions']
+            total_count = response['total_transactions']
+            
+            print(f"   ✅ Transaction history retrieved successfully")
+            print(f"   ✓ Total transactions: {total_count}")
+            print(f"   ✓ Transactions returned: {len(transactions)}")
+            
+            # Verify transaction structure if any exist
+            if len(transactions) > 0:
+                transaction = transactions[0]
+                required_fields = ['type', 'amount', 'date', 'note']
+                missing_fields = []
+                
+                for field in required_fields:
+                    if field not in transaction:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Transaction missing fields: {missing_fields}")
+                    return False
+                
+                print(f"   ✓ Latest transaction: {transaction['type']} R{transaction['amount']} - {transaction['note']}")
+            
+            return True
+        else:
+            print("   ❌ Transaction history retrieval failed")
+            return False
+
+    def test_wallet_role_based_access(self):
+        """Test wallet endpoints have proper role-based access control"""
+        print("\n💰 Testing Wallet Role-Based Access Control...")
+        
+        # Test client trying to access wallet endpoints
+        if self.client_token:
+            # GET /api/wallet should fail for client
+            success, response = self.run_test(
+                "Wallet RBAC - Client GET Wallet (Should Fail)",
+                "GET",
+                "/api/wallet",
+                404,  # Should return 404 for client (no wallet)
+                token=self.client_token
+            )
+            
+            if not success:
+                print("   ❌ Client wallet access not properly restricted")
+                return False
+            
+            # POST /api/wallet/withdraw should fail for client
+            success, response = self.run_test(
+                "Wallet RBAC - Client Withdraw (Should Fail)",
+                "POST",
+                "/api/wallet/withdraw",
+                403,  # Should return 403 for non-freelancer
+                data={"amount": 100.0},
+                token=self.client_token
+            )
+            
+            if not success:
+                print("   ❌ Client withdrawal access not properly restricted")
+                return False
+            
+            # GET /api/wallet/transactions should fail for client
+            success, response = self.run_test(
+                "Wallet RBAC - Client Transactions (Should Fail)",
+                "GET",
+                "/api/wallet/transactions",
+                404,  # Should return 404 for client (no wallet)
+                token=self.client_token
+            )
+            
+            if not success:
+                print("   ❌ Client transaction history access not properly restricted")
+                return False
+        
+        print("   ✅ Wallet role-based access control working correctly")
+        return True
+
 def main():
     print("🚀 Starting Afrilance Authentication System Tests")
     print("=" * 60)
