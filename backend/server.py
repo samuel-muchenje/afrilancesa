@@ -1043,6 +1043,68 @@ async def upload_portfolio_file(
         "file_url": f"/uploads/portfolios/{file_info['filename']}"
     }
 
+@app.post("/api/upload-project-gallery")
+async def upload_project_gallery(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    description: str = Form(...),
+    technologies: str = Form(""),  # Comma-separated technologies
+    project_url: Optional[str] = Form(None),
+    current_user = Depends(verify_token)
+):
+    """Upload project gallery item with metadata"""
+    
+    # Check if user is freelancer
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can upload project gallery items")
+    
+    # Define allowed file types for project gallery
+    allowed_types = [
+        "image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif",
+        "video/mp4", "video/mpeg", "video/quicktime"
+    ]
+    
+    # Save file using utility function
+    file_info = await save_uploaded_file(
+        file=file,
+        user_id=current_user["user_id"],
+        file_type="project_gallery",
+        subdirectory="project_gallery",
+        allowed_types=allowed_types,
+        max_size_mb=25  # Medium size for project media
+    )
+    
+    # Parse technologies
+    tech_list = [tech.strip() for tech in technologies.split(",") if tech.strip()] if technologies else []
+    
+    # Create project gallery item
+    gallery_item = {
+        "id": str(uuid.uuid4()),
+        "title": title,
+        "description": description,
+        "technologies": tech_list,
+        "project_url": project_url,
+        "file_info": file_info,
+        "created_at": datetime.utcnow()
+    }
+    
+    # Add to user's project gallery in database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$push": {
+                "project_gallery": gallery_item
+            }
+        }
+    )
+    
+    return {
+        "message": "Project gallery item uploaded successfully",
+        "project_id": gallery_item["id"],
+        "filename": file_info["filename"],
+        "file_url": f"/uploads/project_gallery/{file_info['filename']}"
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
