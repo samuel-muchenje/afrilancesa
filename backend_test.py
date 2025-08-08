@@ -5,7 +5,7 @@ import jwt
 from datetime import datetime
 
 class AfrilanceAPITester:
-    def __init__(self, base_url="https://08321d4d-2463-412a-978f-4530109b6c73.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cc0855c8-ef4c-408c-97d0-54a2d7a84063.preview.emergentagent.com"):
         self.base_url = base_url
         self.freelancer_token = None
         self.client_token = None
