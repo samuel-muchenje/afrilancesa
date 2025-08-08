@@ -251,6 +251,7 @@ const ModernLanding = ({
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
+                onClick={() => setCurrentPage('browse-jobs')}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6 text-white">
