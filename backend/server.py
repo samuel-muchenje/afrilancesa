@@ -1026,6 +1026,135 @@ async def release_escrow(release: EscrowRelease, current_user = Depends(verify_t
         "contract_id": release.contract_id
     }
 
+@app.get("/api/freelancers/featured")
+async def get_featured_freelancers():
+    """Get featured freelancers for homepage"""
+    try:
+        # Get verified freelancers with highest ratings
+        freelancers = list(db.users.find(
+            {"role": "freelancer", "is_verified": True},
+            {"password": 0}  # Exclude password
+        ).sort([("rating", -1), ("created_at", -1)]).limit(8))
+        
+        # If no real freelancers, return sample data for now
+        if not freelancers:
+            return [
+                {
+                    "id": "sample-1",
+                    "full_name": "Thabo Mthembu",
+                    "profile": {
+                        "profession": "Full-Stack Developer",
+                        "hourly_rate": 850,
+                        "bio": "Building scalable web applications for South African startups and enterprises",
+                        "rating": 4.9,
+                        "total_reviews": 127,
+                        "profile_image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                    }
+                },
+                {
+                    "id": "sample-2", 
+                    "full_name": "Naledi Motaung",
+                    "profile": {
+                        "profession": "Digital Marketing Specialist",
+                        "hourly_rate": 650,
+                        "bio": "Driving growth through strategic digital campaigns across African markets",
+                        "rating": 4.8,
+                        "total_reviews": 98,
+                        "profile_image": "https://images.unsplash.com/photo-1494790108755-2616b9c76f36?w=150&h=150&fit=crop&crop=face"
+                    }
+                }
+            ]
+        
+        # Format real freelancer data
+        featured = []
+        for freelancer in freelancers:
+            if freelancer.get("profile", {}).get("profession"):
+                featured.append({
+                    "id": freelancer["id"],
+                    "full_name": freelancer["full_name"],
+                    "email": freelancer["email"],
+                    "profile": {
+                        "profession": freelancer.get("profile", {}).get("profession", "Freelancer"),
+                        "hourly_rate": freelancer.get("profile", {}).get("hourly_rate", 500),
+                        "bio": freelancer.get("profile", {}).get("bio", "Professional freelancer"),
+                        "rating": freelancer.get("rating", 4.5),
+                        "total_reviews": freelancer.get("total_reviews", 0),
+                        "profile_image": freelancer.get("profile", {}).get("profile_image", ""),
+                        "skills": freelancer.get("profile", {}).get("skills", []),
+                        "location": freelancer.get("profile", {}).get("location", "South Africa")
+                    }
+                })
+        
+        return featured[:8]  # Return max 8 featured freelancers
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching featured freelancers: {str(e)}")
+
+@app.get("/api/freelancers/public")
+async def get_public_freelancers():
+    """Get all public freelancer profiles (for clients to browse)"""
+    try:
+        freelancers = list(db.users.find(
+            {"role": "freelancer", "is_verified": True},
+            {"password": 0, "id_document": 0}  # Exclude sensitive data
+        ).sort([("rating", -1), ("created_at", -1)]))
+        
+        # Format freelancer data for public display
+        public_freelancers = []
+        for freelancer in freelancers:
+            if freelancer.get("profile", {}).get("profession"):
+                public_freelancers.append({
+                    "id": freelancer["id"],
+                    "full_name": freelancer["full_name"],
+                    "profile": {
+                        "profession": freelancer.get("profile", {}).get("profession", "Freelancer"),
+                        "hourly_rate": freelancer.get("profile", {}).get("hourly_rate", 500),
+                        "bio": freelancer.get("profile", {}).get("bio", "Professional freelancer"),
+                        "rating": freelancer.get("rating", 4.5),
+                        "total_reviews": freelancer.get("total_reviews", 0),
+                        "profile_image": freelancer.get("profile", {}).get("profile_image", ""),
+                        "skills": freelancer.get("profile", {}).get("skills", []),
+                        "location": freelancer.get("profile", {}).get("location", "South Africa"),
+                        "availability": freelancer.get("profile", {}).get("availability", "Available"),
+                        "languages": freelancer.get("profile", {}).get("languages", ["English"]),
+                        "experience": freelancer.get("profile", {}).get("experience", "1-3 years")
+                    },
+                    "created_at": freelancer["created_at"],
+                    "is_verified": freelancer["is_verified"]
+                })
+        
+        return public_freelancers
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching public freelancers: {str(e)}")
+
+@app.get("/api/freelancers/{freelancer_id}/public")
+async def get_freelancer_public_profile(freelancer_id: str):
+    """Get a specific freelancer's public profile"""
+    freelancer = db.users.find_one(
+        {"id": freelancer_id, "role": "freelancer", "is_verified": True},
+        {"password": 0, "id_document": 0}
+    )
+    
+    if not freelancer:
+        raise HTTPException(status_code=404, detail="Freelancer not found")
+    
+    # Get freelancer's completed projects/reviews
+    contracts = list(db.contracts.find(
+        {"freelancer_id": freelancer_id, "status": "Completed"}
+    ))
+    
+    return {
+        "id": freelancer["id"],
+        "full_name": freelancer["full_name"],
+        "profile": freelancer.get("profile", {}),
+        "rating": freelancer.get("rating", 4.5),
+        "total_reviews": freelancer.get("total_reviews", 0),
+        "completed_projects": len(contracts),
+        "member_since": freelancer["created_at"],
+        "is_verified": freelancer["is_verified"]
+    }
+
 @app.get("/api/wallet/transactions")
 async def get_transaction_history(current_user = Depends(verify_token)):
     """Get transaction history for current user's wallet"""
