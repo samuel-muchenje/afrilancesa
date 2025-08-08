@@ -276,6 +276,20 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
+  // File upload success handler
+  const handleFileUploadSuccess = (result) => {
+    console.log('File uploaded successfully:', result);
+    setFileUploadRefresh(prev => prev + 1); // Trigger refresh
+    
+    // Show success message
+    const fileType = result.message.toLowerCase().includes('profile') ? 'Profile picture' :
+                    result.message.toLowerCase().includes('resume') ? 'Resume' :
+                    result.message.toLowerCase().includes('portfolio') ? 'Portfolio file' :
+                    result.message.toLowerCase().includes('project') ? 'Project' : 'File';
+    
+    alert(`${fileType} uploaded successfully!`);
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
