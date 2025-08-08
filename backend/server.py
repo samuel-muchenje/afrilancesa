@@ -958,6 +958,46 @@ async def upload_profile_picture(
         "file_url": f"/uploads/profile_pictures/{file_info['filename']}"
     }
 
+@app.post("/api/upload-resume")
+async def upload_resume(
+    file: UploadFile = File(...),
+    current_user = Depends(verify_token)
+):
+    """Upload resume/CV for freelancers"""
+    
+    # Check if user is freelancer
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can upload resumes")
+    
+    # Define allowed file types for resumes
+    allowed_types = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+    
+    # Save file using utility function
+    file_info = await save_uploaded_file(
+        file=file,
+        user_id=current_user["user_id"],
+        file_type="resume",
+        subdirectory="resumes",
+        allowed_types=allowed_types,
+        max_size_mb=10  # Larger size for documents
+    )
+    
+    # Update user resume in database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$set": {
+                "resume": file_info
+            }
+        }
+    )
+    
+    return {
+        "message": "Resume uploaded successfully",
+        "filename": file_info["filename"],
+        "file_url": f"/uploads/resumes/{file_info['filename']}"
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
