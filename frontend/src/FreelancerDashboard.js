@@ -608,6 +608,14 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                     <Button 
                       variant="outline"
                       className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                      onClick={() => setCurrentTab('wallet')}
+                    >
+                      <Wallet className="w-4 h-4 mr-2" />
+                      My Wallet
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Messages
