@@ -178,6 +178,18 @@ const Register = ({ onNavigate, onRegisterSuccess }) => {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      {/* Back Navigation */}
+      <div className="fixed top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          onClick={() => onNavigate('/')}
+          className="text-gray-300 hover:text-white hover:bg-gray-800"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
+      
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
