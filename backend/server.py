@@ -922,6 +922,42 @@ async def upload_id_document(
         "status": "pending_verification"
     }
 
+@app.post("/api/upload-profile-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user = Depends(verify_token)
+):
+    """Upload profile picture for any user"""
+    
+    # Define allowed file types for profile pictures
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
+    
+    # Save file using utility function
+    file_info = await save_uploaded_file(
+        file=file,
+        user_id=current_user["user_id"],
+        file_type="profile_picture",
+        subdirectory="profile_pictures",
+        allowed_types=allowed_types,
+        max_size_mb=2  # Smaller size for profile pictures
+    )
+    
+    # Update user profile picture in database
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$set": {
+                "profile_picture": file_info
+            }
+        }
+    )
+    
+    return {
+        "message": "Profile picture uploaded successfully",
+        "filename": file_info["filename"],
+        "file_url": f"/uploads/profile_pictures/{file_info['filename']}"
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
