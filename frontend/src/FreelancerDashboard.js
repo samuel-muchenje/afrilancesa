@@ -12,7 +12,8 @@ import {
   MessageCircle, Settings, LogOut, CheckCircle, AlertTriangle,
   FileText, Award, Calendar, Search, Filter, Eye, Edit,
   Upload, Plus, BookOpen, Target, ChevronRight, Mail,
-  Phone, MapPin, Globe, Heart, ExternalLink
+  Phone, MapPin, Globe, Heart, ExternalLink, Wallet,
+  CreditCard, ArrowUpRight, ArrowDownLeft, History
 } from 'lucide-react';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
