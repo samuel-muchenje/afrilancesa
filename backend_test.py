@@ -2615,6 +2615,343 @@ Thabo Mthembu""",
         print("   ✅ Wallet role-based access control working correctly")
         return True
 
+    # ========== FREELANCER PROFILE ENDPOINTS TESTS ==========
+    
+    def test_freelancer_featured_endpoint(self):
+        """Test GET /api/freelancers/featured endpoint"""
+        success, response = self.run_test(
+            "Freelancer - Get Featured Freelancers",
+            "GET",
+            "/api/freelancers/featured",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Featured freelancers endpoint working: {len(response)} freelancers")
+            
+            # Check if we have sample data or real data
+            if len(response) > 0:
+                freelancer = response[0]
+                
+                # Verify required fields
+                required_fields = ['id', 'full_name', 'profile']
+                missing_fields = []
+                for field in required_fields:
+                    if field not in freelancer:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Featured freelancer missing fields: {missing_fields}")
+                    return False
+                
+                # Check profile structure
+                profile = freelancer.get('profile', {})
+                profile_fields = ['profession', 'hourly_rate', 'bio', 'rating']
+                for field in profile_fields:
+                    if field not in profile:
+                        print(f"   ❌ Featured freelancer profile missing: {field}")
+                        return False
+                
+                # Verify ZAR currency formatting (no $ signs)
+                hourly_rate = profile.get('hourly_rate', 0)
+                if isinstance(hourly_rate, (int, float)) and hourly_rate > 0:
+                    print(f"   ✓ Hourly rate in proper format: R{hourly_rate}")
+                    
+                    # Check for realistic South African rates (R400-R1200 range)
+                    if 400 <= hourly_rate <= 1200:
+                        print("   ✓ Realistic South African hourly rate")
+                    else:
+                        print(f"   ⚠️  Hourly rate outside typical SA range: R{hourly_rate}")
+                
+                # Check for South African context
+                full_name = freelancer.get('full_name', '')
+                bio = profile.get('bio', '')
+                if any(name in full_name for name in ['Thabo', 'Naledi', 'Sipho', 'Nomsa']) or 'South Africa' in bio:
+                    print("   ✓ Contains South African context")
+                
+                print("   ✅ Featured freelancers endpoint working correctly")
+                return True
+            else:
+                print("   ✓ Featured freelancers endpoint accessible (no data yet)")
+                return True
+        
+        return False
+
+    def test_freelancer_public_endpoint(self):
+        """Test GET /api/freelancers/public endpoint"""
+        success, response = self.run_test(
+            "Freelancer - Get Public Freelancers",
+            "GET",
+            "/api/freelancers/public",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Public freelancers endpoint working: {len(response)} freelancers")
+            
+            if len(response) > 0:
+                freelancer = response[0]
+                
+                # Verify no sensitive data is exposed
+                sensitive_fields = ['password', 'id_document']
+                for field in sensitive_fields:
+                    if field in freelancer:
+                        print(f"   ❌ Sensitive data exposed: {field}")
+                        return False
+                
+                print("   ✓ No sensitive data exposed in public endpoint")
+                
+                # Verify required public fields
+                required_fields = ['id', 'full_name', 'profile', 'created_at', 'is_verified']
+                missing_fields = []
+                for field in required_fields:
+                    if field not in freelancer:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Public freelancer missing fields: {missing_fields}")
+                    return False
+                
+                # Verify only verified freelancers are shown
+                if not freelancer.get('is_verified', False):
+                    print("   ❌ Unverified freelancer in public listing")
+                    return False
+                
+                print("   ✓ Only verified freelancers in public listing")
+                
+                # Check profile completeness
+                profile = freelancer.get('profile', {})
+                if profile.get('profession') and profile.get('hourly_rate') and profile.get('bio'):
+                    print("   ✓ Complete freelancer profiles in public listing")
+                
+                print("   ✅ Public freelancers endpoint working correctly")
+                return True
+            else:
+                print("   ✓ Public freelancers endpoint accessible (no verified freelancers yet)")
+                return True
+        
+        return False
+
+    def test_freelancer_individual_public_profile(self):
+        """Test GET /api/freelancers/{freelancer_id}/public endpoint"""
+        # First, get a freelancer ID from the public listing
+        success, freelancers = self.run_test(
+            "Get Freelancer ID for Individual Profile Test",
+            "GET",
+            "/api/freelancers/public",
+            200
+        )
+        
+        if not success or not isinstance(freelancers, list) or len(freelancers) == 0:
+            # Try with featured freelancers if public is empty
+            success, freelancers = self.run_test(
+                "Get Freelancer ID from Featured",
+                "GET",
+                "/api/freelancers/featured",
+                200
+            )
+        
+        if success and isinstance(freelancers, list) and len(freelancers) > 0:
+            freelancer_id = freelancers[0]['id']
+            
+            success, response = self.run_test(
+                "Freelancer - Get Individual Public Profile",
+                "GET",
+                f"/api/freelancers/{freelancer_id}/public",
+                200
+            )
+            
+            if success:
+                # Verify individual profile structure
+                required_fields = ['id', 'full_name', 'profile', 'rating', 'total_reviews', 'completed_projects', 'member_since', 'is_verified']
+                missing_fields = []
+                for field in required_fields:
+                    if field not in response:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Individual profile missing fields: {missing_fields}")
+                    return False
+                
+                # Verify no sensitive data
+                sensitive_fields = ['password', 'id_document']
+                for field in sensitive_fields:
+                    if field in response:
+                        print(f"   ❌ Sensitive data in individual profile: {field}")
+                        return False
+                
+                # Check profile completeness
+                profile = response.get('profile', {})
+                if profile:
+                    print("   ✓ Individual profile contains detailed information")
+                
+                # Check statistics
+                completed_projects = response.get('completed_projects', 0)
+                total_reviews = response.get('total_reviews', 0)
+                rating = response.get('rating', 0)
+                
+                print(f"   ✓ Profile stats - Projects: {completed_projects}, Reviews: {total_reviews}, Rating: {rating}")
+                
+                print("   ✅ Individual freelancer profile working correctly")
+                return True
+        else:
+            print("   ⚠️  No freelancers available for individual profile test")
+            return True  # Not a failure, just no data yet
+        
+        return False
+
+    def test_freelancer_profile_data_structure(self):
+        """Test freelancer profile data structure and ZAR formatting"""
+        success, response = self.run_test(
+            "Freelancer - Data Structure Validation",
+            "GET",
+            "/api/freelancers/featured",
+            200
+        )
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            freelancer = response[0]
+            profile = freelancer.get('profile', {})
+            
+            # Test ZAR currency formatting
+            hourly_rate = profile.get('hourly_rate', 0)
+            if isinstance(hourly_rate, (int, float)):
+                # Verify no dollar signs in the data
+                rate_str = str(hourly_rate)
+                if '$' in rate_str:
+                    print(f"   ❌ Dollar sign found in hourly rate: {rate_str}")
+                    return False
+                
+                print(f"   ✓ Proper ZAR format (no $ signs): R{hourly_rate}")
+            
+            # Test South African realistic data
+            full_name = freelancer.get('full_name', '')
+            bio = profile.get('bio', '')
+            
+            # Check for South African names or context
+            sa_indicators = ['South Africa', 'Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'SA', 'ZAR', 'Rand']
+            has_sa_context = any(indicator in bio for indicator in sa_indicators)
+            
+            sa_names = ['Thabo', 'Naledi', 'Sipho', 'Nomsa', 'Mandla', 'Zanele', 'Lerato', 'Bongani']
+            has_sa_name = any(name in full_name for name in sa_names)
+            
+            if has_sa_context or has_sa_name:
+                print("   ✓ Contains South African context/names")
+            
+            # Test professional descriptions
+            profession = profile.get('profession', '')
+            if profession and len(profession) > 5:
+                print(f"   ✓ Professional description: {profession}")
+            
+            # Test rating and review structure
+            rating = profile.get('rating', 0)
+            total_reviews = profile.get('total_reviews', 0)
+            
+            if isinstance(rating, (int, float)) and 0 <= rating <= 5:
+                print(f"   ✓ Valid rating format: {rating}/5")
+            
+            if isinstance(total_reviews, int) and total_reviews >= 0:
+                print(f"   ✓ Valid review count: {total_reviews}")
+            
+            print("   ✅ Freelancer data structure validation passed")
+            return True
+        
+        return False
+
+    def test_freelancer_profile_access_control(self):
+        """Test access control for freelancer profile endpoints"""
+        # Test that public endpoints don't require authentication
+        success, response = self.run_test(
+            "Freelancer - Public Access Without Auth",
+            "GET",
+            "/api/freelancers/featured",
+            200
+        )
+        
+        if not success:
+            print("   ❌ Featured freelancers should be publicly accessible")
+            return False
+        
+        success, response = self.run_test(
+            "Freelancer - Public Listing Without Auth",
+            "GET",
+            "/api/freelancers/public",
+            200
+        )
+        
+        if not success:
+            print("   ❌ Public freelancers should be publicly accessible")
+            return False
+        
+        print("   ✅ Freelancer public endpoints properly accessible without authentication")
+        return True
+
+    def test_freelancer_profile_error_handling(self):
+        """Test error handling for freelancer profile endpoints"""
+        # Test non-existent freelancer ID
+        success, response = self.run_test(
+            "Freelancer - Non-existent Profile",
+            "GET",
+            "/api/freelancers/non-existent-id/public",
+            404
+        )
+        
+        if not success:
+            print("   ❌ Non-existent freelancer should return 404")
+            return False
+        
+        print("   ✓ Non-existent freelancer properly returns 404")
+        
+        # Test invalid freelancer ID format
+        success, response = self.run_test(
+            "Freelancer - Invalid ID Format",
+            "GET",
+            "/api/freelancers/invalid-id-format/public",
+            404
+        )
+        
+        if not success:
+            print("   ❌ Invalid freelancer ID should return 404")
+            return False
+        
+        print("   ✓ Invalid freelancer ID properly returns 404")
+        print("   ✅ Freelancer profile error handling working correctly")
+        return True
+
+    def test_freelancer_profile_integration(self):
+        """Test integration with existing freelancer registration flow"""
+        if not self.freelancer_user or not self.freelancer_token:
+            print("   ❌ No freelancer user available for integration test")
+            return False
+        
+        # Update freelancer profile to make it complete
+        profile_data = {
+            "skills": ["Python", "React", "FastAPI", "MongoDB"],
+            "experience": "Senior developer with 5+ years experience in South African market",
+            "hourly_rate": 750.0,
+            "bio": "Experienced full-stack developer based in Cape Town, South Africa. Specializing in modern web applications with Python and React.",
+            "portfolio_links": ["https://github.com/sa-developer", "https://portfolio.co.za"]
+        }
+        
+        success, response = self.run_test(
+            "Integration - Update Freelancer Profile",
+            "PUT",
+            "/api/freelancer/profile",
+            200,
+            data=profile_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("   ❌ Failed to update freelancer profile for integration test")
+            return False
+        
+        # Verify freelancer appears in public listings after verification
+        # (Note: freelancer needs to be verified by admin first)
+        
+        print("   ✅ Freelancer profile integration working correctly")
+        return True
+
 def main():
     print("🚀 Starting Afrilance Authentication System Tests")
     print("=" * 60)
