@@ -3054,6 +3054,26 @@ def main():
             except Exception as e:
                 print(f"❌ {test_name} - Exception: {str(e)}")
         
+        # Add Freelancer Profile Endpoints Tests
+        print("\n👥 FREELANCER PROFILE ENDPOINTS TESTS")
+        print("=" * 60)
+        
+        freelancer_profile_tests = [
+            ("Freelancer Featured Endpoint", tester.test_freelancer_featured_endpoint),
+            ("Freelancer Public Endpoint", tester.test_freelancer_public_endpoint),
+            ("Freelancer Individual Public Profile", tester.test_freelancer_individual_public_profile),
+            ("Freelancer Profile Data Structure", tester.test_freelancer_profile_data_structure),
+            ("Freelancer Profile Access Control", tester.test_freelancer_profile_access_control),
+            ("Freelancer Profile Error Handling", tester.test_freelancer_profile_error_handling),
+            ("Freelancer Profile Integration", tester.test_freelancer_profile_integration),
+        ]
+        
+        for test_name, test_func in freelancer_profile_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
         # Add Wallet System Tests
         print("\n💰 WALLET SYSTEM TESTS")
         print("=" * 60)
