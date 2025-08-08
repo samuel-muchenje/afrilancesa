@@ -62,45 +62,72 @@ const featuredFreelancers = [
   {
     name: "Thabo Mthembu",
     profession: "Full-Stack Developer",
-    image: "https://images.unsplash.com/photo-1622295023576-e4fb6e9e8ba2",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     rating: 4.9,
-    tagline: "I build fast, scalable web apps",
-    price: "R500",
+    tagline: "Building scalable web applications for South African startups and enterprises",
+    price: "R850",
     reviews: 127
   },
   {
-    name: "Nomsa Dlamini",
-    profession: "Digital Marketing Expert",
-    image: "https://images.unsplash.com/photo-1623013736455-1b8d79cc0b5f",
+    name: "Naledi Motaung", 
+    profession: "Digital Marketing Specialist",
+    image: "https://images.unsplash.com/photo-1494790108755-2616b9c76f36?w=150&h=150&fit=crop&crop=face",
     rating: 4.8,
-    tagline: "Grow your business online",
-    price: "R350",
+    tagline: "Driving growth through strategic digital campaigns across African markets",
+    price: "R650",
     reviews: 98
   },
   {
-    name: "Sipho Ngubane",
+    name: "Sipho Ndlovu",
     profession: "Construction Project Manager",
-    image: "https://images.unsplash.com/photo-1489514354504-1653aa90e34e",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
     rating: 4.9,
-    tagline: "Quality builds, on time delivery",
-    price: "R800",
+    tagline: "Managing large-scale construction projects across Gauteng and KwaZulu-Natal",
+    price: "R1200",
     reviews: 156
   },
   {
-    name: "Keabetswe Mokoena",
-    profession: "Graphic Designer",
-    image: "https://images.unsplash.com/photo-1628682814461-c4461c974211",
+    name: "Kgomotso Tladi",
+    profession: "Graphic Designer & Brand Strategist",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
     rating: 4.7,
-    tagline: "Creative designs that convert",
-    price: "R300",
+    tagline: "Creating compelling visual identities for South African businesses",
+    price: "R550",
     reviews: 89
   },
   {
-    name: "Lindiwe Zulu",
-    profession: "Healthcare Consultant",
-    image: "https://images.unsplash.com/photo-1666887360476-7eaa054d1abd",
+    name: "Mandla Zulu",
+    profession: "Mobile App Developer",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
     rating: 4.9,
-    tagline: "Professional healthcare advice",
+    tagline: "Developing innovative mobile solutions for African entrepreneurs",
+    price: "R950",
+    reviews: 143
+  },
+  {
+    name: "Refilwe Molekane",
+    profession: "UX/UI Designer",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    rating: 4.8,
+    tagline: "Designing user-centered experiences for the South African digital landscape",
+    price: "R750",
+    reviews: 112
+  },
+  {
+    name: "Bongani Mahlangu",
+    profession: "Financial Consultant",
+    image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=150&h=150&fit=crop&crop=face",
+    rating: 4.8,
+    tagline: "Providing strategic financial advice to SMEs across South Africa",
+    price: "R900",
+    reviews: 174
+  },
+  {
+    name: "Nomsa Dlamini",
+    profession: "Content Writer & Editor",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+    rating: 4.7,
+    tagline: "Crafting authentic African stories for global and local audiences",
     price: "R450",
     reviews: 203
   }
