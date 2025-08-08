@@ -171,6 +171,56 @@ const ModernLanding = ({
   loading 
 }) => {
   const [ctaBarVisible, setCtaBarVisible] = useState(false); // Start hidden by default
+  const [featuredFreelancers, setFeaturedFreelancers] = useState([]);
+  const [loadingFreelancers, setLoadingFreelancers] = useState(true);
+  
+  const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  
+  // Fetch featured freelancers on component mount
+  useEffect(() => {
+    fetchFeaturedFreelancers();
+  }, []);
+  
+  const fetchFeaturedFreelancers = async () => {
+    try {
+      setLoadingFreelancers(true);
+      const response = await fetch(`${API_BASE}/api/freelancers/featured`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch featured freelancers');
+      }
+      
+      const data = await response.json();
+      setFeaturedFreelancers(data);
+      
+    } catch (error) {
+      console.error('Error fetching featured freelancers:', error);
+      // Fallback to static data if API fails
+      setFeaturedFreelancers([
+        {
+          id: "fallback-1",
+          full_name: "Thabo Mthembu", 
+          profile: {
+            profession: "Full-Stack Developer",
+            hourly_rate: 850,
+            bio: "Building scalable web applications for South African startups and enterprises",
+            rating: 4.9,
+            total_reviews: 127,
+            profile_image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+          }
+        }
+      ]);
+    } finally {
+      setLoadingFreelancers(false);
+    }
+  };
+  
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR'
+    }).format(amount);
+  };
   return (
     <div className="modern-landing">
       {/* Navigation */}
