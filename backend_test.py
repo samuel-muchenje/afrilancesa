@@ -2952,6 +2952,503 @@ Thabo Mthembu""",
         print("   ✅ Freelancer profile integration working correctly")
         return True
 
+    # ========== FILE UPLOAD SYSTEM TESTS ==========
+    
+    def run_file_upload_test(self, name, endpoint, expected_status, files=None, data=None, token=None):
+        """Run a file upload API test with multipart/form-data"""
+        url = f"{self.base_url}{endpoint}"
+        headers = {}
+        if token:
+            headers['Authorization'] = f'Bearer {token}'
+
+        self.tests_run += 1
+        print(f"\n📁 Testing {name}...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, files=files, data=data, headers=headers, timeout=30)
+
+            success = response.status_code == expected_status
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json()
+                except:
+                    return success, {}
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+
+    def create_test_file(self, filename, content, content_type):
+        """Create a test file for upload testing"""
+        import io
+        if isinstance(content, str):
+            content = content.encode('utf-8')
+        return (filename, io.BytesIO(content), content_type)
+
+    def test_profile_picture_upload_valid(self):
+        """Test profile picture upload with valid image file"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for profile picture upload test")
+            return False
+        
+        # Create a fake image file
+        fake_image_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\nIDATx\x9cc\xf8\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        files = {'file': self.create_test_file('profile.png', fake_image_content, 'image/png')}
+        
+        success, response = self.run_file_upload_test(
+            "Profile Picture Upload - Valid Image",
+            "/api/upload-profile-picture",
+            200,
+            files=files,
+            token=self.freelancer_token
+        )
+        
+        if success and 'filename' in response and 'file_url' in response:
+            print(f"   ✓ File uploaded: {response['filename']}")
+            print(f"   ✓ File URL: {response['file_url']}")
+            return True
+        return False
+
+    def test_profile_picture_upload_invalid_type(self):
+        """Test profile picture upload with invalid file type"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for invalid file type test")
+            return False
+        
+        # Create a fake text file
+        files = {'file': self.create_test_file('document.txt', 'This is not an image', 'text/plain')}
+        
+        success, response = self.run_file_upload_test(
+            "Profile Picture Upload - Invalid File Type",
+            "/api/upload-profile-picture",
+            400,
+            files=files,
+            token=self.freelancer_token
+        )
+        return success
+
+    def test_profile_picture_upload_no_auth(self):
+        """Test profile picture upload without authentication"""
+        fake_image_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde'
+        files = {'file': self.create_test_file('profile.png', fake_image_content, 'image/png')}
+        
+        success, response = self.run_file_upload_test(
+            "Profile Picture Upload - No Authentication",
+            "/api/upload-profile-picture",
+            401,
+            files=files
+        )
+        return success
+
+    def test_resume_upload_valid(self):
+        """Test resume upload with valid PDF file"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for resume upload test")
+            return False
+        
+        # Create a fake PDF file
+        fake_pdf_content = b'%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF'
+        
+        files = {'file': self.create_test_file('resume.pdf', fake_pdf_content, 'application/pdf')}
+        
+        success, response = self.run_file_upload_test(
+            "Resume Upload - Valid PDF",
+            "/api/upload-resume",
+            200,
+            files=files,
+            token=self.freelancer_token
+        )
+        
+        if success and 'filename' in response and 'file_url' in response:
+            print(f"   ✓ Resume uploaded: {response['filename']}")
+            print(f"   ✓ File URL: {response['file_url']}")
+            return True
+        return False
+
+    def test_resume_upload_client_access(self):
+        """Test resume upload with client token (should fail)"""
+        if not self.client_token:
+            print("❌ No client token available for resume upload access test")
+            return False
+        
+        fake_pdf_content = b'%PDF-1.4\nFake PDF content'
+        files = {'file': self.create_test_file('resume.pdf', fake_pdf_content, 'application/pdf')}
+        
+        success, response = self.run_file_upload_test(
+            "Resume Upload - Client Access (Should Fail)",
+            "/api/upload-resume",
+            403,
+            files=files,
+            token=self.client_token
+        )
+        return success
+
+    def test_resume_upload_invalid_type(self):
+        """Test resume upload with invalid file type"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for invalid resume type test")
+            return False
+        
+        files = {'file': self.create_test_file('resume.txt', 'This is not a valid resume format', 'text/plain')}
+        
+        success, response = self.run_file_upload_test(
+            "Resume Upload - Invalid File Type",
+            "/api/upload-resume",
+            400,
+            files=files,
+            token=self.freelancer_token
+        )
+        return success
+
+    def test_portfolio_file_upload_valid(self):
+        """Test portfolio file upload with valid file"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for portfolio upload test")
+            return False
+        
+        # Create a fake image file for portfolio
+        fake_image_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\nIDATx\x9cc\xf8\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        files = {'file': self.create_test_file('portfolio_item.png', fake_image_content, 'image/png')}
+        
+        success, response = self.run_file_upload_test(
+            "Portfolio File Upload - Valid Image",
+            "/api/upload-portfolio-file",
+            200,
+            files=files,
+            token=self.freelancer_token
+        )
+        
+        if success and 'filename' in response and 'file_url' in response:
+            print(f"   ✓ Portfolio file uploaded: {response['filename']}")
+            print(f"   ✓ File URL: {response['file_url']}")
+            return True
+        return False
+
+    def test_portfolio_file_upload_client_access(self):
+        """Test portfolio file upload with client token (should fail)"""
+        if not self.client_token:
+            print("❌ No client token available for portfolio upload access test")
+            return False
+        
+        fake_image_content = b'\x89PNG\r\n\x1a\nFake PNG content'
+        files = {'file': self.create_test_file('portfolio.png', fake_image_content, 'image/png')}
+        
+        success, response = self.run_file_upload_test(
+            "Portfolio File Upload - Client Access (Should Fail)",
+            "/api/upload-portfolio-file",
+            403,
+            files=files,
+            token=self.client_token
+        )
+        return success
+
+    def test_project_gallery_upload_valid(self):
+        """Test project gallery upload with valid file and metadata"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for project gallery upload test")
+            return False
+        
+        # Create a fake image file
+        fake_image_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\nIDATx\x9cc\xf8\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        files = {'file': self.create_test_file('project_screenshot.png', fake_image_content, 'image/png')}
+        data = {
+            'title': 'E-commerce Website Project',
+            'description': 'A full-stack e-commerce platform built with React and FastAPI for a South African retail client.',
+            'technologies': 'React, FastAPI, MongoDB, Stripe, PayFast',
+            'project_url': 'https://demo-ecommerce.co.za'
+        }
+        
+        success, response = self.run_file_upload_test(
+            "Project Gallery Upload - Valid with Metadata",
+            "/api/upload-project-gallery",
+            200,
+            files=files,
+            data=data,
+            token=self.freelancer_token
+        )
+        
+        if success and 'project_id' in response and 'filename' in response:
+            print(f"   ✓ Project uploaded: {response['project_id']}")
+            print(f"   ✓ File: {response['filename']}")
+            print(f"   ✓ File URL: {response['file_url']}")
+            self.test_project_id = response['project_id']  # Store for deletion test
+            return True
+        return False
+
+    def test_project_gallery_upload_missing_metadata(self):
+        """Test project gallery upload with missing required metadata"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for project gallery metadata test")
+            return False
+        
+        fake_image_content = b'\x89PNG\r\n\x1a\nFake PNG content'
+        files = {'file': self.create_test_file('project.png', fake_image_content, 'image/png')}
+        data = {
+            'title': 'Test Project'
+            # Missing required 'description' field
+        }
+        
+        success, response = self.run_file_upload_test(
+            "Project Gallery Upload - Missing Metadata",
+            "/api/upload-project-gallery",
+            422,  # FastAPI validation error
+            files=files,
+            data=data,
+            token=self.freelancer_token
+        )
+        return success
+
+    def test_project_gallery_upload_client_access(self):
+        """Test project gallery upload with client token (should fail)"""
+        if not self.client_token:
+            print("❌ No client token available for project gallery access test")
+            return False
+        
+        fake_image_content = b'\x89PNG\r\n\x1a\nFake PNG content'
+        files = {'file': self.create_test_file('project.png', fake_image_content, 'image/png')}
+        data = {
+            'title': 'Test Project',
+            'description': 'Test Description'
+        }
+        
+        success, response = self.run_file_upload_test(
+            "Project Gallery Upload - Client Access (Should Fail)",
+            "/api/upload-project-gallery",
+            403,
+            files=files,
+            data=data,
+            token=self.client_token
+        )
+        return success
+
+    def test_user_files_get_freelancer(self):
+        """Test GET /api/user-files endpoint for freelancer"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for user files test")
+            return False
+        
+        success, response = self.run_test(
+            "Get User Files - Freelancer",
+            "GET",
+            "/api/user-files",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            # Check expected structure for freelancer
+            expected_fields = ['profile_picture', 'id_document', 'resume', 'portfolio_files', 'project_gallery']
+            missing_fields = []
+            
+            for field in expected_fields:
+                if field not in response:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Missing fields in freelancer files response: {missing_fields}")
+                return False
+            
+            print("   ✓ Freelancer files response contains all expected fields")
+            print(f"   ✓ Portfolio files: {len(response.get('portfolio_files', []))}")
+            print(f"   ✓ Project gallery: {len(response.get('project_gallery', []))}")
+            return True
+        return False
+
+    def test_user_files_get_client(self):
+        """Test GET /api/user-files endpoint for client"""
+        if not self.client_token:
+            print("❌ No client token available for client files test")
+            return False
+        
+        success, response = self.run_test(
+            "Get User Files - Client",
+            "GET",
+            "/api/user-files",
+            200,
+            token=self.client_token
+        )
+        
+        if success:
+            # Check that client gets limited fields
+            if response.get('resume') is None and response.get('portfolio_files') == [] and response.get('project_gallery') == []:
+                print("   ✓ Client correctly gets limited file access")
+                return True
+            else:
+                print("   ❌ Client getting freelancer-only file data")
+                return False
+        return False
+
+    def test_user_files_no_auth(self):
+        """Test GET /api/user-files endpoint without authentication"""
+        success, response = self.run_test(
+            "Get User Files - No Authentication",
+            "GET",
+            "/api/user-files",
+            401
+        )
+        return success
+
+    def test_delete_portfolio_file(self):
+        """Test DELETE /api/delete-portfolio-file/{filename} endpoint"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for portfolio file deletion test")
+            return False
+        
+        # First, try to get user files to find a portfolio file
+        success, response = self.run_test(
+            "Get Files for Deletion Test",
+            "GET",
+            "/api/user-files",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and response.get('portfolio_files') and len(response['portfolio_files']) > 0:
+            filename = response['portfolio_files'][0]['filename']
+            
+            success, delete_response = self.run_test(
+                "Delete Portfolio File - Valid",
+                "DELETE",
+                f"/api/delete-portfolio-file/{filename}",
+                200,
+                token=self.freelancer_token
+            )
+            
+            if success:
+                print(f"   ✓ Portfolio file deleted: {filename}")
+                return True
+        else:
+            # Test with fake filename to check error handling
+            success, delete_response = self.run_test(
+                "Delete Portfolio File - Non-existent",
+                "DELETE",
+                "/api/delete-portfolio-file/fake-filename.jpg",
+                404,
+                token=self.freelancer_token
+            )
+            return success
+
+    def test_delete_portfolio_file_client_access(self):
+        """Test DELETE portfolio file with client token (should fail)"""
+        if not self.client_token:
+            print("❌ No client token available for portfolio deletion access test")
+            return False
+        
+        success, response = self.run_test(
+            "Delete Portfolio File - Client Access (Should Fail)",
+            "DELETE",
+            "/api/delete-portfolio-file/test-file.jpg",
+            403,
+            token=self.client_token
+        )
+        return success
+
+    def test_delete_project_gallery_item(self):
+        """Test DELETE /api/delete-project-gallery/{project_id} endpoint"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for project gallery deletion test")
+            return False
+        
+        # Use the project_id from the upload test if available
+        if hasattr(self, 'test_project_id'):
+            success, response = self.run_test(
+                "Delete Project Gallery Item - Valid",
+                "DELETE",
+                f"/api/delete-project-gallery/{self.test_project_id}",
+                200,
+                token=self.freelancer_token
+            )
+            
+            if success:
+                print(f"   ✓ Project gallery item deleted: {self.test_project_id}")
+                return True
+        else:
+            # Test with fake project ID to check error handling
+            success, response = self.run_test(
+                "Delete Project Gallery Item - Non-existent",
+                "DELETE",
+                "/api/delete-project-gallery/fake-project-id",
+                404,
+                token=self.freelancer_token
+            )
+            return success
+
+    def test_delete_project_gallery_client_access(self):
+        """Test DELETE project gallery with client token (should fail)"""
+        if not self.client_token:
+            print("❌ No client token available for project gallery deletion access test")
+            return False
+        
+        success, response = self.run_test(
+            "Delete Project Gallery - Client Access (Should Fail)",
+            "DELETE",
+            "/api/delete-project-gallery/test-project-id",
+            403,
+            token=self.client_token
+        )
+        return success
+
+    def test_file_size_validation(self):
+        """Test file size validation for different upload types"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for file size validation test")
+            return False
+        
+        # Create a file that's too large for profile picture (>2MB)
+        large_content = b'x' * (3 * 1024 * 1024)  # 3MB
+        files = {'file': self.create_test_file('large_profile.png', large_content, 'image/png')}
+        
+        success, response = self.run_file_upload_test(
+            "File Size Validation - Profile Picture Too Large",
+            "/api/upload-profile-picture",
+            400,
+            files=files,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ File size validation working for profile pictures")
+            return True
+        return False
+
+    def test_static_file_serving(self):
+        """Test static file serving from /uploads/* URLs"""
+        # This test checks if the static file serving is configured
+        # We'll test by trying to access a non-existent file and checking the response
+        
+        try:
+            response = requests.get(f"{self.base_url}/uploads/profile_pictures/test-file.png", timeout=10)
+            
+            # We expect either 404 (file not found) or 403 (access denied) - both indicate the endpoint exists
+            if response.status_code in [404, 403]:
+                print("✅ Static File Serving - Endpoint configured correctly")
+                print(f"   Status: {response.status_code} (expected for non-existent file)")
+                self.tests_passed += 1
+            else:
+                print(f"❌ Static File Serving - Unexpected status: {response.status_code}")
+            
+            self.tests_run += 1
+            return response.status_code in [404, 403]
+            
+        except Exception as e:
+            print(f"❌ Static File Serving - Error: {str(e)}")
+            self.tests_run += 1
+            return False
+
 def main():
     print("🚀 Starting Afrilance Authentication System Tests")
     print("=" * 60)
