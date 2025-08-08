@@ -413,8 +413,8 @@ function App() {
     setCurrentPage('dashboard');
   };
 
-  // Modern Landing Page
-  if (currentPage === 'landing') {
+  // Modern Landing Page - Default when not logged in or explicitly set to 'landing'
+  if (currentPage === 'landing' || (!user && !['login', 'register', 'freelancer-profile-setup', 'post-job', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works'].includes(currentPage))) {
     return (
       <ModernLanding 
         setCurrentPage={handleLandingNavigation}
