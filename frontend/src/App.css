@@ -50,6 +50,14 @@ body {
   }
 }
 
+/* Large Screen Logo Constraints */
+@media (min-width: 1200px) {
+  .afrilance-logo {
+    height: 45px;  /* Slightly larger for big screens but still controlled */
+    max-height: 60px;  /* Hard limit to prevent oversizing */
+  }
+}
+
 /* Modern Landing Page Styles */
 .modern-landing {
   background-color: #000000;
