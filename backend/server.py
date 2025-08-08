@@ -206,6 +206,19 @@ async def register_user(user: UserRegister):
         user_data["can_bid"] = True
     
     db.users.insert_one(user_data)
+    
+    # Auto-create wallet for freelancers
+    if user.role == "freelancer":
+        wallet_data = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_data["id"],
+            "available_balance": 0.0,
+            "escrow_balance": 0.0,
+            "transaction_history": [],
+            "created_at": datetime.utcnow()
+        }
+        db.wallets.insert_one(wallet_data)
+    
     token = create_token(user_data["id"], user_data["role"])
     
     return {
