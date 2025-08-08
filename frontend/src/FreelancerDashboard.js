@@ -68,6 +68,8 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
       fetchAvailableJobs();
     } else if (currentTab === 'applications') {
       fetchMyApplications();
+    } else if (currentTab === 'wallet') {
+      fetchWallet();
     }
   }, [currentTab]);
 
