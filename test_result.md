@@ -282,15 +282,18 @@ frontend:
 
   - task: "Modern Landing Page"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/ModernLanding.js"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: "Dark-themed landing page with African branding, dynamic sections, testimonials"
+      - working: false
+        agent: "user"
+        comment: "USER REPORTED: Navigation links not working - 'For Clients', 'How It Works', 'Browse Freelancers', 'Support', 'Enterprise' links are not functional. Fixed navigation routing issues ('/' vs 'landing') and created missing Enterprise page, but navigation appears to still have issues with React state management."
 
 metadata:
   created_by: "main_agent"
