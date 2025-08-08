@@ -300,11 +300,7 @@ const ModernLanding = ({
                         <Button
                           size="sm"
                           className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold btn-glow"
-                          onClick={() => {
-                            setAuthMode('register');
-                            setAuthForm(prev => ({ ...prev, role: 'client' }));
-                            setCurrentPage('auth');
-                          }}
+                          onClick={() => setCurrentPage('register')}
                         >
                           View Profile
                         </Button>
