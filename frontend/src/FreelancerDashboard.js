@@ -1251,6 +1251,176 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
 
+        {/* Wallet Tab */}
+        {currentTab === 'wallet' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">My Wallet</h2>
+              <Button 
+                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                onClick={() => setShowWithdrawDialog(true)}
+                disabled={!wallet || wallet.available_balance <= 0}
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Withdraw Funds
+              </Button>
+            </div>
+
+            {walletLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto"></div>
+                <p className="text-gray-400 mt-2">Loading wallet...</p>
+              </div>
+            ) : wallet ? (
+              <>
+                {/* Wallet Balance Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="dashboard-card">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-gray-400 text-sm">Available Balance</p>
+                          <p className="text-3xl font-bold text-green-400">{formatCurrency(wallet.available_balance)}</p>
+                          <p className="text-gray-300 text-sm">Ready to withdraw</p>
+                        </div>
+                        <Wallet className="w-10 h-10 text-green-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="dashboard-card">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-gray-400 text-sm">Escrow Balance</p>
+                          <p className="text-3xl font-bold text-yellow-400">{formatCurrency(wallet.escrow_balance)}</p>
+                          <p className="text-gray-300 text-sm">Held for active projects</p>
+                        </div>
+                        <CreditCard className="w-10 h-10 text-yellow-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Total Wallet Value */}
+                <Card className="dashboard-card">
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Total Wallet Value</p>
+                      <p className="text-4xl font-bold text-white">
+                        {formatCurrency(wallet.available_balance + wallet.escrow_balance)}
+                      </p>
+                      <p className="text-gray-300 text-sm mt-2">
+                        Available + Escrow balances
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Transaction History */}
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <History className="w-5 h-5 mr-2" />
+                      Transaction History
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {transactionHistory.length === 0 ? (
+                      <div className="text-center py-8">
+                        <History className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <p className="text-gray-400">No transactions yet</p>
+                        <p className="text-gray-500 text-sm">Your transaction history will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {transactionHistory.slice(0, 10).map((transaction, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-700">
+                            <div className="flex items-center space-x-3">
+                              {getTransactionIcon(transaction.type)}
+                              <div>
+                                <p className="text-white font-medium">{transaction.note}</p>
+                                <p className="text-gray-400 text-sm">
+                                  {new Date(transaction.date).toLocaleDateString('en-ZA', {
+                                    year: 'numeric',
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-semibold ${getTransactionColor(transaction.type)}`}>
+                                {transaction.type === 'Credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                              </p>
+                              <p className="text-gray-400 text-sm capitalize">{transaction.type}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card className="dashboard-card">
+                <CardContent className="p-6 text-center">
+                  <Wallet className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">Wallet not available</p>
+                  <p className="text-gray-500 text-sm">Only freelancers have wallets</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Withdraw Dialog */}
+            <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
+              <DialogContent className="bg-gray-800 border-gray-700">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Withdraw Funds</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-gray-400 text-sm mb-2">Available Balance</p>
+                    <p className="text-2xl font-bold text-green-400">
+                      {wallet && formatCurrency(wallet.available_balance)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">Withdrawal Amount</label>
+                    <Input
+                      type="number"
+                      placeholder="Enter amount in ZAR"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                      max={wallet?.available_balance || 0}
+                      min="0"
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowWithdrawDialog(false)}
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleWithdraw}
+                      className="flex-1 bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold"
+                      disabled={!withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                    >
+                      Withdraw
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+
         {/* Earnings Tab */}
         {currentTab === 'earnings' && (
           <div className="space-y-6">
