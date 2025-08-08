@@ -562,6 +562,25 @@ async def accept_proposal(job_id: str, acceptance: ProposalAcceptance, current_u
         # Insert contract
         db.contracts.insert_one(contract_data)
         
+        # Handle escrow: Move funds to escrow balance for freelancer
+        freelancer_wallet = db.wallets.find_one({"user_id": acceptance.freelancer_id})
+        if freelancer_wallet:
+            # Update wallet escrow balance and add transaction
+            transaction = {
+                "type": "Credit",
+                "amount": acceptance.bid_amount,
+                "date": datetime.utcnow(),
+                "note": f"Funds held in escrow for job: {job.get('title', 'Untitled Job')}"
+            }
+            
+            db.wallets.update_one(
+                {"user_id": acceptance.freelancer_id},
+                {
+                    "$inc": {"escrow_balance": acceptance.bid_amount},
+                    "$push": {"transaction_history": transaction}
+                }
+            )
+        
         # Update job status to 'assigned'
         db.jobs.update_one(
             {"id": job_id},
