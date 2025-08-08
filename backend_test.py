@@ -2717,6 +2717,32 @@ def main():
             except Exception as e:
                 print(f"❌ {test_name} - Exception: {str(e)}")
         
+        # Add Wallet System Tests
+        print("\n💰 WALLET SYSTEM TESTS")
+        print("=" * 60)
+        
+        wallet_tests = [
+            ("Wallet Auto-Creation for Freelancer", tester.test_wallet_auto_creation_freelancer),
+            ("Wallet NOT Created for Client", tester.test_wallet_not_created_for_client),
+            ("Wallet NOT Created for Admin", tester.test_wallet_not_created_for_admin),
+            ("Contract-Escrow Integration", tester.test_contract_escrow_integration),
+            ("Wallet GET Endpoint", tester.test_wallet_get_endpoint),
+            ("Wallet Withdraw - Sufficient Balance", tester.test_wallet_withdraw_sufficient_balance),
+            ("Wallet Withdraw - Insufficient Balance", tester.test_wallet_withdraw_insufficient_balance),
+            ("Wallet Withdraw - Invalid Amount", tester.test_wallet_withdraw_invalid_amount),
+            ("Wallet Withdraw - Non-Freelancer Access", tester.test_wallet_withdraw_non_freelancer),
+            ("Escrow Release - Admin Access", tester.test_wallet_release_escrow_admin),
+            ("Escrow Release - Non-Admin Access", tester.test_wallet_release_escrow_non_admin),
+            ("Wallet Transaction History", tester.test_wallet_transaction_history),
+            ("Wallet Role-Based Access Control", tester.test_wallet_role_based_access),
+        ]
+        
+        for test_name, test_func in wallet_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
         for test_name, test_func in additional_tests:
             try:
                 test_func()
