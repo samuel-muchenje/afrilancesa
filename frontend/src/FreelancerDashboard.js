@@ -1450,6 +1450,72 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
 
+        {/* Files Tab */}
+        {currentTab === 'files' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">File Management</h2>
+              <div className="flex items-center space-x-2">
+                <FolderOpen className="w-5 h-5 text-yellow-400" />
+                <span className="text-gray-300">Upload & manage your files</span>
+              </div>
+            </div>
+
+            {/* File Upload Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Profile Picture Upload */}
+              <FileUpload
+                uploadType="profile-picture"
+                title="Profile Picture"
+                accept="image/*"
+                maxSize={2}
+                onUploadSuccess={handleFileUploadSuccess}
+              />
+
+              {/* Resume Upload */}
+              <FileUpload
+                uploadType="resume"
+                title="Resume/CV"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
+                onUploadSuccess={handleFileUploadSuccess}
+              />
+
+              {/* Portfolio File Upload */}
+              <FileUpload
+                uploadType="portfolio"
+                title="Portfolio Files"
+                accept="image/*,video/*,.pdf,.zip"
+                maxSize={50}
+                onUploadSuccess={handleFileUploadSuccess}
+              />
+
+              {/* Project Gallery Upload */}
+              <FileUpload
+                uploadType="project-gallery"
+                title="Project Gallery"
+                accept="image/*,video/*"
+                maxSize={25}
+                onUploadSuccess={handleFileUploadSuccess}
+                showMetadata={true}
+              />
+            </div>
+
+            {/* File Gallery */}
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <File className="w-5 h-5 mr-2" />
+                Your Files
+              </h3>
+              <FileGallery 
+                user={user} 
+                onFileDeleted={() => setFileUploadRefresh(prev => prev + 1)}
+                key={fileUploadRefresh}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Earnings Tab */}
         {currentTab === 'earnings' && (
           <div className="space-y-6">
