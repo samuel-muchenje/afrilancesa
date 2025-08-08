@@ -55,6 +55,13 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
     bid_amount: ''
   });
 
+  // Wallet management states
+  const [wallet, setWallet] = useState(null);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+  const [transactionHistory, setTransactionHistory] = useState([]);
+
   useEffect(() => {
     fetchDashboardData();
     if (currentTab === 'jobs') {
