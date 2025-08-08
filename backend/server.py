@@ -165,22 +165,81 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-def send_email(to_email: str, subject: str, body: str):
+def send_email(to_email: str, subject: str, body: str) -> bool:
+    """Send email using SMTP"""
     try:
         msg = MIMEMultipart()
         msg['From'] = EMAIL_USER
         msg['To'] = to_email
         msg['Subject'] = subject
+        
         msg.attach(MIMEText(body, 'html'))
         
         server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
         server.login(EMAIL_USER, EMAIL_PASS)
-        server.send_message(msg)
+        text = msg.as_string()
+        server.sendmail(EMAIL_USER, to_email, text)
         server.quit()
         return True
     except Exception as e:
-        print(f"Email error: {e}")
+        print(f"Failed to send email: {e}")
         return False
+
+def validate_file_upload(file: UploadFile, allowed_types: List[str], max_size_mb: int = 5) -> None:
+    """Validate uploaded file type and size"""
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}"
+        )
+    
+    # Note: We'll check size when reading the file content
+
+def generate_unique_filename(user_id: str, file_type: str, original_filename: str) -> str:
+    """Generate unique filename for uploaded file"""
+    file_extension = original_filename.split(".")[-1] if "." in original_filename else "bin"
+    timestamp = int(datetime.utcnow().timestamp())
+    unique_id = uuid.uuid4().hex[:8]
+    return f"{user_id}_{file_type}_{timestamp}_{unique_id}.{file_extension}"
+
+async def save_uploaded_file(
+    file: UploadFile, 
+    user_id: str, 
+    file_type: str, 
+    subdirectory: str,
+    allowed_types: List[str],
+    max_size_mb: int = 5
+) -> dict:
+    """Save uploaded file and return file info"""
+    
+    # Validate file type
+    validate_file_upload(file, allowed_types, max_size_mb)
+    
+    # Read and validate file size
+    file_content = await file.read()
+    max_size = max_size_mb * 1024 * 1024  # Convert MB to bytes
+    if len(file_content) > max_size:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File too large. Maximum size is {max_size_mb}MB"
+        )
+    
+    # Generate unique filename and path
+    unique_filename = generate_unique_filename(user_id, file_type, file.filename)
+    file_path = UPLOAD_DIR / subdirectory / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        buffer.write(file_content)
+    
+    return {
+        "filename": unique_filename,
+        "original_name": file.filename,
+        "file_path": str(file_path),
+        "content_type": file.content_type,
+        "file_size": len(file_content),
+        "uploaded_at": datetime.utcnow()
+    }
 
 # API Routes
 @app.get("/api/health")
