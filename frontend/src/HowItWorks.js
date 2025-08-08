@@ -68,7 +68,7 @@ const HowItWorks = ({ onNavigate }) => {
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
-              onClick={() => onNavigate('/')}
+              onClick={() => onNavigate('landing')}
               className="text-gray-300 hover:text-white hover:bg-gray-800"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
