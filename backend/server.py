@@ -2370,6 +2370,320 @@ async def get_transaction_history(current_user = Depends(verify_token)):
         "total_transactions": len(transactions)
     }
 
+# Admin Dashboard Enhanced Endpoints
+
+@app.get("/api/admin/stats")
+async def get_admin_stats(current_user = Depends(verify_token)):
+    """Get comprehensive admin dashboard statistics"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        # User stats
+        total_users = db.users.count_documents({})
+        total_freelancers = db.users.count_documents({"role": "freelancer"})
+        total_clients = db.users.count_documents({"role": "client"})
+        verified_freelancers = db.users.count_documents({"role": "freelancer", "is_verified": True})
+        
+        # Job stats
+        total_jobs = db.jobs.count_documents({})
+        active_jobs = db.jobs.count_documents({"status": "active"})
+        completed_jobs = db.jobs.count_documents({"status": "completed"})
+        
+        # Contract stats
+        total_contracts = db.contracts.count_documents({})
+        in_progress_contracts = db.contracts.count_documents({"status": "In Progress"})
+        completed_contracts = db.contracts.count_documents({"status": "Completed"})
+        
+        # Revenue stats from wallets
+        pipeline = [
+            {"$group": {
+                "_id": None,
+                "total_available": {"$sum": "$available_balance"},
+                "total_escrow": {"$sum": "$escrow_balance"}
+            }}
+        ]
+        wallet_stats = list(db.wallets.aggregate(pipeline))
+        total_revenue = (wallet_stats[0]["total_available"] + wallet_stats[0]["total_escrow"]) if wallet_stats else 0
+        
+        # Support ticket stats
+        open_tickets = db.support_tickets.count_documents({"status": "open"})
+        total_tickets = db.support_tickets.count_documents({})
+        
+        # Growth metrics (last 30 days)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        new_users_month = db.users.count_documents({"created_at": {"$gte": thirty_days_ago}})
+        new_jobs_month = db.jobs.count_documents({"created_at": {"$gte": thirty_days_ago}})
+        
+        return {
+            "users": {
+                "total": total_users,
+                "freelancers": total_freelancers,
+                "clients": total_clients,
+                "verified_freelancers": verified_freelancers,
+                "new_this_month": new_users_month
+            },
+            "jobs": {
+                "total": total_jobs,
+                "active": active_jobs,
+                "completed": completed_jobs,
+                "new_this_month": new_jobs_month
+            },
+            "contracts": {
+                "total": total_contracts,
+                "in_progress": in_progress_contracts,
+                "completed": completed_contracts
+            },
+            "revenue": {
+                "total_platform": total_revenue,
+                "available_balance": wallet_stats[0]["total_available"] if wallet_stats else 0,
+                "escrow_balance": wallet_stats[0]["total_escrow"] if wallet_stats else 0
+            },
+            "support": {
+                "open_tickets": open_tickets,
+                "total_tickets": total_tickets
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching admin stats: {str(e)}")
+
+@app.get("/api/admin/users/search")
+async def search_users(
+    q: str = "",
+    role: str = "all",
+    status: str = "all",
+    skip: int = 0,
+    limit: int = 20,
+    current_user = Depends(verify_token)
+):
+    """Search and filter users for admin management"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Build search query
+    query = {}
+    
+    # Text search
+    if q:
+        query["$or"] = [
+            {"full_name": {"$regex": q, "$options": "i"}},
+            {"email": {"$regex": q, "$options": "i"}}
+        ]
+    
+    # Role filter
+    if role != "all":
+        query["role"] = role
+    
+    # Status filter
+    if status == "verified":
+        query["is_verified"] = True
+    elif status == "unverified":
+        query["is_verified"] = {"$ne": True}
+    elif status == "suspended":
+        query["is_suspended"] = True
+    
+    # Get users with pagination
+    users = list(db.users.find(
+        query, 
+        {"password": 0}  # Exclude password
+    ).skip(skip).limit(limit).sort("created_at", -1))
+    
+    # Get total count
+    total = db.users.count_documents(query)
+    
+    # Convert ObjectId to string
+    for user in users:
+        user["_id"] = str(user["_id"])
+    
+    return {
+        "users": users,
+        "total": total,
+        "page": skip // limit + 1,
+        "pages": (total + limit - 1) // limit
+    }
+
+@app.patch("/api/admin/users/{user_id}/suspend")
+async def suspend_user(user_id: str, current_user = Depends(verify_token)):
+    """Suspend or unsuspend a user"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    user = db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Toggle suspension status
+    is_suspended = not user.get("is_suspended", False)
+    
+    db.users.update_one(
+        {"id": user_id},
+        {
+            "$set": {
+                "is_suspended": is_suspended,
+                "suspended_at": datetime.utcnow() if is_suspended else None,
+                "suspended_by": current_user["user_id"] if is_suspended else None
+            }
+        }
+    )
+    
+    return {
+        "message": f"User {'suspended' if is_suspended else 'unsuspended'} successfully",
+        "user_id": user_id,
+        "is_suspended": is_suspended
+    }
+
+@app.get("/api/admin/support-tickets")
+async def get_support_tickets(
+    status: str = "all",
+    skip: int = 0,
+    limit: int = 20,
+    current_user = Depends(verify_token)
+):
+    """Get support tickets for admin management"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Build query
+    query = {}
+    if status != "all":
+        query["status"] = status
+    
+    # Get tickets with pagination
+    tickets = list(db.support_tickets.find(query)
+                  .skip(skip).limit(limit)
+                  .sort("created_at", -1))
+    
+    total = db.support_tickets.count_documents(query)
+    
+    # Convert ObjectId to string
+    for ticket in tickets:
+        ticket["_id"] = str(ticket["_id"])
+    
+    return {
+        "tickets": tickets,
+        "total": total,
+        "page": skip // limit + 1,
+        "pages": (total + limit - 1) // limit
+    }
+
+@app.patch("/api/admin/support-tickets/{ticket_id}")
+async def update_support_ticket(
+    ticket_id: str,
+    update_data: dict,
+    current_user = Depends(verify_token)
+):
+    """Update a support ticket (status, assigned admin, reply)"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    ticket = db.support_tickets.find_one({"id": ticket_id})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Support ticket not found")
+    
+    # Prepare update data
+    update_fields = {}
+    if "status" in update_data:
+        update_fields["status"] = update_data["status"]
+        if update_data["status"] == "resolved":
+            update_fields["resolved_at"] = datetime.utcnow()
+            update_fields["resolved_by"] = current_user["user_id"]
+    
+    if "assigned_to" in update_data:
+        update_fields["assigned_to"] = update_data["assigned_to"]
+        update_fields["assigned_at"] = datetime.utcnow()
+    
+    if "admin_reply" in update_data:
+        reply = {
+            "message": update_data["admin_reply"],
+            "replied_by": current_user["user_id"],
+            "replied_at": datetime.utcnow()
+        }
+        update_fields["admin_replies"] = ticket.get("admin_replies", []) + [reply]
+        update_fields["last_reply_at"] = datetime.utcnow()
+    
+    update_fields["updated_at"] = datetime.utcnow()
+    
+    # Update ticket
+    db.support_tickets.update_one(
+        {"id": ticket_id},
+        {"$set": update_fields}
+    )
+    
+    return {
+        "message": "Support ticket updated successfully",
+        "ticket_id": ticket_id
+    }
+
+@app.get("/api/admin/activity-log")
+async def get_activity_log(
+    skip: int = 0,
+    limit: int = 50,
+    current_user = Depends(verify_token)
+):
+    """Get platform activity log for admin monitoring"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Create activity log from recent database changes
+    activities = []
+    
+    # Recent user registrations
+    recent_users = list(db.users.find(
+        {}, {"full_name": 1, "role": 1, "created_at": 1, "is_verified": 1}
+    ).sort("created_at", -1).limit(10))
+    
+    for user in recent_users:
+        activities.append({
+            "type": "user_registration",
+            "description": f"New {user['role']} registered: {user['full_name']}",
+            "timestamp": user["created_at"],
+            "user_id": user.get("id"),
+            "icon": "user-plus"
+        })
+    
+    # Recent job posts
+    recent_jobs = list(db.jobs.find(
+        {}, {"title": 1, "created_at": 1, "client_id": 1}
+    ).sort("created_at", -1).limit(10))
+    
+    for job in recent_jobs:
+        client = db.users.find_one({"id": job["client_id"]}, {"full_name": 1})
+        activities.append({
+            "type": "job_posted",
+            "description": f"New job posted: {job['title']} by {client['full_name'] if client else 'Unknown'}",
+            "timestamp": job["created_at"],
+            "job_id": job.get("id"),
+            "icon": "briefcase"
+        })
+    
+    # Recent support tickets
+    recent_tickets = list(db.support_tickets.find(
+        {}, {"name": 1, "created_at": 1, "status": 1}
+    ).sort("created_at", -1).limit(5))
+    
+    for ticket in recent_tickets:
+        activities.append({
+            "type": "support_ticket",
+            "description": f"Support ticket from {ticket['name']} - Status: {ticket['status']}",
+            "timestamp": ticket["created_at"],
+            "ticket_id": ticket.get("id"),
+            "icon": "help-circle"
+        })
+    
+    # Sort all activities by timestamp
+    activities.sort(key=lambda x: x["timestamp"], reverse=True)
+    
+    # Apply pagination
+    total = len(activities)
+    activities = activities[skip:skip + limit]
+    
+    return {
+        "activities": activities,
+        "total": total,
+        "page": skip // limit + 1,
+        "pages": (total + limit - 1) // limit if total > 0 else 1
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
