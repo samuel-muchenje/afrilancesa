@@ -203,17 +203,29 @@ class JWTFocusedTester:
             print("❌ FAILURE: Invalid token not properly rejected")
             return False
         
-        # Test 8: No Token Rejection - Ensure requests without tokens are rejected (401 status)
+        # Test 8: No Token Rejection - Ensure requests without tokens are rejected (401 or 403 status)
         success, no_token_response = self.run_test(
             "No Token Rejection - Test Request Without Token",
             "GET",
             "/api/profile",
-            401
+            403  # FastAPI HTTPBearer returns 403 for missing tokens, which is correct
         )
         
         if not success:
-            print("❌ FAILURE: Request without token not properly rejected")
-            return False
+            # Try 401 as alternative (some implementations return 401)
+            success, no_token_response = self.run_test(
+                "No Token Rejection - Test Request Without Token (Alternative)",
+                "GET",
+                "/api/profile",
+                401
+            )
+            if not success:
+                print("❌ FAILURE: Request without token not properly rejected (expected 401 or 403)")
+                return False
+            else:
+                print("   ✓ Alternative 401 response accepted")
+        else:
+            print("   ✓ Standard 403 response for missing token (correct behavior)")
         
         # Test 9: Token Expiration Handling - Test token expiration scenarios
         # For this test, we'll verify the token has proper expiration field
