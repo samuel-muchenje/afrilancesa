@@ -368,7 +368,7 @@ function App() {
   const handleRegisterNavigation = (destination) => {
     if (destination === 'login') {
       setCurrentPage('login');
-    } else if (destination === 'landing') {
+    } else if (destination === 'landing' || destination === '/') {
       setCurrentPage('landing');
     }
   };
