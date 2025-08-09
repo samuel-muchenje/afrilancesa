@@ -605,6 +605,196 @@ async def get_messages(job_id: str, current_user = Depends(verify_token)):
     
     return messages
 
+# ENHANCED MESSAGING SYSTEM - Direct Messages & Conversations
+
+@app.post("/api/direct-messages")
+async def send_direct_message(message: DirectMessage, current_user = Depends(verify_token)):
+    """Send a direct message between users (not tied to a specific job)"""
+    
+    # Check if receiver exists
+    receiver = db.users.find_one({"id": message.receiver_id})
+    if not receiver:
+        raise HTTPException(status_code=404, detail="Receiver not found")
+    
+    # Don't allow messaging yourself
+    if message.receiver_id == current_user["user_id"]:
+        raise HTTPException(status_code=400, detail="Cannot send message to yourself")
+    
+    # Create conversation ID based on participants (consistent ordering)
+    participants = sorted([current_user["user_id"], message.receiver_id])
+    conversation_id = f"dm_{participants[0]}_{participants[1]}"
+    
+    message_data = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "sender_id": current_user["user_id"],
+        "receiver_id": message.receiver_id,
+        "content": message.content,
+        "message_type": "direct",
+        "created_at": datetime.utcnow(),
+        "read": False,
+        "job_id": None  # No job association for direct messages
+    }
+    
+    db.messages.insert_one(message_data)
+    
+    # Update or create conversation metadata
+    conversation_data = {
+        "conversation_id": conversation_id,
+        "participants": participants,
+        "last_message_id": message_data["id"],
+        "last_message_at": datetime.utcnow(),
+        "last_message_content": message.content[:100],  # Preview
+        "updated_at": datetime.utcnow()
+    }
+    
+    # Upsert conversation
+    db.conversations.update_one(
+        {"conversation_id": conversation_id},
+        {"$set": conversation_data},
+        upsert=True
+    )
+    
+    return {"message": "Direct message sent successfully", "conversation_id": conversation_id}
+
+@app.get("/api/conversations")
+async def get_conversations(current_user = Depends(verify_token)):
+    """Get all conversations for the current user"""
+    
+    conversations = list(db.conversations.find({
+        "participants": current_user["user_id"]
+    }).sort("last_message_at", -1))
+    
+    # Enrich conversations with participant info and unread counts
+    for conv in conversations:
+        # Get other participant's info
+        other_participant_id = next(
+            (p for p in conv["participants"] if p != current_user["user_id"]), 
+            None
+        )
+        
+        if other_participant_id:
+            other_user = db.users.find_one({"id": other_participant_id})
+            if other_user:
+                conv["other_participant"] = {
+                    "id": other_user["id"],
+                    "full_name": other_user["full_name"],
+                    "role": other_user["role"],
+                    "is_verified": other_user.get("is_verified", False),
+                    "profile_picture": other_user.get("profile_picture")
+                }
+        
+        # Count unread messages
+        unread_count = db.messages.count_documents({
+            "conversation_id": conv["conversation_id"],
+            "receiver_id": current_user["user_id"],
+            "read": False
+        })
+        conv["unread_count"] = unread_count
+        
+        # Convert ObjectId to string
+        conv["_id"] = str(conv["_id"])
+    
+    return conversations
+
+@app.get("/api/conversations/{conversation_id}/messages")
+async def get_conversation_messages(conversation_id: str, current_user = Depends(verify_token)):
+    """Get all messages in a specific conversation"""
+    
+    # Verify user is participant in this conversation
+    conversation = db.conversations.find_one({
+        "conversation_id": conversation_id,
+        "participants": current_user["user_id"]
+    })
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+    
+    # Get messages for this conversation
+    messages = list(db.messages.find({
+        "conversation_id": conversation_id
+    }).sort("created_at", 1))
+    
+    # Enrich messages with sender info
+    for msg in messages:
+        sender = db.users.find_one({"id": msg["sender_id"]})
+        if sender:
+            msg["sender_name"] = sender["full_name"]
+            msg["sender_role"] = sender["role"]
+            msg["sender_profile_picture"] = sender.get("profile_picture")
+        msg["_id"] = str(msg["_id"])
+    
+    # Mark messages as read for the current user
+    db.messages.update_many(
+        {
+            "conversation_id": conversation_id,
+            "receiver_id": current_user["user_id"],
+            "read": False
+        },
+        {"$set": {"read": True, "read_at": datetime.utcnow()}}
+    )
+    
+    return messages
+
+@app.post("/api/conversations/{conversation_id}/mark-read")
+async def mark_conversation_read(conversation_id: str, current_user = Depends(verify_token)):
+    """Mark all messages in a conversation as read for the current user"""
+    
+    # Verify user is participant
+    conversation = db.conversations.find_one({
+        "conversation_id": conversation_id,
+        "participants": current_user["user_id"]
+    })
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+    
+    # Mark all unread messages as read
+    result = db.messages.update_many(
+        {
+            "conversation_id": conversation_id,
+            "receiver_id": current_user["user_id"],
+            "read": False
+        },
+        {"$set": {"read": True, "read_at": datetime.utcnow()}}
+    )
+    
+    return {"message": f"Marked {result.modified_count} messages as read"}
+
+@app.get("/api/conversations/search")
+async def search_users_for_messaging(query: str, current_user = Depends(verify_token)):
+    """Search users to start a new conversation"""
+    
+    if len(query.strip()) < 2:
+        raise HTTPException(status_code=400, detail="Query must be at least 2 characters")
+    
+    # Search users by name or email (exclude current user)
+    search_regex = {"$regex": query, "$options": "i"}
+    users = list(db.users.find({
+        "$and": [
+            {"id": {"$ne": current_user["user_id"]}},  # Exclude current user
+            {
+                "$or": [
+                    {"full_name": search_regex},
+                    {"email": search_regex}
+                ]
+            }
+        ]
+    }, {
+        "id": 1,
+        "full_name": 1,
+        "email": 1,
+        "role": 1,
+        "is_verified": 1,
+        "profile_picture": 1
+    }).limit(20))
+    
+    # Convert ObjectId to string
+    for user in users:
+        user["_id"] = str(user["_id"])
+    
+    return users
+
 # CONTRACTS MANAGEMENT
 @app.post("/api/jobs/{job_id}/accept-proposal")
 async def accept_proposal(job_id: str, acceptance: ProposalAcceptance, current_user = Depends(verify_token)):
