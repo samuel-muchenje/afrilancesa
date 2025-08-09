@@ -434,7 +434,7 @@ function App() {
 
   // Modern Landing Page - Default when not logged in or explicitly set to 'landing'
   console.log('Current page state in App.js:', currentPage);
-  if (currentPage === 'landing' || (!user && !['login', 'register', 'freelancer-profile-setup', 'post-job', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press'].includes(currentPage))) {
+  if (currentPage === 'landing' || (!user && !['login', 'register', 'freelancer-profile-setup', 'post-job', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press'].includes(currentPage) && !currentPage.startsWith('browse-freelancers'))) {
     return (
       <ModernLanding 
         setCurrentPage={handleLandingNavigation}
