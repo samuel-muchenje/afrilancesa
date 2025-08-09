@@ -1367,6 +1367,8 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
         {currentTab === 'users' && renderUsersTab()}
         {currentTab === 'support' && renderSupportTab()}
         {currentTab === 'activity' && renderActivityTab()}
+        {currentTab === 'revenue' && renderRevenueTab()}
+        {currentTab === 'search' && renderAdvancedSearchTab()}
       </div>
     </div>
   );
