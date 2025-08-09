@@ -4018,6 +4018,16 @@ def main():
         except Exception as e:
             print(f"❌ {test_name} - Exception: {str(e)}")
     
+    # Run dedicated admin login system tests
+    print("\n🔐 DEDICATED ADMIN LOGIN SYSTEM TESTS")
+    print("=" * 60)
+    
+    for test_name, test_func in admin_login_tests:
+        try:
+            test_func()
+        except Exception as e:
+            print(f"❌ {test_name} - Exception: {str(e)}")
+    
     # Print authentication test results
     print("\n" + "=" * 60)
     print(f"🔐 AUTHENTICATION TEST RESULTS")
