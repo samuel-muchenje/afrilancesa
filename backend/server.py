@@ -154,6 +154,55 @@ class WithdrawalRequest(BaseModel):
 class EscrowRelease(BaseModel):
     contract_id: str
 
+# Phase 2: Advanced Features Models
+
+class ReviewCreate(BaseModel):
+    contract_id: str
+    rating: int  # 1-5 stars
+    review_text: str
+    reviewer_type: str  # "client" or "freelancer"
+
+class ReviewUpdate(BaseModel):
+    review_id: str
+    rating: Optional[int] = None
+    review_text: Optional[str] = None
+    is_approved: Optional[bool] = None
+
+class AdvancedJobSearch(BaseModel):
+    query: Optional[str] = ""
+    category: Optional[str] = "all"
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    budget_type: Optional[str] = "all"  # fixed, hourly, all
+    skills: Optional[List[str]] = []
+    location: Optional[str] = ""
+    posted_within_days: Optional[int] = None
+    sort_by: Optional[str] = "created_at"  # created_at, budget, title
+    sort_order: Optional[str] = "desc"  # asc, desc
+
+class AdvancedUserSearch(BaseModel):
+    query: Optional[str] = ""
+    role: Optional[str] = "all"
+    skills: Optional[List[str]] = []
+    min_rating: Optional[float] = None
+    max_hourly_rate: Optional[float] = None
+    min_hourly_rate: Optional[float] = None
+    location: Optional[str] = ""
+    is_verified: Optional[bool] = None
+    availability: Optional[str] = "all"
+    sort_by: Optional[str] = "rating"  # rating, hourly_rate, created_at
+    sort_order: Optional[str] = "desc"
+
+class TransactionSearch(BaseModel):
+    user_id: Optional[str] = None
+    transaction_type: Optional[str] = "all"  # Credit, Debit, all
+    amount_min: Optional[float] = None
+    amount_max: Optional[float] = None
+    date_from: Optional[str] = None  # ISO date string
+    date_to: Optional[str] = None
+    sort_by: Optional[str] = "date"
+    sort_order: Optional[str] = "desc"
+
 # Utility functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
