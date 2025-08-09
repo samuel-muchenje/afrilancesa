@@ -2402,6 +2402,43 @@ async def get_freelancer_public_profile(freelancer_id: str):
         "is_verified": freelancer["is_verified"]
     }
 
+@app.get("/api/categories/counts")
+async def get_category_counts():
+    """Get freelancer counts for each category (public endpoint)"""
+    try:
+        # Define the categories that match the frontend
+        categories = [
+            'ICT & Digital Work', 'Construction & Engineering', 'Creative & Media',
+            'Admin & Office Support', 'Health & Wellness', 'Beauty & Fashion',
+            'Logistics & Labour', 'Education & Training', 'Home & Domestic Services'
+        ]
+        
+        category_counts = {}
+        
+        # Count verified freelancers for each category
+        for category in categories:
+            count = db.users.count_documents({
+                "role": "freelancer",
+                "is_verified": True,
+                "profile.category": category
+            })
+            category_counts[category] = count
+        
+        # Also get total counts
+        total_freelancers = db.users.count_documents({"role": "freelancer", "is_verified": True})
+        total_jobs = db.jobs.count_documents({"status": "active"})
+        
+        return {
+            "category_counts": category_counts,
+            "totals": {
+                "freelancers": total_freelancers,
+                "active_jobs": total_jobs
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching category counts: {str(e)}")
+
 @app.get("/api/wallet/transactions")
 async def get_transaction_history(current_user = Depends(verify_token)):
     """Get transaction history for current user's wallet"""
