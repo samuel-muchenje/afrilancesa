@@ -146,6 +146,19 @@ const ModernLanding = ({
       currency: 'ZAR'
     }).format(amount);
   };
+
+  // Handle search functionality
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setCurrentPage(`browse-freelancers-search-${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
   return (
     <div className="modern-landing">
       {/* Animated Background Effects */}
