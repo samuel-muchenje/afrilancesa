@@ -717,10 +717,10 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('about')} className="footer-link text-left">About</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Careers</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Contact</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Press</button></li>
+                <li><button onClick={() => setCurrentPage('about')} className="footer-link text-left hover:text-yellow-400 transition-colors">About</button></li>
+                <li><button onClick={() => setCurrentPage('careers')} className="footer-link text-left hover:text-yellow-400 transition-colors">Careers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left hover:text-yellow-400 transition-colors">Contact</button></li>
+                <li><button onClick={() => setCurrentPage('press')} className="footer-link text-left hover:text-yellow-400 transition-colors">Press</button></li>
               </ul>
             </div>
             
