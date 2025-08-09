@@ -177,7 +177,17 @@ const Register = ({ onNavigate, onRegisterSuccess }) => {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-400', 'bg-green-500'];
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative">
+      {/* Animated Background Effects */}
+      <div className="floating-shapes">
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+        <div className="floating-shape shape-3"></div>
+        <div className="floating-shape shape-4"></div>
+        <div className="floating-shape shape-5"></div>
+        <div className="floating-shape shape-6"></div>
+      </div>
+      
       {/* Back Navigation */}
       <div className="fixed top-4 left-4 z-50">
         <Button
