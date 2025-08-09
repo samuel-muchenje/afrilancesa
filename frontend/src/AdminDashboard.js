@@ -25,8 +25,10 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
   });
   
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [pendingAdmins, setPendingAdmins] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState('dashboard');
 
   useEffect(() => {
     fetchAdminData();
