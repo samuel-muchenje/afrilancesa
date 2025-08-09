@@ -160,6 +160,13 @@ const ModernLanding = ({
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
+              onClick={() => setCurrentPage('for-freelancers')}
+              className="text-white hover:text-yellow-400 hover:bg-white/5"
+            >
+              For Freelancers
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => setCurrentPage('login')}
               className="text-white hover:text-yellow-400 hover:bg-white/5"
             >
