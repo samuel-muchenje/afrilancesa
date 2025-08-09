@@ -218,7 +218,7 @@ const ModernLanding = ({
             <h1 className="hero-title text-white mb-8">
               SA'S FIRST<br />
               FREE LANCING<br />
-              <span className="text-gradient">TOOL</span>
+              <span className="gradient-text">TOOL</span>
             </h1>
             <p className="text-xl text-gray-300 mb-10 leading-relaxed">
               The future of freelance in Africa starts here
