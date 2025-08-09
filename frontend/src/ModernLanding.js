@@ -703,10 +703,10 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">For Freelancers</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left">How to Join</button></li>
-                <li><button onClick={() => setCurrentPage('register')} className="footer-link text-left">Create a Profile</button></li>
-                <li><button onClick={() => setCurrentPage('register')} className="footer-link text-left">Get Verified</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left">Success Stories</button></li>
+                <li><button onClick={() => setCurrentPage('how-to-join')} className="footer-link text-left">How to Join</button></li>
+                <li><button onClick={() => setCurrentPage('create-profile')} className="footer-link text-left">Create a Profile</button></li>
+                <li><button onClick={() => setCurrentPage('get-verified')} className="footer-link text-left">Get Verified</button></li>
+                <li><button onClick={() => setCurrentPage('success-stories')} className="footer-link text-left">Success Stories</button></li>
               </ul>
             </div>
             
