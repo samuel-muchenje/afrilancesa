@@ -154,10 +154,11 @@ const ModernLanding = ({
     }
   };
 
-  const handleSearchKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+  // Handle category navigation
+  const handleCategoryClick = (category) => {
+    const categorySlug = category.title.replace(/\s+/g, '-').toLowerCase();
+    console.log('Category clicked:', category.title, 'Slug:', categorySlug);
+    setCurrentPage(`browse-freelancers-${categorySlug}`);
   };
   return (
     <div className="modern-landing">
