@@ -312,10 +312,7 @@ const ModernLanding = ({
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
-                onClick={() => {
-                  const params = { category: category.title };
-                  setCurrentPage({ page: 'browse-freelancers', params });
-                }}
+                onClick={() => setCurrentPage(`browse-freelancers-${category.title.replace(/\s+/g, '-').toLowerCase()}`)}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6 text-white">
