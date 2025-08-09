@@ -105,6 +105,7 @@ const ModernLanding = ({
   // Fetch featured freelancers on component mount
   useEffect(() => {
     fetchFeaturedFreelancers();
+    fetchCategoryCounts();
   }, []);
   
   const fetchFeaturedFreelancers = async () => {
@@ -138,6 +139,28 @@ const ModernLanding = ({
       ]);
     } finally {
       setLoadingFreelancers(false);
+    }
+  };
+
+  const fetchCategoryCounts = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/categories/counts`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch category counts');
+      }
+      
+      const data = await response.json();
+      setCategoryCounts(data.category_counts);
+      
+    } catch (error) {
+      console.error('Error fetching category counts:', error);
+      // Initialize with zeros if API fails
+      const defaultCounts = {};
+      categories.forEach(category => {
+        defaultCounts[category.title] = 0;
+      });
+      setCategoryCounts(defaultCounts);
     }
   };
   
