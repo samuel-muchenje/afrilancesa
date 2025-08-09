@@ -5417,6 +5417,50 @@ def main():
             except Exception as e:
                 print(f"❌ {test_name} - Exception: {str(e)}")
         
+        # Add Admin Dashboard Enhanced Endpoints Tests
+        print("\n🔧 ADMIN DASHBOARD ENHANCED ENDPOINTS TESTS")
+        print("=" * 60)
+        
+        admin_dashboard_tests = [
+            ("Admin Stats Endpoint", tester.test_admin_stats_endpoint),
+            ("Admin Stats Unauthorized", tester.test_admin_stats_unauthorized),
+            ("Admin Users Search Basic", tester.test_admin_users_search_basic),
+            ("Admin Users Search with Query", tester.test_admin_users_search_with_query),
+            ("Admin Users Search Role Filter", tester.test_admin_users_search_role_filter),
+            ("Admin Users Search Status Filter", tester.test_admin_users_search_status_filter),
+            ("Admin Users Search Pagination", tester.test_admin_users_search_pagination),
+            ("Admin Users Search Unauthorized", tester.test_admin_users_search_unauthorized),
+            ("Admin Suspend User", tester.test_admin_suspend_user),
+            ("Admin Unsuspend User", tester.test_admin_unsuspend_user),
+            ("Admin Suspend Non-existent User", tester.test_admin_suspend_nonexistent_user),
+            ("Admin Suspend Unauthorized", tester.test_admin_suspend_unauthorized),
+            ("Admin Support Tickets List", tester.test_admin_support_tickets_list),
+            ("Admin Support Tickets Status Filter", tester.test_admin_support_tickets_status_filter),
+            ("Admin Support Tickets Pagination", tester.test_admin_support_tickets_pagination),
+            ("Admin Support Tickets Unauthorized", tester.test_admin_support_tickets_unauthorized),
+            ("Admin Update Support Ticket Status", tester.test_admin_update_support_ticket_status),
+            ("Admin Update Support Ticket Assign", tester.test_admin_update_support_ticket_assign),
+            ("Admin Update Support Ticket Reply", tester.test_admin_update_support_ticket_reply),
+            ("Admin Update Support Ticket Non-existent", tester.test_admin_update_support_ticket_nonexistent),
+            ("Admin Update Support Ticket Unauthorized", tester.test_admin_update_support_ticket_unauthorized),
+            ("Admin Activity Log", tester.test_admin_activity_log),
+            ("Admin Activity Log Pagination", tester.test_admin_activity_log_pagination),
+            ("Admin Activity Log Unauthorized", tester.test_admin_activity_log_unauthorized),
+        ]
+        
+        admin_dashboard_tests_passed = 0
+        for test_name, test_func in admin_dashboard_tests:
+            try:
+                if test_func():
+                    admin_dashboard_tests_passed += 1
+                    print(f"✅ {test_name}")
+                else:
+                    print(f"❌ {test_name}")
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
+        print(f"\n🔧 ADMIN DASHBOARD RESULTS: {admin_dashboard_tests_passed}/{len(admin_dashboard_tests)} tests passed")
+        
         for test_name, test_func in additional_tests:
             try:
                 test_func()
