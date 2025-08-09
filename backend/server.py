@@ -1470,6 +1470,27 @@ async def verify_user(
         "verification_date": update_data["verification_date"]
     }
 
+@app.get("/api/user/verification-status")
+async def get_verification_status(current_user = Depends(verify_token)):
+    """Get current user's verification status"""
+    
+    user = db.users.find_one({"id": current_user["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    verification_info = {
+        "user_id": user["id"],
+        "verification_status": user.get("verification_status", "not_submitted"),
+        "is_verified": user.get("is_verified", False),
+        "document_submitted": user.get("document_submitted", False),
+        "verification_date": user.get("verification_date"),
+        "verification_reason": user.get("verification_reason", ""),
+        "id_document": user.get("id_document"),
+        "contact_email": "sam@afrilance.co.za"
+    }
+    
+    return verification_info
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
