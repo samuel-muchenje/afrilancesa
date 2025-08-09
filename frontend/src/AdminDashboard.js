@@ -18,6 +18,7 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     totalFreelancers: 0,
     totalClients: 0,
     pendingVerifications: 0,
+    pendingAdmins: 0,
     totalJobs: 0,
     activeJobs: 0,
     totalRevenue: 0,
