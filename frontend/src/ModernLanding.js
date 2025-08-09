@@ -364,7 +364,7 @@ const ModernLanding = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6 text-white">
                   <h3 className="text-xl font-bold mb-2">{category.title}</h3>
-                  <p className="text-yellow-400 text-sm">{category.count}</p>
+                  <p className="text-yellow-400 text-sm">{getCategoryDisplayCount(category.title)}</p>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
