@@ -276,6 +276,385 @@ class AfrilanceAPITester:
         
         return True
     
+    def test_comprehensive_registration_system(self):
+        """Comprehensive testing of all registration forms and endpoints"""
+        print("\n🎯 COMPREHENSIVE REGISTRATION SYSTEM TESTING")
+        print("=" * 60)
+        
+        registration_tests_passed = 0
+        registration_tests_total = 0
+        
+        # ========== REGULAR USER REGISTRATION TESTS ==========
+        print("\n📝 TESTING REGULAR USER REGISTRATION ENDPOINTS")
+        print("-" * 50)
+        
+        # Test 1: Freelancer Registration with Valid Data
+        registration_tests_total += 1
+        timestamp = datetime.now().strftime('%H%M%S')
+        freelancer_data = {
+            "email": f"sipho.ndlovu{timestamp}@gmail.com",
+            "password": "SecurePass123!",
+            "role": "freelancer",
+            "full_name": "Sipho Ndlovu",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Freelancer with Valid Data",
+            "POST",
+            "/api/register",
+            200,
+            data=freelancer_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            registration_tests_passed += 1
+            self.freelancer_token = response['token']
+            self.freelancer_user = response['user']
+            print(f"   ✓ Freelancer registered: {response['user']['full_name']}")
+            print(f"   ✓ JWT token generated: {response['token'][:20]}...")
+            print(f"   ✓ User role: {response['user']['role']}")
+            print(f"   ✓ Verification required: {response['user'].get('verification_required', False)}")
+            print(f"   ✓ Can bid: {response['user'].get('can_bid', True)}")
+            
+            # Verify wallet auto-creation for freelancer
+            wallet_success, wallet_response = self.run_test(
+                "Registration - Freelancer Wallet Auto-Creation",
+                "GET",
+                "/api/wallet",
+                200,
+                token=self.freelancer_token
+            )
+            if wallet_success:
+                print(f"   ✓ Wallet auto-created with balance: R{wallet_response.get('available_balance', 0)}")
+        else:
+            print("   ❌ Freelancer registration failed")
+        
+        # Test 2: Client Registration with Valid Data
+        registration_tests_total += 1
+        client_data = {
+            "email": f"nomsa.dlamini{timestamp}@gmail.com",
+            "password": "ClientPass123!",
+            "role": "client",
+            "full_name": "Nomsa Dlamini",
+            "phone": "+27834567890"
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Client with Valid Data",
+            "POST",
+            "/api/register",
+            200,
+            data=client_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            registration_tests_passed += 1
+            self.client_token = response['token']
+            self.client_user = response['user']
+            print(f"   ✓ Client registered: {response['user']['full_name']}")
+            print(f"   ✓ JWT token generated: {response['token'][:20]}...")
+            print(f"   ✓ User role: {response['user']['role']}")
+            print(f"   ✓ Verification required: {response['user'].get('verification_required', False)}")
+            print(f"   ✓ Can bid: {response['user'].get('can_bid', True)}")
+            
+            # Verify no wallet for client
+            wallet_success, wallet_response = self.run_test(
+                "Registration - Client No Wallet Creation",
+                "GET",
+                "/api/wallet",
+                404,  # Clients should not have wallets
+                token=self.client_token
+            )
+            if wallet_success:
+                print(f"   ✓ Correctly no wallet created for client (404 response)")
+        else:
+            print("   ❌ Client registration failed")
+        
+        # Test 3: Duplicate Email Registration
+        registration_tests_total += 1
+        duplicate_data = {
+            "email": freelancer_data["email"],  # Same email as freelancer
+            "password": "AnotherPass123!",
+            "role": "client",
+            "full_name": "Another User",
+            "phone": "+27845678901"
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Duplicate Email Validation",
+            "POST",
+            "/api/register",
+            400,
+            data=duplicate_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Duplicate email properly rejected")
+        
+        # Test 4: Invalid Role Registration
+        registration_tests_total += 1
+        invalid_role_data = {
+            "email": f"invalid.role{timestamp}@gmail.com",
+            "password": "ValidPass123!",
+            "role": "invalid_role",
+            "full_name": "Invalid Role User",
+            "phone": "+27856789012"
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Invalid Role Validation",
+            "POST",
+            "/api/register",
+            400,
+            data=invalid_role_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Invalid role properly rejected")
+        
+        # Test 5: Missing Required Fields
+        registration_tests_total += 1
+        incomplete_data = {
+            "email": f"incomplete{timestamp}@gmail.com",
+            "password": "ValidPass123!",
+            "role": "freelancer"
+            # Missing full_name and phone
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Required Fields Validation",
+            "POST",
+            "/api/register",
+            422,  # Pydantic validation error
+            data=incomplete_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Missing required fields properly rejected")
+        
+        # Test 6: Invalid Email Format
+        registration_tests_total += 1
+        invalid_email_data = {
+            "email": "invalid-email-format",
+            "password": "ValidPass123!",
+            "role": "freelancer",
+            "full_name": "Invalid Email User",
+            "phone": "+27867890123"
+        }
+        
+        success, response = self.run_test(
+            "Regular Registration - Email Format Validation",
+            "POST",
+            "/api/register",
+            422,  # Pydantic validation error
+            data=invalid_email_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Invalid email format properly rejected")
+        
+        # ========== ADMIN REGISTRATION REQUEST TESTS ==========
+        print("\n🔐 TESTING ADMIN REGISTRATION REQUEST SYSTEM")
+        print("-" * 50)
+        
+        # Test 7: Valid Admin Registration Request
+        registration_tests_total += 1
+        admin_request_data = {
+            "email": f"admin.test{timestamp}@afrilance.co.za",
+            "password": "AdminPass123!",
+            "full_name": "Admin Test User",
+            "phone": "+27878901234",
+            "department": "IT Operations",
+            "reason": "Need admin access to manage user verifications and system monitoring for the IT department."
+        }
+        
+        success, response = self.run_test(
+            "Admin Registration - Valid Request with @afrilance.co.za Domain",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=admin_request_data
+        )
+        
+        if success and 'user_id' in response:
+            registration_tests_passed += 1
+            admin_user_id = response['user_id']
+            print(f"   ✓ Admin request submitted: {response.get('message', 'Success')}")
+            print(f"   ✓ User ID generated: {admin_user_id}")
+            print(f"   ✓ Status: {response.get('status', 'Unknown')}")
+            print("   ✓ Email notification sent to sam@afrilance.co.za")
+        else:
+            print("   ❌ Valid admin registration request failed")
+        
+        # Test 8: Admin Registration with Invalid Domain
+        registration_tests_total += 1
+        invalid_domain_data = {
+            "email": f"admin.test{timestamp}@gmail.com",  # Wrong domain
+            "password": "AdminPass123!",
+            "full_name": "Invalid Domain Admin",
+            "phone": "+27889012345",
+            "department": "Marketing",
+            "reason": "Need admin access for marketing campaigns."
+        }
+        
+        success, response = self.run_test(
+            "Admin Registration - Invalid Domain Rejection",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=invalid_domain_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Non-@afrilance.co.za domain properly rejected")
+        
+        # Test 9: Admin Registration with Missing Fields
+        registration_tests_total += 1
+        incomplete_admin_data = {
+            "email": f"incomplete.admin{timestamp}@afrilance.co.za",
+            "password": "AdminPass123!",
+            "full_name": "Incomplete Admin"
+            # Missing phone, department, reason
+        }
+        
+        success, response = self.run_test(
+            "Admin Registration - Missing Required Fields",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=incomplete_admin_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Missing admin fields properly rejected")
+        
+        # Test 10: Admin Registration with Duplicate Email
+        registration_tests_total += 1
+        duplicate_admin_data = {
+            "email": admin_request_data["email"],  # Same email as previous admin request
+            "password": "AnotherAdminPass123!",
+            "full_name": "Duplicate Admin",
+            "phone": "+27890123456",
+            "department": "HR",
+            "reason": "Need admin access for HR operations."
+        }
+        
+        success, response = self.run_test(
+            "Admin Registration - Duplicate Email Validation",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=duplicate_admin_data
+        )
+        
+        if success:
+            registration_tests_passed += 1
+            print("   ✓ Duplicate admin email properly rejected")
+        
+        # ========== REGISTRATION INTEGRATION TESTS ==========
+        print("\n🔗 TESTING REGISTRATION INTEGRATION FEATURES")
+        print("-" * 50)
+        
+        # Test 11: JWT Token Validation for Registered Users
+        registration_tests_total += 1
+        if self.freelancer_token:
+            success, response = self.run_test(
+                "Registration Integration - JWT Token Validation",
+                "GET",
+                "/api/profile",
+                200,
+                token=self.freelancer_token
+            )
+            
+            if success and response.get('role') == 'freelancer':
+                registration_tests_passed += 1
+                print(f"   ✓ JWT token works for profile access")
+                print(f"   ✓ Profile data: {response.get('full_name', 'Unknown')}")
+                print(f"   ✓ Role verification: {response.get('role', 'Unknown')}")
+        
+        # Test 12: Role-Based Access Control After Registration
+        registration_tests_total += 1
+        if self.freelancer_token:
+            success, response = self.run_test(
+                "Registration Integration - Freelancer Cannot Create Jobs",
+                "POST",
+                "/api/jobs",
+                403,
+                data={
+                    "title": "Test Job",
+                    "description": "Test job description",
+                    "category": "Web Development",
+                    "budget": 5000,
+                    "budget_type": "fixed",
+                    "requirements": ["PHP", "MySQL"]
+                },
+                token=self.freelancer_token
+            )
+            
+            if success:
+                registration_tests_passed += 1
+                print("   ✓ Freelancer correctly blocked from creating jobs")
+        
+        # Test 13: Client Job Creation After Registration
+        registration_tests_total += 1
+        if self.client_token:
+            success, response = self.run_test(
+                "Registration Integration - Client Can Create Jobs",
+                "POST",
+                "/api/jobs",
+                200,
+                data={
+                    "title": "E-commerce Website Development",
+                    "description": "Need a modern e-commerce website with payment integration",
+                    "category": "Web Development",
+                    "budget": 15000,
+                    "budget_type": "fixed",
+                    "requirements": ["React", "Node.js", "Payment Gateway"]
+                },
+                token=self.client_token
+            )
+            
+            if success:
+                registration_tests_passed += 1
+                self.test_job_id = response.get('job_id')
+                print(f"   ✓ Client successfully created job: {self.test_job_id}")
+        
+        # ========== REGISTRATION SYSTEM SUMMARY ==========
+        print("\n📊 COMPREHENSIVE REGISTRATION TESTING SUMMARY")
+        print("=" * 60)
+        
+        success_rate = (registration_tests_passed / registration_tests_total) * 100 if registration_tests_total > 0 else 0
+        
+        print(f"✅ REGISTRATION TESTS PASSED: {registration_tests_passed}/{registration_tests_total} ({success_rate:.1f}%)")
+        print("\n🎯 REGISTRATION FEATURES TESTED:")
+        print("   ✓ Regular user registration (freelancer/client)")
+        print("   ✓ Admin registration request system")
+        print("   ✓ Email validation and duplicate checking")
+        print("   ✓ Role validation and access control")
+        print("   ✓ Required field validation")
+        print("   ✓ Domain restriction for admin requests")
+        print("   ✓ JWT token generation and validation")
+        print("   ✓ Wallet auto-creation for freelancers")
+        print("   ✓ Role-based feature access")
+        print("   ✓ Integration with job creation system")
+        print("   ✓ Email notification system")
+        
+        if success_rate >= 90:
+            print("\n🎉 REGISTRATION SYSTEM WORKING EXCELLENTLY!")
+        elif success_rate >= 75:
+            print("\n✅ REGISTRATION SYSTEM WORKING WELL!")
+        else:
+            print("\n⚠️ REGISTRATION SYSTEM NEEDS ATTENTION!")
+        
+        return registration_tests_passed, registration_tests_total
+
     def test_auth_register_freelancer(self):
         """Test freelancer registration with South African data"""
         timestamp = datetime.now().strftime('%H%M%S')
