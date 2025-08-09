@@ -3993,6 +3993,21 @@ def main():
         ("Role-Based Access Control", tester.test_role_based_access_control),
     ]
     
+    # Dedicated Admin Login System Tests
+    admin_login_tests = [
+        ("Admin Login - Valid Afrilance Email", tester.test_admin_login_valid_afrilance_email),
+        ("Admin Login - Non-Afrilance Domain", tester.test_admin_login_non_afrilance_domain),
+        ("Admin Login - Invalid Credentials", tester.test_admin_login_invalid_credentials),
+        ("Admin Login - Pending Approval", tester.test_admin_login_pending_approval),
+        ("Admin Register - Valid Request", tester.test_admin_register_request_valid),
+        ("Admin Register - Invalid Domain", tester.test_admin_register_request_invalid_domain),
+        ("Admin Register - Missing Fields", tester.test_admin_register_request_missing_fields),
+        ("Admin Approval - Approve Workflow", tester.test_admin_approval_workflow_approve),
+        ("Admin Approval - Reject Workflow", tester.test_admin_approval_workflow_reject),
+        ("Admin Approval - Unauthorized Access", tester.test_admin_approval_unauthorized),
+        ("Admin Security Validations", tester.test_admin_security_validations),
+    ]
+    
     # Run authentication tests
     print("\n🔐 AUTHENTICATION SYSTEM TESTS")
     print("=" * 60)
