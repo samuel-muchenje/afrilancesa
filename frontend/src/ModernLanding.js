@@ -189,6 +189,18 @@ const ModernLanding = ({
     const categorySlug = category.title.replace(/\s+/g, '-').toLowerCase();
     setCurrentPage(`browse-freelancers-${categorySlug}`);
   };
+
+  // Get display count for a category
+  const getCategoryDisplayCount = (categoryTitle) => {
+    const count = categoryCounts[categoryTitle] || 0;
+    if (count === 0) {
+      return "0 freelancers";
+    } else if (count === 1) {
+      return "1 freelancer";
+    } else {
+      return `${count} freelancers`;
+    }
+  };
   return (
     <div className="modern-landing">
       {/* Animated Background Effects */}
