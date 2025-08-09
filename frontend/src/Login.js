@@ -204,7 +204,7 @@ const Login = ({ onNavigate, onLoginSuccess }) => {
               {/* Login Button */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow"
+                className="w-full bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold py-3 btn-glow glow"
                 disabled={loading}
               >
                 {loading ? (
