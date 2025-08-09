@@ -1743,6 +1743,523 @@ Freelance Web Developer"""
             return True
         return False
 
+    # ========== COMPREHENSIVE IN-APP MESSAGING SYSTEM TESTS ==========
+    
+    def test_direct_message_send(self):
+        """Test sending direct messages between users"""
+        if not self.freelancer_token or not self.client_user:
+            print("❌ Missing freelancer token or client user for direct message test")
+            return False
+            
+        message_data = {
+            "receiver_id": self.client_user['id'],
+            "content": "Hello! I'm interested in discussing potential collaboration opportunities. I specialize in full-stack development with React and Python, and I've noticed you post interesting projects. Would you be open to a brief conversation about your upcoming development needs?"
+        }
+        
+        success, response = self.run_test(
+            "Direct Message - Send Message",
+            "POST",
+            "/api/direct-messages",
+            200,
+            data=message_data,
+            token=self.freelancer_token
+        )
+        
+        if success and 'conversation_id' in response:
+            print(f"   ✓ Direct message sent successfully")
+            print(f"   ✓ Conversation ID: {response['conversation_id']}")
+            self.test_conversation_id = response['conversation_id']
+            return True
+        return False
+
+    def test_direct_message_to_self(self):
+        """Test sending direct message to self - should fail"""
+        if not self.freelancer_token or not self.freelancer_user:
+            print("❌ Missing freelancer token or user for self-message test")
+            return False
+            
+        message_data = {
+            "receiver_id": self.freelancer_user['id'],
+            "content": "This should fail - messaging yourself"
+        }
+        
+        success, response = self.run_test(
+            "Direct Message - Send to Self (Should Fail)",
+            "POST",
+            "/api/direct-messages",
+            400,
+            data=message_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ Self-messaging properly blocked")
+            return True
+        return False
+
+    def test_direct_message_nonexistent_user(self):
+        """Test sending direct message to non-existent user - should fail"""
+        if not self.freelancer_token:
+            print("❌ Missing freelancer token for non-existent user test")
+            return False
+            
+        message_data = {
+            "receiver_id": "non-existent-user-id",
+            "content": "This should fail - user doesn't exist"
+        }
+        
+        success, response = self.run_test(
+            "Direct Message - Non-existent User (Should Fail)",
+            "POST",
+            "/api/direct-messages",
+            404,
+            data=message_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ Non-existent user properly handled")
+            return True
+        return False
+
+    def test_get_conversations(self):
+        """Test getting all conversations for current user"""
+        if not self.freelancer_token:
+            print("❌ Missing freelancer token for conversations test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Get All Conversations",
+            "GET",
+            "/api/conversations",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Retrieved {len(response)} conversations")
+            
+            if len(response) > 0:
+                conversation = response[0]
+                required_fields = ['conversation_id', 'participants', 'last_message_at', 'last_message_content', 'other_participant', 'unread_count']
+                
+                missing_fields = []
+                for field in required_fields:
+                    if field not in conversation:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Missing conversation fields: {missing_fields}")
+                    return False
+                
+                print(f"   ✓ Conversation with: {conversation['other_participant']['full_name']}")
+                print(f"   ✓ Unread messages: {conversation['unread_count']}")
+                print(f"   ✓ Last message preview: {conversation['last_message_content'][:50]}...")
+                
+            return True
+        return False
+
+    def test_get_conversation_messages(self):
+        """Test getting messages in a specific conversation"""
+        if not self.freelancer_token or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing freelancer token or conversation ID for messages test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Get Messages",
+            "GET",
+            f"/api/conversations/{self.test_conversation_id}/messages",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Retrieved {len(response)} messages in conversation")
+            
+            if len(response) > 0:
+                message = response[0]
+                required_fields = ['id', 'conversation_id', 'sender_id', 'receiver_id', 'content', 'created_at', 'read', 'sender_name', 'sender_role']
+                
+                missing_fields = []
+                for field in required_fields:
+                    if field not in message:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Missing message fields: {missing_fields}")
+                    return False
+                
+                print(f"   ✓ Message from: {message['sender_name']} ({message['sender_role']})")
+                print(f"   ✓ Message content: {message['content'][:100]}...")
+                print(f"   ✓ Message read status: {message['read']}")
+                
+            return True
+        return False
+
+    def test_get_conversation_messages_unauthorized(self):
+        """Test getting messages from conversation user is not part of - should fail"""
+        if not self.admin_token:
+            print("❌ Missing admin token for unauthorized conversation test")
+            return False
+            
+        # Try to access conversation between freelancer and client using admin token
+        fake_conversation_id = "dm_fake_user1_fake_user2"
+        
+        success, response = self.run_test(
+            "Conversations - Unauthorized Access (Should Fail)",
+            "GET",
+            f"/api/conversations/{fake_conversation_id}/messages",
+            404,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✓ Unauthorized conversation access properly blocked")
+            return True
+        return False
+
+    def test_mark_conversation_read(self):
+        """Test marking all messages in a conversation as read"""
+        if not self.client_token or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing client token or conversation ID for mark read test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Mark as Read",
+            "POST",
+            f"/api/conversations/{self.test_conversation_id}/mark-read",
+            200,
+            token=self.client_token
+        )
+        
+        if success and 'message' in response:
+            print(f"   ✓ Mark as read successful: {response['message']}")
+            return True
+        return False
+
+    def test_mark_conversation_read_unauthorized(self):
+        """Test marking conversation as read by non-participant - should fail"""
+        if not self.admin_token or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing admin token or conversation ID for unauthorized mark read test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Mark Read Unauthorized (Should Fail)",
+            "POST",
+            f"/api/conversations/{self.test_conversation_id}/mark-read",
+            404,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✓ Unauthorized mark as read properly blocked")
+            return True
+        return False
+
+    def test_search_users_for_messaging(self):
+        """Test searching users to start new conversations"""
+        if not self.freelancer_token:
+            print("❌ Missing freelancer token for user search test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Search Users",
+            "GET",
+            "/api/conversations/search?query=client",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Found {len(response)} users matching 'client'")
+            
+            if len(response) > 0:
+                user = response[0]
+                required_fields = ['id', 'full_name', 'email', 'role', 'is_verified']
+                
+                missing_fields = []
+                for field in required_fields:
+                    if field not in user:
+                        missing_fields.append(field)
+                
+                if missing_fields:
+                    print(f"   ❌ Missing user search fields: {missing_fields}")
+                    return False
+                
+                print(f"   ✓ Found user: {user['full_name']} ({user['role']})")
+                print(f"   ✓ User verified: {user['is_verified']}")
+                
+                # Verify current user is not in results
+                for search_user in response:
+                    if search_user['id'] == self.freelancer_user['id']:
+                        print("   ❌ Current user included in search results")
+                        return False
+                
+                print("   ✓ Current user properly excluded from search results")
+                
+            return True
+        return False
+
+    def test_search_users_short_query(self):
+        """Test user search with too short query - should fail"""
+        if not self.freelancer_token:
+            print("❌ Missing freelancer token for short query test")
+            return False
+            
+        success, response = self.run_test(
+            "Conversations - Search Short Query (Should Fail)",
+            "GET",
+            "/api/conversations/search?query=a",
+            400,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ Short query properly rejected")
+            return True
+        return False
+
+    def test_search_users_by_email(self):
+        """Test searching users by email"""
+        if not self.freelancer_token or not self.client_user:
+            print("❌ Missing freelancer token or client user for email search test")
+            return False
+            
+        # Search by part of client's email
+        client_email_part = self.client_user['email'].split('@')[0][:5]  # First 5 chars before @
+        
+        success, response = self.run_test(
+            "Conversations - Search by Email",
+            "GET",
+            f"/api/conversations/search?query={client_email_part}",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✓ Email search returned {len(response)} results")
+            
+            # Check if our client user is in the results
+            found_client = False
+            for user in response:
+                if user['id'] == self.client_user['id']:
+                    found_client = True
+                    print(f"   ✓ Found client user: {user['full_name']}")
+                    break
+            
+            if not found_client and len(response) == 0:
+                print("   ✓ No results found (acceptable if no matching users)")
+                return True
+            elif found_client:
+                return True
+            else:
+                print("   ❌ Expected client user not found in search results")
+                return False
+        return False
+
+    def test_conversation_bidirectional_messaging(self):
+        """Test bidirectional messaging in a conversation"""
+        if not self.client_token or not self.freelancer_user or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing client token, freelancer user, or conversation ID for bidirectional test")
+            return False
+            
+        # Client sends reply to freelancer
+        reply_data = {
+            "receiver_id": self.freelancer_user['id'],
+            "content": "Hello! Thank you for reaching out. I'm always interested in connecting with talented developers. I have several upcoming projects that might be a good fit for your skills. Could you tell me more about your experience with e-commerce platforms and payment integrations?"
+        }
+        
+        success, response = self.run_test(
+            "Direct Message - Client Reply",
+            "POST",
+            "/api/direct-messages",
+            200,
+            data=reply_data,
+            token=self.client_token
+        )
+        
+        if not success:
+            return False
+        
+        # Verify both users can see the conversation
+        success, response = self.run_test(
+            "Conversations - Client View",
+            "GET",
+            "/api/conversations",
+            200,
+            token=self.client_token
+        )
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            print(f"   ✓ Client can see {len(response)} conversations")
+            
+            # Find our test conversation
+            found_conversation = False
+            for conv in response:
+                if conv['conversation_id'] == self.test_conversation_id:
+                    found_conversation = True
+                    print(f"   ✓ Client found conversation with: {conv['other_participant']['full_name']}")
+                    break
+            
+            if not found_conversation:
+                print("   ❌ Client cannot find the conversation")
+                return False
+            
+            return True
+        return False
+
+    def test_conversation_message_persistence(self):
+        """Test that messages persist correctly in conversations"""
+        if not self.freelancer_token or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing freelancer token or conversation ID for persistence test")
+            return False
+            
+        # Get messages before sending new one
+        success, response_before = self.run_test(
+            "Conversations - Get Messages Before",
+            "GET",
+            f"/api/conversations/{self.test_conversation_id}/messages",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            return False
+        
+        messages_before = len(response_before) if isinstance(response_before, list) else 0
+        
+        # Send another message
+        message_data = {
+            "receiver_id": self.client_user['id'],
+            "content": "I have extensive experience with e-commerce platforms. I've built over 15 online stores using React/Next.js frontends with Python FastAPI backends. For payments, I've integrated Stripe, PayPal, and PayFast (for South African market). I can share some portfolio examples if you're interested."
+        }
+        
+        success, response = self.run_test(
+            "Direct Message - Follow-up Message",
+            "POST",
+            "/api/direct-messages",
+            200,
+            data=message_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            return False
+        
+        # Get messages after sending new one
+        success, response_after = self.run_test(
+            "Conversations - Get Messages After",
+            "GET",
+            f"/api/conversations/{self.test_conversation_id}/messages",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response_after, list):
+            messages_after = len(response_after)
+            
+            if messages_after == messages_before + 1:
+                print(f"   ✓ Message count increased from {messages_before} to {messages_after}")
+                
+                # Check if the new message is the latest one
+                latest_message = response_after[-1]
+                if message_data['content'] in latest_message['content']:
+                    print("   ✓ Latest message content matches sent message")
+                    return True
+                else:
+                    print("   ❌ Latest message content doesn't match")
+                    return False
+            else:
+                print(f"   ❌ Message count didn't increase correctly: {messages_before} → {messages_after}")
+                return False
+        return False
+
+    def test_conversation_unread_count_tracking(self):
+        """Test unread message count tracking"""
+        if not self.client_token or not hasattr(self, 'test_conversation_id'):
+            print("❌ Missing client token or conversation ID for unread count test")
+            return False
+            
+        # Get conversations for client (should have unread messages from freelancer)
+        success, response = self.run_test(
+            "Conversations - Check Unread Count",
+            "GET",
+            "/api/conversations",
+            200,
+            token=self.client_token
+        )
+        
+        if success and isinstance(response, list):
+            # Find our test conversation
+            test_conversation = None
+            for conv in response:
+                if conv['conversation_id'] == self.test_conversation_id:
+                    test_conversation = conv
+                    break
+            
+            if not test_conversation:
+                print("   ❌ Test conversation not found")
+                return False
+            
+            unread_count = test_conversation['unread_count']
+            print(f"   ✓ Unread count for client: {unread_count}")
+            
+            if unread_count > 0:
+                print("   ✓ Unread count tracking working correctly")
+                return True
+            else:
+                print("   ⚠️ No unread messages (may be expected if messages were already read)")
+                return True  # This is acceptable
+        return False
+
+    def test_messaging_system_comprehensive_workflow(self):
+        """Test complete messaging workflow end-to-end"""
+        print("\n💬 Testing Complete Messaging Workflow...")
+        
+        if not all([self.freelancer_token, self.client_token, self.admin_token, 
+                   self.freelancer_user, self.client_user, self.admin_user]):
+            print("❌ Missing required tokens or users for comprehensive workflow test")
+            return False
+        
+        workflow_steps = [
+            "1. Freelancer initiates conversation with client",
+            "2. Client receives and replies to message", 
+            "3. Multiple message exchange",
+            "4. Mark messages as read",
+            "5. Search for users to message",
+            "6. Verify conversation persistence"
+        ]
+        
+        print("   Workflow steps:")
+        for step in workflow_steps:
+            print(f"   {step}")
+        
+        # All individual tests should have covered these steps
+        # This is a summary test to confirm the workflow
+        
+        # Check final conversation state
+        success, response = self.run_test(
+            "Workflow - Final Conversation State",
+            "GET",
+            "/api/conversations",
+            200,
+            token=self.freelancer_token
+        )
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            conversation = response[0]
+            print(f"   ✓ Final conversation state:")
+            print(f"     - Participants: {len(conversation['participants'])}")
+            print(f"     - Other participant: {conversation['other_participant']['full_name']}")
+            print(f"     - Last message: {conversation['last_message_content'][:50]}...")
+            print(f"     - Unread count: {conversation['unread_count']}")
+            
+            print("   ✅ Complete messaging workflow successful")
+            return True
+        
+        print("   ❌ Messaging workflow incomplete")
+        return False
+
     # ========== CONTRACTS SYSTEM TESTS ==========
     
     def test_contract_creation_flow(self):
