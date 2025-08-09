@@ -3,38 +3,14 @@ import AdvancedSearch from './components/AdvancedSearch';
 import { Button } from './components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-const BrowseFreelancers = ({ user, onNavigate }) => {
-  const [searchCategory, setSearchCategory] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    // Parse URL parameters from the current page URL passed through props or window location
-    const currentUrl = window.location.href;
-    const url = new URL(currentUrl);
-    const params = new URLSearchParams(url.search);
-    
-    const category = params.get('category');
-    const search = params.get('search');
-    
-    if (category) {
-      setSearchCategory(category);
-    }
-    if (search) {
-      setSearchQuery(search);
-    }
-  }, []);
-
+const BrowseFreelancers = ({ user, onNavigate, initialCategory = '', initialSearch = '' }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       {/* Back to Home Button */}
       <div className="container mx-auto px-6 pt-6">
         <Button
           variant="ghost"
-          onClick={() => {
-            // Clear URL parameters when going back
-            window.history.replaceState({}, document.title, window.location.pathname);
-            onNavigate('landing');
-          }}
+          onClick={() => onNavigate('landing')}
           className="text-gray-300 hover:text-yellow-400 hover:bg-white/5 mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -51,14 +27,14 @@ const BrowseFreelancers = ({ user, onNavigate }) => {
           <p className="text-gray-400">
             Discover talented South African freelancers with advanced search and filtering
           </p>
-          {searchCategory && (
+          {initialCategory && (
             <p className="text-yellow-400 mt-2">
-              Showing freelancers in: <span className="font-semibold">{searchCategory}</span>
+              Showing freelancers in: <span className="font-semibold">{initialCategory}</span>
             </p>
           )}
-          {searchQuery && (
+          {initialSearch && (
             <p className="text-green-400 mt-2">
-              Search results for: <span className="font-semibold">"{searchQuery}"</span>
+              Search results for: <span className="font-semibold">"{initialSearch}"</span>
             </p>
           )}
         </div>
@@ -66,8 +42,8 @@ const BrowseFreelancers = ({ user, onNavigate }) => {
         {/* Advanced Search Component */}
         <AdvancedSearch 
           searchType="users" 
-          initialCategory={searchCategory}
-          initialSearch={searchQuery}
+          initialCategory={initialCategory}
+          initialSearch={initialSearch}
         />
       </div>
     </div>
