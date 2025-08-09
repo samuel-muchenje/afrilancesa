@@ -585,6 +585,13 @@ function App() {
     );
   }
 
+  // Admin Login Page
+  if (currentPage === 'admin' || currentPage === 'admin-login') {
+    return (
+      <AdminLogin onNavigate={setCurrentPage} onLoginSuccess={handleLoginSuccess} />
+    );
+  }
+
   // Main Dashboard
   return (
     <div className="dashboard-modern">
