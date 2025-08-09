@@ -121,6 +121,7 @@ const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSear
     } else {
       setUserFilters({
         role: 'freelancer',
+        category: 'all',
         skills: [],
         min_rating: null,
         max_hourly_rate: '',
