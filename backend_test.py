@@ -6984,14 +6984,21 @@ def main():
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    # Run comprehensive authentication tests
-    print("🚀 Starting Comprehensive Afrilance API Testing...")
+    # Run comprehensive registration tests as requested
+    print("🚀 COMPREHENSIVE REGISTRATION FORMS AND ENDPOINTS TESTING")
     print(f"🌐 Base URL: {tester.base_url}")
     print("=" * 80)
     
-    # Authentication System Tests
+    # COMPREHENSIVE REGISTRATION SYSTEM TESTING
+    print("\n" + "="*60)
+    print("📝 COMPREHENSIVE REGISTRATION SYSTEM TESTING")
+    print("="*60)
+    
+    registration_passed, registration_total = tester.test_comprehensive_registration_system()
+    
+    # Additional Authentication System Tests (if needed)
     print("\n" + "="*50)
-    print("🔐 AUTHENTICATION SYSTEM TESTS")
+    print("🔐 ADDITIONAL AUTHENTICATION SYSTEM TESTS")
     print("="*50)
     
     tester.test_auth_register_freelancer()
