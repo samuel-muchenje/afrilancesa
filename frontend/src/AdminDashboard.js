@@ -1286,7 +1286,9 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
               { id: 'admin-requests', label: `Admin Requests (${stats.pendingAdmins})`, icon: UserPlus },
               { id: 'users', label: 'User Management', icon: Users },
               { id: 'support', label: 'Support Tickets', icon: HelpCircle },
-              { id: 'activity', label: 'Activity Log', icon: Activity }
+              { id: 'activity', label: 'Activity Log', icon: Activity },
+              { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign },
+              { id: 'search', label: 'Advanced Search', icon: Search }
             ].map(tab => {
               const IconComponent = tab.icon;
               return (
