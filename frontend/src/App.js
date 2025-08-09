@@ -532,7 +532,7 @@ function App() {
   }
 
   // Browse Freelancers Page
-  if (currentPage === 'browse-freelancers') {
+  if (currentPage.startsWith('browse-freelancers')) {
     return (
       <BrowseFreelancers onNavigate={setCurrentPage} />
     );
