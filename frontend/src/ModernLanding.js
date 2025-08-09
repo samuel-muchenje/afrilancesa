@@ -150,7 +150,6 @@ const ModernLanding = ({
   // Handle search functionality
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      console.log('Search initiated:', searchQuery.trim());
       setCurrentPage(`browse-freelancers-search-${encodeURIComponent(searchQuery.trim())}`);
     }
   };
@@ -164,7 +163,6 @@ const ModernLanding = ({
   // Handle category navigation
   const handleCategoryClick = (category) => {
     const categorySlug = category.title.replace(/\s+/g, '-').toLowerCase();
-    console.log('Category clicked:', category.title, 'Slug:', categorySlug);
     setCurrentPage(`browse-freelancers-${categorySlug}`);
   };
   return (
