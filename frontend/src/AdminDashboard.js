@@ -126,6 +126,35 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     }
   };
 
+  const handleAdminApproval = async (userId, status, notes = '') => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/api/admin/approve-admin/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: status,
+          admin_notes: notes
+        })
+      });
+
+      if (response.ok) {
+        // Refresh admin data
+        fetchAdminData();
+        alert(`Admin request ${status} successfully!`);
+      } else {
+        const error = await response.json();
+        throw new Error(error.detail || `Failed to ${status} admin request`);
+      }
+    } catch (error) {
+      console.error('Admin approval error:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+
   return (
     <div className="dashboard-modern">
       {/* Navigation */}
