@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
 import { Avatar, AvatarFallback } from './components/ui/avatar';
+import RevenueMonitoring from './components/RevenueMonitoring';
+import AdvancedSearch from './components/AdvancedSearch';
 import { 
   Users, Shield, TrendingUp, DollarSign, Briefcase, 
   MessageSquare, Settings, LogOut, CheckCircle, XCircle,
