@@ -177,8 +177,7 @@ const ModernLanding = ({
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && e.target.value.trim()) {
-                    const params = { search: e.target.value.trim() };
-                    setCurrentPage({ page: 'browse-freelancers', params });
+                    setCurrentPage(`browse-freelancers-search-${encodeURIComponent(e.target.value.trim())}`);
                   }
                 }}
               />
