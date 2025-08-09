@@ -26,6 +26,11 @@ import BrowseJobs from './BrowseJobs';
 import BrowseFreelancers from './BrowseFreelancers';
 import HowItWorks from './HowItWorks';
 import Enterprise from './Enterprise';
+import ForFreelancers from './ForFreelancers';
+import HowToJoin from './HowToJoin';
+import CreateProfile from './CreateProfile';
+import GetVerified from './GetVerified';
+import SuccessStories from './SuccessStories';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
