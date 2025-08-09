@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from './components/ui/avatar';
 import { Input } from './components/ui/input';
 import { Textarea } from './components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+import MessagingSystem from './components/MessagingSystem';
 import { 
   Plus, Briefcase, Users, DollarSign, Clock, TrendingUp, Search, Filter,
   MessageCircle, Settings, LogOut, CheckCircle, Star, Eye, Edit, X,
