@@ -219,6 +219,18 @@ backend:
         agent: "testing"
         comment: "COMPREHENSIVE MESSAGING SYSTEM TESTING COMPLETED - ALL TESTS PASSED. ✅ MESSAGE SENDING: Enhanced messaging system working perfectly with detailed project communication. ✅ MESSAGE CONTENT: Supports comprehensive messages with project questions, technical requirements, timeline discussions. ✅ MESSAGE RETRIEVAL: Message retrieval working correctly, messages properly associated with jobs and users. ✅ JOB CONTEXT: Messages properly linked to specific jobs for project-based communication. Enhanced messaging system working excellently for freelancer-client communication."
 
+  - task: "Comprehensive In-App Direct Messaging System"
+    implemented: false
+    working: "not_started"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "not_started"
+        agent: "main"
+        comment: "Starting implementation of comprehensive messaging system. Current job-based messaging needs enhancement with: 1) Direct user-to-user conversations, 2) Conversation list management, 3) Message status tracking, 4) Enhanced chat interface, 5) Real-time messaging capabilities."
+
   - task: "Verification System with Email Notifications"
     implemented: true
     working: true
