@@ -125,7 +125,7 @@ const HowToJoin = ({ onNavigate }) => {
     },
     {
       question: "What if my verification is rejected?",
-      answer: "If verification is rejected, we'll send you an email explaining the reason and steps to resolve any issues. Common issues include unclear ID photos or incomplete information."
+      answer: "If verification is rejected, we'll send you an email explaining the reason and steps to resolve any issues. Common issues include unclear ID photos or incomplete information. You can contact sam@afrilance.co.za for additional assistance."
     }
   ];
 
