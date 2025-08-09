@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class AdminLoginTester:
-    def __init__(self, base_url="https://cc0855c8-ef4c-408c-97d0-54a2d7a84063.preview.emergentagent.com"):
+    def __init__(self, base_url="https://233386b1-2685-4958-abad-b6a050fc11d2.preview.emergentagent.com"):
         self.base_url = base_url
         self.admin_token = None
         self.admin_user = None
