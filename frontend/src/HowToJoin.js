@@ -317,7 +317,7 @@ const HowToJoin = ({ onNavigate }) => {
 
             <div className="mt-8 flex items-center justify-center space-x-4 text-gray-400">
               <AlertCircle className="w-5 h-5" />
-              <span className="text-sm">Need help? Contact our support team at support@afrilance.co.za</span>
+              <span className="text-sm">Need help? Contact our verification team at sam@afrilance.co.za</span>
             </div>
           </div>
         </div>
