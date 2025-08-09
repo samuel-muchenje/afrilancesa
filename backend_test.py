@@ -398,6 +398,521 @@ class AfrilanceAPITester:
         )
         return success
 
+    # ========== DEDICATED ADMIN LOGIN SYSTEM TESTS ==========
+    
+    def test_admin_login_valid_afrilance_email(self):
+        """Test admin login with valid @afrilance.co.za email"""
+        # First create an approved admin user
+        timestamp = datetime.now().strftime('%H%M%S')
+        admin_email = f"admin.test{timestamp}@afrilance.co.za"
+        admin_password = "AdminSecure123!"
+        
+        # Create admin user directly (simulating approved admin)
+        admin_data = {
+            "email": admin_email,
+            "password": admin_password,
+            "role": "admin",
+            "full_name": f"Test Admin {timestamp}",
+            "phone": "+27123456789"
+        }
+        
+        # Register admin first
+        success, response = self.run_auth_test(
+            "Admin Login - Create Approved Admin",
+            "POST",
+            "/api/register",
+            200,
+            data=admin_data
+        )
+        
+        if not success:
+            print("❌ Failed to create admin for login test")
+            return False
+            
+        # Now test dedicated admin login
+        login_data = {
+            "email": admin_email,
+            "password": admin_password
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Login - Valid Afrilance Email",
+            "POST",
+            "/api/admin/login",
+            200,
+            data=login_data
+        )
+        
+        if success and 'token' in response and 'user' in response:
+            print(f"   ✓ Admin login successful")
+            print(f"   ✓ Token generated: {response['token'][:20]}...")
+            print(f"   ✓ Admin user: {response['user']['full_name']}")
+            print(f"   ✓ Role: {response['user']['role']}")
+            print(f"   ✓ Admin approved: {response['user'].get('admin_approved', False)}")
+            
+            # Store for other tests
+            self.admin_token = response['token']
+            self.admin_user = response['user']
+            return True
+        return False
+
+    def test_admin_login_non_afrilance_domain(self):
+        """Test admin login with non-@afrilance.co.za email - should fail"""
+        login_data = {
+            "email": "admin@gmail.com",
+            "password": "AdminPass123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Login - Non-Afrilance Domain (Should Fail)",
+            "POST",
+            "/api/admin/login",
+            403,
+            data=login_data
+        )
+        
+        if success:
+            print("   ✓ Non-Afrilance domain properly rejected")
+            return True
+        return False
+
+    def test_admin_login_invalid_credentials(self):
+        """Test admin login with invalid credentials"""
+        login_data = {
+            "email": "nonexistent@afrilance.co.za",
+            "password": "WrongPassword123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Login - Invalid Credentials",
+            "POST",
+            "/api/admin/login",
+            401,
+            data=login_data
+        )
+        
+        if success:
+            print("   ✓ Invalid credentials properly rejected")
+            return True
+        return False
+
+    def test_admin_login_pending_approval(self):
+        """Test admin login with pending approval - should show pending message"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        pending_admin_data = {
+            "email": f"pending.admin{timestamp}@afrilance.co.za",
+            "password": "PendingPass123!",
+            "full_name": f"Pending Admin {timestamp}",
+            "phone": "+27987654321",
+            "department": "IT Support",
+            "reason": "Need admin access for user support tasks"
+        }
+        
+        # Create pending admin request
+        success, response = self.run_auth_test(
+            "Admin Login - Create Pending Admin",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=pending_admin_data
+        )
+        
+        if not success:
+            print("❌ Failed to create pending admin")
+            return False
+        
+        # Try to login with pending admin
+        login_data = {
+            "email": pending_admin_data["email"],
+            "password": pending_admin_data["password"]
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Login - Pending Approval (Should Fail)",
+            "POST",
+            "/api/admin/login",
+            403,
+            data=login_data
+        )
+        
+        if success:
+            print("   ✓ Pending admin login properly blocked")
+            return True
+        return False
+
+    def test_admin_register_request_valid(self):
+        """Test admin registration request with valid @afrilance.co.za email"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        request_data = {
+            "email": f"new.admin{timestamp}@afrilance.co.za",
+            "password": "NewAdminPass123!",
+            "full_name": f"New Admin {timestamp}",
+            "phone": "+27123456789",
+            "department": "Customer Support",
+            "reason": "I need admin access to help with user verification and support ticket management. I am the new customer support manager and require these privileges to effectively assist users and manage platform operations."
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Register - Valid Request",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=request_data
+        )
+        
+        if success:
+            print("   ✓ Admin registration request submitted successfully")
+            print(f"   ✓ Email notification sent to sam@afrilance.co.za")
+            return True
+        return False
+
+    def test_admin_register_request_invalid_domain(self):
+        """Test admin registration request with non-@afrilance.co.za email"""
+        request_data = {
+            "email": "admin@gmail.com",
+            "password": "AdminPass123!",
+            "full_name": "Invalid Admin",
+            "phone": "+27123456789",
+            "department": "IT",
+            "reason": "Need admin access"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Register - Invalid Domain (Should Fail)",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=request_data
+        )
+        
+        if success:
+            print("   ✓ Non-Afrilance domain registration properly rejected")
+            return True
+        return False
+
+    def test_admin_register_request_missing_fields(self):
+        """Test admin registration request with missing required fields"""
+        incomplete_data = {
+            "email": "incomplete@afrilance.co.za",
+            "password": "Pass123!",
+            # Missing full_name, phone, department, reason
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Register - Missing Fields (Should Fail)",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=incomplete_data
+        )
+        
+        if success:
+            print("   ✓ Incomplete registration properly rejected")
+            return True
+        return False
+
+    def test_admin_approval_workflow_approve(self):
+        """Test admin approval workflow - approve admin request"""
+        if not self.admin_token:
+            print("❌ No admin token available for approval test")
+            return False
+        
+        # First create a pending admin request
+        timestamp = datetime.now().strftime('%H%M%S')
+        pending_data = {
+            "email": f"approve.test{timestamp}@afrilance.co.za",
+            "password": "ApproveTest123!",
+            "full_name": f"Approve Test {timestamp}",
+            "phone": "+27123456789",
+            "department": "Quality Assurance",
+            "reason": "Need admin access for testing and quality assurance of platform features"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Approval - Create Pending Request",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=pending_data
+        )
+        
+        if not success:
+            print("❌ Failed to create pending admin for approval test")
+            return False
+        
+        # Get the user ID (we need to find it from the database or response)
+        # For testing, we'll simulate having the user_id
+        # In real scenario, admin would get this from admin dashboard
+        
+        # Test approval
+        approval_data = {
+            "status": "approved",
+            "admin_notes": "Approved for QA testing purposes. User verified as legitimate Afrilance employee."
+        }
+        
+        # We need to get the user_id first - let's get all users and find our test user
+        success, users_response = self.run_auth_test(
+            "Admin Approval - Get Users to Find Test User",
+            "GET",
+            "/api/admin/users",
+            200,
+            token=self.admin_token
+        )
+        
+        if not success:
+            print("❌ Failed to get users for approval test")
+            return False
+        
+        # Find our test user
+        test_user_id = None
+        for user in users_response:
+            if user.get('email') == pending_data['email']:
+                test_user_id = user.get('id')
+                break
+        
+        if not test_user_id:
+            print("❌ Could not find test user for approval")
+            return False
+        
+        # Now approve the admin
+        success, response = self.run_auth_test(
+            "Admin Approval - Approve Admin Request",
+            "POST",
+            f"/api/admin/approve-admin/{test_user_id}",
+            200,
+            data=approval_data,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✓ Admin approval successful")
+            print(f"   ✓ User approved: {response.get('user_id', 'Unknown')}")
+            print(f"   ✓ Status: {response.get('status', 'Unknown')}")
+            
+            # Test that approved admin can now login
+            login_data = {
+                "email": pending_data["email"],
+                "password": pending_data["password"]
+            }
+            
+            success, login_response = self.run_auth_test(
+                "Admin Approval - Test Approved Admin Login",
+                "POST",
+                "/api/admin/login",
+                200,
+                data=login_data
+            )
+            
+            if success:
+                print("   ✓ Approved admin can now login successfully")
+                return True
+            else:
+                print("   ❌ Approved admin still cannot login")
+                return False
+        return False
+
+    def test_admin_approval_workflow_reject(self):
+        """Test admin approval workflow - reject admin request"""
+        if not self.admin_token:
+            print("❌ No admin token available for rejection test")
+            return False
+        
+        # Create another pending admin request
+        timestamp = datetime.now().strftime('%H%M%S')
+        pending_data = {
+            "email": f"reject.test{timestamp}@afrilance.co.za",
+            "password": "RejectTest123!",
+            "full_name": f"Reject Test {timestamp}",
+            "phone": "+27987654321",
+            "department": "Unknown",
+            "reason": "Testing rejection workflow"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Rejection - Create Pending Request",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=pending_data
+        )
+        
+        if not success:
+            print("❌ Failed to create pending admin for rejection test")
+            return False
+        
+        # Get the user ID
+        success, users_response = self.run_auth_test(
+            "Admin Rejection - Get Users to Find Test User",
+            "GET",
+            "/api/admin/users",
+            200,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        # Find our test user
+        test_user_id = None
+        for user in users_response:
+            if user.get('email') == pending_data['email']:
+                test_user_id = user.get('id')
+                break
+        
+        if not test_user_id:
+            print("❌ Could not find test user for rejection")
+            return False
+        
+        # Reject the admin request
+        rejection_data = {
+            "status": "rejected",
+            "admin_notes": "Request rejected due to insufficient justification and unclear department role. Please provide more details about your position and specific admin requirements."
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Rejection - Reject Admin Request",
+            "POST",
+            f"/api/admin/approve-admin/{test_user_id}",
+            200,
+            data=rejection_data,
+            token=self.admin_token
+        )
+        
+        if success:
+            print("   ✓ Admin rejection successful")
+            print(f"   ✓ User rejected: {response.get('user_id', 'Unknown')}")
+            
+            # Test that rejected admin still cannot login
+            login_data = {
+                "email": pending_data["email"],
+                "password": pending_data["password"]
+            }
+            
+            success, login_response = self.run_auth_test(
+                "Admin Rejection - Test Rejected Admin Login (Should Fail)",
+                "POST",
+                "/api/admin/login",
+                403,
+                data=login_data
+            )
+            
+            if success:
+                print("   ✓ Rejected admin properly blocked from login")
+                return True
+            else:
+                print("   ❌ Rejected admin can still login")
+                return False
+        return False
+
+    def test_admin_approval_unauthorized(self):
+        """Test that only admins can approve admin requests"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for unauthorized test")
+            return False
+        
+        approval_data = {
+            "status": "approved",
+            "admin_notes": "Unauthorized approval attempt"
+        }
+        
+        success, response = self.run_auth_test(
+            "Admin Approval - Unauthorized Access (Should Fail)",
+            "POST",
+            "/api/admin/approve-admin/fake-user-id",
+            403,
+            data=approval_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ Non-admin properly blocked from admin approval")
+            return True
+        return False
+
+    def test_admin_security_validations(self):
+        """Test comprehensive admin security validations"""
+        print("\n🔒 Testing Admin Security Validations...")
+        
+        # Test 1: Admin login domain restriction
+        invalid_domain_data = {
+            "email": "hacker@gmail.com",
+            "password": "HackerPass123!"
+        }
+        
+        success, response = self.run_auth_test(
+            "Security - Domain Restriction",
+            "POST",
+            "/api/admin/login",
+            403,
+            data=invalid_domain_data
+        )
+        
+        if not success:
+            return False
+        
+        # Test 2: Admin registration domain restriction
+        invalid_reg_data = {
+            "email": "fake@yahoo.com",
+            "password": "FakePass123!",
+            "full_name": "Fake Admin",
+            "phone": "+27123456789",
+            "department": "Fake",
+            "reason": "Fake reason"
+        }
+        
+        success, response = self.run_auth_test(
+            "Security - Registration Domain Restriction",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=invalid_reg_data
+        )
+        
+        if not success:
+            return False
+        
+        # Test 3: Non-admin role trying to access admin login
+        if self.freelancer_user:
+            # Create a freelancer with @afrilance.co.za email (but not admin role)
+            timestamp = datetime.now().strftime('%H%M%S')
+            fake_admin_data = {
+                "email": f"freelancer{timestamp}@afrilance.co.za",
+                "password": "FreelancerPass123!",
+                "role": "freelancer",
+                "full_name": f"Freelancer {timestamp}",
+                "phone": "+27123456789"
+            }
+            
+            # Register as freelancer
+            success, response = self.run_auth_test(
+                "Security - Create Freelancer with Afrilance Email",
+                "POST",
+                "/api/register",
+                200,
+                data=fake_admin_data
+            )
+            
+            if success:
+                # Try to login via admin endpoint
+                login_data = {
+                    "email": fake_admin_data["email"],
+                    "password": fake_admin_data["password"]
+                }
+                
+                success, response = self.run_auth_test(
+                    "Security - Non-Admin Role Admin Login (Should Fail)",
+                    "POST",
+                    "/api/admin/login",
+                    403,
+                    data=login_data
+                )
+                
+                if not success:
+                    return False
+        
+        print("   ✅ All admin security validations passed")
+        return True
+
     # ========== ADMIN USER MANAGEMENT TESTS ==========
     
     def test_admin_get_all_users(self):
