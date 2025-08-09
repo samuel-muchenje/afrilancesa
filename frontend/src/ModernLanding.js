@@ -150,7 +150,14 @@ const ModernLanding = ({
   // Handle search functionality
   const handleSearch = () => {
     if (searchQuery.trim()) {
+      console.log('Search initiated:', searchQuery.trim());
       setCurrentPage(`browse-freelancers-search-${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
