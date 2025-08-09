@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import FileUpload from './components/FileUpload';
 import FileGallery from './components/FileGallery';
 import MessagingSystem from './components/MessagingSystem';
+import ReviewSystem from './components/ReviewSystem';
 import { 
   Briefcase, DollarSign, Star, Clock, Users, TrendingUp, 
   MessageCircle, Settings, LogOut, CheckCircle, AlertTriangle,
