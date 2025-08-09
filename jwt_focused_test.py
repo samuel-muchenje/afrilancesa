@@ -5,7 +5,7 @@ import jwt
 from datetime import datetime
 
 class JWTFocusedTester:
-    def __init__(self, base_url="https://9c38454e-b247-48e2-bfc9-c1c62214b98a.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
