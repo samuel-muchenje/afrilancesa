@@ -275,6 +275,20 @@ const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSear
       </div>
 
       <div>
+        <label className="block text-gray-300 text-sm font-medium mb-2">Category</label>
+        <select
+          value={userFilters.category}
+          onChange={(e) => setUserFilters(prev => ({ ...prev, category: e.target.value }))}
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        >
+          <option value="all">All Categories</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
         <label className="block text-gray-300 text-sm font-medium mb-2">Minimum Rating</label>
         <select
           value={userFilters.min_rating || ''}
