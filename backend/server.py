@@ -916,13 +916,83 @@ async def upload_id_document(
         {
             "$set": {
                 "id_document": file_info,
-                "document_submitted": True
+                "document_submitted": True,
+                "verification_status": "pending"
             }
         }
     )
     
+    # Send verification approval email to sam@afrilance.co.za
+    try:
+        user = db.users.find_one({"id": current_user["user_id"]})
+        if user:
+            verification_email_subject = f"New Verification Request - {user['full_name']}"
+            verification_email_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+                        New Freelancer Verification Request
+                    </h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #2c3e50;">Freelancer Details:</h3>
+                        <p><strong>Name:</strong> {user['full_name']}</p>
+                        <p><strong>Email:</strong> {user['email']}</p>
+                        <p><strong>Phone:</strong> {user.get('phone', 'Not provided')}</p>
+                        <p><strong>User ID:</strong> {user['id']}</p>
+                        <p><strong>Registration Date:</strong> {user.get('created_at', 'Unknown')}</p>
+                    </div>
+                    
+                    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #27ae60;">Document Information:</h3>
+                        <p><strong>Document Type:</strong> ID Document</p>
+                        <p><strong>Original Filename:</strong> {file_info['original_name']}</p>
+                        <p><strong>File Size:</strong> {round(file_info['file_size'] / 1024 / 1024, 2)} MB</p>
+                        <p><strong>Upload Date:</strong> {file_info['uploaded_at']}</p>
+                        <p><strong>Server Filename:</strong> {file_info['filename']}</p>
+                    </div>
+                    
+                    <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                        <h3 style="margin-top: 0; color: #856404;">Action Required:</h3>
+                        <p>Please review the uploaded ID document and verify the freelancer's identity.</p>
+                        <p><strong>Document Location:</strong> /app/backend/uploads/id_documents/{file_info['filename']}</p>
+                    </div>
+                    
+                    <div style="margin: 30px 0; text-align: center;">
+                        <a href="http://localhost:3000/admin-dashboard" 
+                           style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Review in Admin Dashboard
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
+                        <p>This is an automated notification from Afrilance verification system.</p>
+                        <p>Please do not reply to this email. Contact support if you need assistance.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Send email to verification team
+            email_sent = send_email(
+                to_email="sam@afrilance.co.za",
+                subject=verification_email_subject,
+                body=verification_email_body
+            )
+            
+            if email_sent:
+                print(f"✅ Verification email sent to sam@afrilance.co.za for user {user['full_name']}")
+            else:
+                print(f"❌ Failed to send verification email for user {user['full_name']}")
+                
+    except Exception as e:
+        print(f"❌ Error sending verification email: {str(e)}")
+        # Don't fail the upload if email fails
+    
     return {
-        "message": "ID document uploaded successfully",
+        "message": "ID document uploaded successfully. Verification team has been notified.",
         "filename": file_info["filename"],
         "status": "pending_verification"
     }
