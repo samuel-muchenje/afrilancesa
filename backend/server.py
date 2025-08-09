@@ -2685,7 +2685,7 @@ async def advanced_job_search(search_params: AdvancedJobSearch, skip: int = 0, l
             query["$or"] = [
                 {"title": {"$regex": search_params.query, "$options": "i"}},
                 {"description": {"$regex": search_params.query, "$options": "i"}},
-                {"requirements": {"$in": [{"$regex": search_params.query, "$options": "i"}]}}
+                {"requirements": {"$elemMatch": {"$regex": search_params.query, "$options": "i"}}}
             ]
         
         # Category filter
