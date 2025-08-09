@@ -56,16 +56,25 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
           u.role === 'freelancer' && !u.is_verified && u.id_document
         ).length;
         
+        // Filter pending admin requests
+        const pendingAdminRequests = usersData.filter(u => 
+          u.role === 'admin' && 
+          !u.admin_approved
+        );
+        
         setPendingUsers(usersData.filter(u => 
           u.role === 'freelancer' && !u.is_verified && u.id_document
         ).slice(0, 10));
+        
+        setPendingAdmins(pendingAdminRequests);
         
         setStats(prev => ({
           ...prev,
           totalUsers,
           totalFreelancers,
           totalClients,
-          pendingVerifications
+          pendingVerifications,
+          pendingAdmins: pendingAdminRequests.length
         }));
       }
       
