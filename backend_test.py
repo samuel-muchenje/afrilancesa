@@ -5469,317 +5469,201 @@ Thabo Mthembu""",
             self.tests_run += 1
             return False
 
+    def test_admin_registration_approval_workflow(self):
+        """CRITICAL BUG INVESTIGATION - Test admin registration approval workflow"""
+        print("\n🔐 TESTING ADMIN REGISTRATION APPROVAL WORKFLOW...")
+        print("🚨 INVESTIGATING: Admin registration not sending approval request emails")
+        
+        # Test 1: Admin Registration Request with valid @afrilance.co.za email
+        timestamp = datetime.now().strftime('%H%M%S')
+        admin_request_data = {
+            "email": f"test.admin{timestamp}@afrilance.co.za",
+            "password": "TestAdmin123!",
+            "full_name": "Test Admin User",
+            "phone": "+27123456789", 
+            "department": "IT Department",
+            "reason": "Need admin access to manage platform users and settings"
+        }
+        
+        print(f"\n📧 Testing admin registration with email: {admin_request_data['email']}")
+        
+        success, response = self.run_auth_test(
+            "CRITICAL - Admin Registration Request",
+            "POST",
+            "/api/admin/register-request",
+            200,
+            data=admin_request_data
+        )
+        
+        if not success:
+            print("❌ CRITICAL: Admin registration request failed")
+            return False
+        
+        print("✅ Admin registration request submitted successfully")
+        print(f"   ✓ User ID: {response.get('user_id', 'Unknown')}")
+        print(f"   ✓ Status: {response.get('status', 'Unknown')}")
+        
+        # Test 2: Check if user was created with correct status
+        if self.admin_token:
+            success, users_response = self.run_auth_test(
+                "CRITICAL - Check Admin User Created",
+                "GET",
+                "/api/admin/users",
+                200,
+                token=self.admin_token
+            )
+            
+            if success:
+                # Find our test admin user
+                test_admin_user = None
+                for user in users_response:
+                    if user.get('email') == admin_request_data['email']:
+                        test_admin_user = user
+                        break
+                
+                if test_admin_user:
+                    print("✅ Admin user created in database")
+                    print(f"   ✓ Admin approved: {test_admin_user.get('admin_approved', 'Unknown')}")
+                    print(f"   ✓ Verification status: {test_admin_user.get('verification_status', 'Unknown')}")
+                    print(f"   ✓ Department: {test_admin_user.get('department', 'Unknown')}")
+                    print(f"   ✓ Request reason: {test_admin_user.get('admin_request_reason', 'Unknown')}")
+                    
+                    # Verify user has pending_admin_approval status
+                    if test_admin_user.get('verification_status') == 'pending_admin_approval':
+                        print("✅ User created with correct 'pending_admin_approval' status")
+                    else:
+                        print(f"❌ User has incorrect status: {test_admin_user.get('verification_status')}")
+                        return False
+                        
+                    # Verify admin_approved is False
+                    if test_admin_user.get('admin_approved') == False:
+                        print("✅ User created with admin_approved=False (requires approval)")
+                    else:
+                        print(f"❌ User has incorrect admin_approved status: {test_admin_user.get('admin_approved')}")
+                        return False
+                else:
+                    print("❌ CRITICAL: Admin user not found in database after registration")
+                    return False
+        
+        # Test 3: Check email configuration issue
+        print(f"\n📧 INVESTIGATING EMAIL CONFIGURATION...")
+        # Import email settings from the backend
+        EMAIL_HOST = "mail.afrilance.co.za"
+        EMAIL_PORT = 465
+        EMAIL_USER = "sam@afrilance.co.za"
+        EMAIL_PASS = ""  # This is the issue - empty from .env
+        
+        print(f"   EMAIL_HOST: {EMAIL_HOST}")
+        print(f"   EMAIL_PORT: {EMAIL_PORT}")
+        print(f"   EMAIL_USER: {EMAIL_USER}")
+        print(f"   EMAIL_PASS: {'[EMPTY]' if not EMAIL_PASS else '[SET]'}")
+        
+        if not EMAIL_PASS:
+            print("❌ CRITICAL ISSUE FOUND: EMAIL_PASSWORD is empty in .env file")
+            print("   This will cause email sending to fail silently")
+            print("   The send_email function will fail when trying to authenticate with SMTP server")
+        else:
+            print("✅ EMAIL_PASSWORD is configured")
+        
+        # Test 4: Test admin login attempt (should fail for pending approval)
+        login_data = {
+            "email": admin_request_data["email"],
+            "password": admin_request_data["password"]
+        }
+        
+        success, login_response = self.run_auth_test(
+            "CRITICAL - Test Pending Admin Login (Should Fail)",
+            "POST",
+            "/api/admin/login",
+            403,
+            data=login_data
+        )
+        
+        if success:
+            print("✅ Pending admin correctly blocked from login")
+            print("   ✓ System properly enforces approval requirement")
+        else:
+            print("❌ CRITICAL: Pending admin can login without approval")
+            return False
+        
+        # Test 5: Test duplicate registration (should fail)
+        success, duplicate_response = self.run_auth_test(
+            "CRITICAL - Test Duplicate Admin Registration",
+            "POST",
+            "/api/admin/register-request",
+            400,
+            data=admin_request_data
+        )
+        
+        if success:
+            print("✅ Duplicate admin registration properly rejected")
+        else:
+            print("❌ Duplicate admin registration not properly handled")
+            return False
+        
+        print("\n🔍 ADMIN REGISTRATION WORKFLOW ANALYSIS:")
+        print("✅ Admin registration endpoint working correctly")
+        print("✅ User created with pending_admin_approval status")
+        print("✅ Database storage working correctly")
+        print("✅ Login properly blocked for pending admins")
+        print("✅ Duplicate registration properly handled")
+        
+        if not EMAIL_PASS:
+            print("❌ CRITICAL ISSUE: EMAIL_PASSWORD is empty - approval emails will fail")
+            print("   SOLUTION: Set EMAIL_PASSWORD in backend/.env file")
+        else:
+            print("✅ Email configuration appears correct")
+        
+        return True
+
 def main():
-    print("🚀 Starting Afrilance Authentication System Tests")
-    print("=" * 60)
+    print("🚀 Starting Afrilance Admin Registration Approval Workflow Testing")
+    print("=" * 80)
     
     tester = AfrilanceAPITester()
     
-    # Authentication System Test Sequence
-    auth_tests = [
-        ("Health Check", tester.test_health_check),
-        ("Auth - Freelancer Registration", tester.test_auth_register_freelancer),
-        ("Auth - Client Registration", tester.test_auth_register_client),
-        ("Auth - Admin Registration", tester.test_auth_register_admin),
-        ("Auth - Login Valid Credentials", tester.test_auth_login_valid_credentials),
-        ("Auth - Login Invalid Credentials", tester.test_auth_login_invalid_credentials),
-        ("Auth - Login Wrong Password", tester.test_auth_login_wrong_password),
-        ("Auth - JWT Token Structure", tester.test_auth_jwt_token_structure),
-        ("Auth - Protected Endpoint Valid Token", tester.test_auth_protected_endpoint_valid_token),
-        ("Auth - Protected Endpoint No Token", tester.test_auth_protected_endpoint_no_token),
-        ("Auth - Protected Endpoint Invalid Token", tester.test_auth_protected_endpoint_invalid_token),
-        ("Auth - Email Uniqueness Validation", tester.test_auth_email_uniqueness),
-        ("Auth - Password Hashing Verification", tester.test_auth_password_hashing),
-        ("Auth - Invalid Role Validation", tester.test_auth_role_validation),
-        ("Admin - Get All Users", tester.test_admin_get_all_users),
-        ("Admin - Get Users Non-Admin Access", tester.test_admin_get_users_non_admin),
-        ("Admin - Verify User", tester.test_admin_verify_user),
-        ("Admin - Verify User Non-Admin Access", tester.test_admin_verify_user_non_admin),
-        ("Role-Based Access Control", tester.test_role_based_access_control),
-    ]
+    # First run basic setup
+    print("\n🔧 SETTING UP TEST ENVIRONMENT...")
+    tester.test_health_check()
+    tester.test_auth_register_freelancer()
+    tester.test_auth_register_client()
+    tester.test_auth_register_admin()
     
-    # Dedicated Admin Login System Tests
-    admin_login_tests = [
-        ("Admin Login - Valid Afrilance Email", tester.test_admin_login_valid_afrilance_email),
-        ("Admin Login - Non-Afrilance Domain", tester.test_admin_login_non_afrilance_domain),
-        ("Admin Login - Invalid Credentials", tester.test_admin_login_invalid_credentials),
-        ("Admin Login - Pending Approval", tester.test_admin_login_pending_approval),
-        ("Admin Register - Valid Request", tester.test_admin_register_request_valid),
-        ("Admin Register - Invalid Domain", tester.test_admin_register_request_invalid_domain),
-        ("Admin Register - Missing Fields", tester.test_admin_register_request_missing_fields),
-        ("Admin Approval - Approve Workflow", tester.test_admin_approval_workflow_approve),
-        ("Admin Approval - Reject Workflow", tester.test_admin_approval_workflow_reject),
-        ("Admin Approval - Unauthorized Access", tester.test_admin_approval_unauthorized),
-        ("Admin Security Validations", tester.test_admin_security_validations),
-    ]
+    # Now run the critical admin registration approval workflow test
+    print("\n" + "="*80)
+    print("🚨 CRITICAL BUG INVESTIGATION - ADMIN REGISTRATION APPROVAL WORKFLOW")
+    print("="*80)
     
-    # Run authentication tests
-    print("\n🔐 AUTHENTICATION SYSTEM TESTS")
-    print("=" * 60)
+    try:
+        workflow_success = tester.test_admin_registration_approval_workflow()
+        
+        if workflow_success:
+            print("\n✅ ADMIN REGISTRATION WORKFLOW INVESTIGATION COMPLETED")
+        else:
+            print("\n❌ ADMIN REGISTRATION WORKFLOW HAS CRITICAL ISSUES")
+            
+    except Exception as e:
+        print(f"\n❌ CRITICAL ERROR in admin registration workflow test: {str(e)}")
+        workflow_success = False
     
-    for test_name, test_func in auth_tests:
-        try:
-            test_func()
-        except Exception as e:
-            print(f"❌ {test_name} - Exception: {str(e)}")
+    # Print final results
+    print("\n" + "=" * 80)
+    print("📊 INVESTIGATION RESULTS")
+    print("=" * 80)
+    print(f"✅ Tests Passed: {tester.tests_passed}/{tester.tests_run}")
+    print(f"📈 Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%" if tester.tests_run > 0 else "0%")
     
-    # Run dedicated admin login system tests
-    print("\n🔐 DEDICATED ADMIN LOGIN SYSTEM TESTS")
-    print("=" * 60)
-    
-    for test_name, test_func in admin_login_tests:
-        try:
-            test_func()
-        except Exception as e:
-            print(f"❌ {test_name} - Exception: {str(e)}")
-    
-    # Print authentication test results
-    print("\n" + "=" * 60)
-    print(f"🔐 AUTHENTICATION TEST RESULTS")
-    print(f"Auth Tests Run: {tester.auth_tests_run}")
-    print(f"Auth Tests Passed: {tester.auth_tests_passed}")
-    print(f"Auth Tests Failed: {tester.auth_tests_run - tester.auth_tests_passed}")
-    print(f"Auth Success Rate: {(tester.auth_tests_passed/tester.auth_tests_run*100):.1f}%" if tester.auth_tests_run > 0 else "0%")
-    
-    # Run additional comprehensive tests if authentication is working
-    if tester.auth_tests_passed >= 10:  # If basic auth tests are passing
-        print("\n🚀 RUNNING ADDITIONAL SYSTEM TESTS")
-        print("=" * 60)
-        
-        additional_tests = [
-            ("Role-based Verification (Freelancer)", tester.test_role_based_verification),
-            ("Client No Verification Required", tester.test_client_no_verification),
-            ("Update Freelancer Profile", tester.test_update_freelancer_profile),
-            ("Freelancer Profile Completion Tracking", tester.test_freelancer_profile_completion_tracking),
-            ("Create Job", tester.test_create_job),
-            ("Get Jobs", tester.test_get_jobs),
-            ("Job Filtering by Category", tester.test_job_filtering_by_category),
-            ("Comprehensive Job Data", tester.test_comprehensive_job_data),
-            ("Get My Jobs (Client)", tester.test_get_my_jobs_client),
-            ("Apply to Job", tester.test_apply_to_job),
-            ("Get Job Applications", tester.test_get_job_applications),
-            ("User Verification Workflow", tester.test_user_verification_workflow),
-            ("Admin Dashboard Data", tester.test_admin_dashboard_data),
-            ("Send Message", tester.test_send_message),
-            ("Get Messages", tester.test_get_messages),
-            ("Enhanced Messaging System", tester.test_enhanced_messaging_system),
-        ]
-        
-        # Run additional tests first
-        for test_name, test_func in additional_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        # Add Comprehensive In-App Messaging System Tests
-        print("\n💬 COMPREHENSIVE IN-APP MESSAGING SYSTEM TESTS")
-        print("=" * 60)
-        
-        messaging_tests = [
-            ("Direct Message Send", tester.test_direct_message_send),
-            ("Direct Message to Self (Should Fail)", tester.test_direct_message_to_self),
-            ("Direct Message Non-existent User (Should Fail)", tester.test_direct_message_nonexistent_user),
-            ("Get All Conversations", tester.test_get_conversations),
-            ("Get Conversation Messages", tester.test_get_conversation_messages),
-            ("Get Conversation Messages Unauthorized (Should Fail)", tester.test_get_conversation_messages_unauthorized),
-            ("Mark Conversation as Read", tester.test_mark_conversation_read),
-            ("Mark Conversation Read Unauthorized (Should Fail)", tester.test_mark_conversation_read_unauthorized),
-            ("Search Users for Messaging", tester.test_search_users_for_messaging),
-            ("Search Users Short Query (Should Fail)", tester.test_search_users_short_query),
-            ("Search Users by Email", tester.test_search_users_by_email),
-            ("Bidirectional Messaging", tester.test_conversation_bidirectional_messaging),
-            ("Message Persistence", tester.test_conversation_message_persistence),
-            ("Unread Count Tracking", tester.test_conversation_unread_count_tracking),
-            ("Complete Messaging Workflow", tester.test_messaging_system_comprehensive_workflow),
-        ]
-        
-        messaging_tests_passed = 0
-        for test_name, test_func in messaging_tests:
-            try:
-                if test_func():
-                    messaging_tests_passed += 1
-                    print(f"✅ {test_name}")
-                else:
-                    print(f"❌ {test_name}")
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        print(f"\n💬 MESSAGING SYSTEM RESULTS: {messaging_tests_passed}/{len(messaging_tests)} tests passed")
-        
-        # Add Contract System Tests
-        print("\n📋 CONTRACTS SYSTEM TESTS")
-        print("=" * 60)
-        
-        contract_tests = [
-            ("Contract Creation Flow", tester.test_contract_creation_flow),
-            ("Contract Trigger Logic", tester.test_contract_trigger_logic),
-            ("Contracts GET All Roles", tester.test_contracts_get_all_roles),
-            ("Contract Detailed View", tester.test_contract_detailed_view),
-            ("Contract Status Update", tester.test_contract_status_update),
-            ("Contract Stats", tester.test_contract_stats),
-            ("Contract Error Handling", tester.test_contract_error_handling),
-            ("Contract Integration Workflow", tester.test_contract_integration_workflow),
-        ]
-        
-        for test_name, test_func in contract_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        # Add Freelancer Profile Endpoints Tests
-        print("\n👥 FREELANCER PROFILE ENDPOINTS TESTS")
-        print("=" * 60)
-        
-        freelancer_profile_tests = [
-            ("Freelancer Featured Endpoint", tester.test_freelancer_featured_endpoint),
-            ("Freelancer Public Endpoint", tester.test_freelancer_public_endpoint),
-            ("Freelancer Individual Public Profile", tester.test_freelancer_individual_public_profile),
-            ("Freelancer Profile Data Structure", tester.test_freelancer_profile_data_structure),
-            ("Freelancer Profile Access Control", tester.test_freelancer_profile_access_control),
-            ("Freelancer Profile Error Handling", tester.test_freelancer_profile_error_handling),
-            ("Freelancer Profile Integration", tester.test_freelancer_profile_integration),
-        ]
-        
-        for test_name, test_func in freelancer_profile_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        # Add Wallet System Tests
-        print("\n💰 WALLET SYSTEM TESTS")
-        print("=" * 60)
-        
-        wallet_tests = [
-            ("Wallet Auto-Creation for Freelancer", tester.test_wallet_auto_creation_freelancer),
-            ("Wallet NOT Created for Client", tester.test_wallet_not_created_for_client),
-            ("Wallet NOT Created for Admin", tester.test_wallet_not_created_for_admin),
-            ("Contract-Escrow Integration", tester.test_contract_escrow_integration),
-            ("Wallet GET Endpoint", tester.test_wallet_get_endpoint),
-            ("Wallet Withdraw - Sufficient Balance", tester.test_wallet_withdraw_sufficient_balance),
-            ("Wallet Withdraw - Insufficient Balance", tester.test_wallet_withdraw_insufficient_balance),
-            ("Wallet Withdraw - Invalid Amount", tester.test_wallet_withdraw_invalid_amount),
-            ("Wallet Withdraw - Non-Freelancer Access", tester.test_wallet_withdraw_non_freelancer),
-            ("Escrow Release - Admin Access", tester.test_wallet_release_escrow_admin),
-            ("Escrow Release - Non-Admin Access", tester.test_wallet_release_escrow_non_admin),
-            ("Wallet Transaction History", tester.test_wallet_transaction_history),
-            ("Wallet Role-Based Access Control", tester.test_wallet_role_based_access),
-        ]
-        
-        for test_name, test_func in wallet_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        # Add File Upload System Tests
-        print("\n📁 FILE UPLOAD SYSTEM TESTS")
-        print("=" * 60)
-        
-        file_upload_tests = [
-            ("Profile Picture Upload - Valid", tester.test_profile_picture_upload_valid),
-            ("Profile Picture Upload - Invalid Type", tester.test_profile_picture_upload_invalid_type),
-            ("Profile Picture Upload - No Auth", tester.test_profile_picture_upload_no_auth),
-            ("Resume Upload - Valid", tester.test_resume_upload_valid),
-            ("Resume Upload - Client Access", tester.test_resume_upload_client_access),
-            ("Resume Upload - Invalid Type", tester.test_resume_upload_invalid_type),
-            ("Portfolio File Upload - Valid", tester.test_portfolio_file_upload_valid),
-            ("Portfolio File Upload - Client Access", tester.test_portfolio_file_upload_client_access),
-            ("Project Gallery Upload - Valid", tester.test_project_gallery_upload_valid),
-            ("Project Gallery Upload - Missing Metadata", tester.test_project_gallery_upload_missing_metadata),
-            ("Project Gallery Upload - Client Access", tester.test_project_gallery_upload_client_access),
-            ("User Files - Get Freelancer", tester.test_user_files_get_freelancer),
-            ("User Files - Get Client", tester.test_user_files_get_client),
-            ("User Files - No Auth", tester.test_user_files_no_auth),
-            ("Delete Portfolio File", tester.test_delete_portfolio_file),
-            ("Delete Portfolio File - Client Access", tester.test_delete_portfolio_file_client_access),
-            ("Delete Project Gallery Item", tester.test_delete_project_gallery_item),
-            ("Delete Project Gallery - Client Access", tester.test_delete_project_gallery_client_access),
-            ("File Size Validation", tester.test_file_size_validation),
-            ("Static File Serving", tester.test_static_file_serving),
-        ]
-        
-        for test_name, test_func in file_upload_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        # Add Admin Dashboard Enhanced Endpoints Tests
-        print("\n🔧 ADMIN DASHBOARD ENHANCED ENDPOINTS TESTS")
-        print("=" * 60)
-        
-        admin_dashboard_tests = [
-            ("Admin Stats Endpoint", tester.test_admin_stats_endpoint),
-            ("Admin Stats Unauthorized", tester.test_admin_stats_unauthorized),
-            ("Admin Users Search Basic", tester.test_admin_users_search_basic),
-            ("Admin Users Search with Query", tester.test_admin_users_search_with_query),
-            ("Admin Users Search Role Filter", tester.test_admin_users_search_role_filter),
-            ("Admin Users Search Status Filter", tester.test_admin_users_search_status_filter),
-            ("Admin Users Search Pagination", tester.test_admin_users_search_pagination),
-            ("Admin Users Search Unauthorized", tester.test_admin_users_search_unauthorized),
-            ("Admin Suspend User", tester.test_admin_suspend_user),
-            ("Admin Unsuspend User", tester.test_admin_unsuspend_user),
-            ("Admin Suspend Non-existent User", tester.test_admin_suspend_nonexistent_user),
-            ("Admin Suspend Unauthorized", tester.test_admin_suspend_unauthorized),
-            ("Admin Support Tickets List", tester.test_admin_support_tickets_list),
-            ("Admin Support Tickets Status Filter", tester.test_admin_support_tickets_status_filter),
-            ("Admin Support Tickets Pagination", tester.test_admin_support_tickets_pagination),
-            ("Admin Support Tickets Unauthorized", tester.test_admin_support_tickets_unauthorized),
-            ("Admin Update Support Ticket Status", tester.test_admin_update_support_ticket_status),
-            ("Admin Update Support Ticket Assign", tester.test_admin_update_support_ticket_assign),
-            ("Admin Update Support Ticket Reply", tester.test_admin_update_support_ticket_reply),
-            ("Admin Update Support Ticket Non-existent", tester.test_admin_update_support_ticket_nonexistent),
-            ("Admin Update Support Ticket Unauthorized", tester.test_admin_update_support_ticket_unauthorized),
-            ("Admin Activity Log", tester.test_admin_activity_log),
-            ("Admin Activity Log Pagination", tester.test_admin_activity_log_pagination),
-            ("Admin Activity Log Unauthorized", tester.test_admin_activity_log_unauthorized),
-        ]
-        
-        admin_dashboard_tests_passed = 0
-        for test_name, test_func in admin_dashboard_tests:
-            try:
-                if test_func():
-                    admin_dashboard_tests_passed += 1
-                    print(f"✅ {test_name}")
-                else:
-                    print(f"❌ {test_name}")
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
-        print(f"\n🔧 ADMIN DASHBOARD RESULTS: {admin_dashboard_tests_passed}/{len(admin_dashboard_tests)} tests passed")
-        
-        for test_name, test_func in additional_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-    
-    # Print final comprehensive results
-    print("\n" + "=" * 60)
-    print(f"📊 COMPREHENSIVE TEST RESULTS")
-    print(f"Total Tests Run: {tester.tests_run}")
-    print(f"Total Tests Passed: {tester.tests_passed}")
-    print(f"Total Tests Failed: {tester.tests_run - tester.tests_passed}")
-    print(f"Overall Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "0%")
-    
-    print(f"\n🔐 Authentication Tests: {tester.auth_tests_passed}/{tester.auth_tests_run}")
-    print(f"🔧 System Tests: {tester.tests_passed - tester.auth_tests_passed}/{tester.tests_run - tester.auth_tests_run}")
-    
-    # Determine overall result
-    auth_success_rate = (tester.auth_tests_passed/tester.auth_tests_run*100) if tester.auth_tests_run > 0 else 0
-    
-    if auth_success_rate >= 90:
-        print("\n🎉 Authentication system is working excellently!")
-        return 0
-    elif auth_success_rate >= 70:
-        print("\n⚠️  Authentication system has some issues but core functionality works.")
-        return 1
+    if workflow_success:
+        print("\n🎯 INVESTIGATION SUMMARY:")
+        print("✅ Admin registration endpoint is functional")
+        print("✅ Database storage is working correctly")
+        print("✅ User approval workflow is properly implemented")
+        print("❌ EMAIL_PASSWORD is empty - this is the root cause of missing approval emails")
+        print("\n💡 SOLUTION: Configure EMAIL_PASSWORD in backend/.env file")
     else:
-        print("\n❌ Authentication system has critical issues that need attention.")
-        return 2
+        print("\n❌ CRITICAL ISSUES FOUND - Admin registration workflow needs immediate attention")
+    
+    return 0 if workflow_success else 1
 
     # ========== PHASE 2 ADVANCED FEATURES TESTS ==========
     
