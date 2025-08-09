@@ -97,6 +97,7 @@ const ModernLanding = ({
   const [ctaBarVisible, setCtaBarVisible] = useState(false); // Start hidden by default
   const [featuredFreelancers, setFeaturedFreelancers] = useState([]);
   const [loadingFreelancers, setLoadingFreelancers] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(''); // Add search query state
   
   const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   
