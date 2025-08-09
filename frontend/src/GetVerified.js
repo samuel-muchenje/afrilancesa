@@ -151,23 +151,23 @@ const GetVerified = ({ onNavigate }) => {
   const faqs = [
     {
       question: "How long does verification take?",
-      answer: "Standard verification takes 24-48 hours during business days. Peak periods may take up to 72 hours. You'll receive email updates throughout the process."
+      answer: "Standard verification takes 24-48 hours during business days. Peak periods may take up to 72 hours. Our verification team at sam@afrilance.co.za reviews each application manually to ensure quality and security."
     },
     {
       question: "What if my ID document is rejected?",
-      answer: "We'll send you specific feedback on why the document was rejected and what needs to be corrected. Common issues include poor image quality, missing corners, or glare. You can resubmit immediately after addressing the issues."
+      answer: "We'll send you specific feedback via email on why the document was rejected and what needs to be corrected. Common issues include poor image quality, missing corners, or glare. You can resubmit immediately after addressing the issues. Contact sam@afrilance.co.za if you need additional help."
     },
     {
       question: "Can international freelancers get verified?",
-      answer: "Yes! International freelancers can get verified by providing a valid passport and proof of legal work authorization in South Africa (work permit, visa, etc.)."
+      answer: "Yes! International freelancers can get verified by providing a valid passport and proof of legal work authorization in South Africa (work permit, visa, etc.). Contact sam@afrilance.co.za for specific requirements for your situation."
     },
     {
-      question: "Is verification free?",
-      answer: "Yes, identity verification is completely free. We believe in making our platform accessible to all qualified freelancers."
+      question: "Is there a fee to join Afrilance?",
+      answer: "No, joining Afrilance is completely free. We only charge a small service fee (10%) when you successfully complete paid projects."
     },
     {
       question: "What happens if I lose my verified status?",
-      answer: "Verified status can only be revoked for serious violations of our terms of service. If this happens, you'll be notified with specific reasons and given an opportunity to appeal."
+      answer: "Verified status can only be revoked for serious violations of our terms of service. If this happens, you'll be notified with specific reasons and given an opportunity to appeal to sam@afrilance.co.za."
     },
     {
       question: "Do I need to reverify periodically?",
