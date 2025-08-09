@@ -4575,6 +4575,51 @@ def main():
             ("Send Message", tester.test_send_message),
             ("Get Messages", tester.test_get_messages),
             ("Enhanced Messaging System", tester.test_enhanced_messaging_system),
+        ]
+        
+        # Run additional tests first
+        for test_name, test_func in additional_tests:
+            try:
+                test_func()
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
+        # Add Comprehensive In-App Messaging System Tests
+        print("\n💬 COMPREHENSIVE IN-APP MESSAGING SYSTEM TESTS")
+        print("=" * 60)
+        
+        messaging_tests = [
+            ("Direct Message Send", tester.test_direct_message_send),
+            ("Direct Message to Self (Should Fail)", tester.test_direct_message_to_self),
+            ("Direct Message Non-existent User (Should Fail)", tester.test_direct_message_nonexistent_user),
+            ("Get All Conversations", tester.test_get_conversations),
+            ("Get Conversation Messages", tester.test_get_conversation_messages),
+            ("Get Conversation Messages Unauthorized (Should Fail)", tester.test_get_conversation_messages_unauthorized),
+            ("Mark Conversation as Read", tester.test_mark_conversation_read),
+            ("Mark Conversation Read Unauthorized (Should Fail)", tester.test_mark_conversation_read_unauthorized),
+            ("Search Users for Messaging", tester.test_search_users_for_messaging),
+            ("Search Users Short Query (Should Fail)", tester.test_search_users_short_query),
+            ("Search Users by Email", tester.test_search_users_by_email),
+            ("Bidirectional Messaging", tester.test_conversation_bidirectional_messaging),
+            ("Message Persistence", tester.test_conversation_message_persistence),
+            ("Unread Count Tracking", tester.test_conversation_unread_count_tracking),
+            ("Complete Messaging Workflow", tester.test_messaging_system_comprehensive_workflow),
+        ]
+        
+        messaging_tests_passed = 0
+        for test_name, test_func in messaging_tests:
+            try:
+                if test_func():
+                    messaging_tests_passed += 1
+                    print(f"✅ {test_name}")
+                else:
+                    print(f"❌ {test_name}")
+            except Exception as e:
+                print(f"❌ {test_name} - Exception: {str(e)}")
+        
+        print(f"\n💬 MESSAGING SYSTEM RESULTS: {messaging_tests_passed}/{len(messaging_tests)} tests passed")
+        
+        additional_tests = [
             ("Submit Support Ticket", tester.test_support_ticket),
             ("Comprehensive Support System", tester.test_support_system_comprehensive),
             ("ID Document Upload", tester.test_id_document_upload),
