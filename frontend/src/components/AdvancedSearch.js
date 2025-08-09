@@ -11,7 +11,7 @@ import {
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-const AdvancedSearch = ({ searchType = 'jobs' }) => {
+const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSearch = '' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
