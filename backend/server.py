@@ -1491,6 +1491,372 @@ async def get_verification_status(current_user = Depends(verify_token)):
     
     return verification_info
 
+@app.post("/api/admin/login")
+async def admin_login(user_data: UserLogin):
+    """Dedicated admin login endpoint with additional security"""
+    
+    # Validate Afrilance domain for admin login
+    if not user_data.email.lower().endswith('@afrilance.co.za'):
+        raise HTTPException(
+            status_code=403, 
+            detail="Admin access is restricted to @afrilance.co.za email addresses"
+        )
+    
+    # Find user
+    user = db.users.find_one({"email": user_data.email.lower()})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Verify password
+    if not verify_password(user_data.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Check if user is admin
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    
+    # Check if admin account is approved
+    if not user.get("admin_approved", False):
+        raise HTTPException(
+            status_code=403, 
+            detail="Your admin account is pending approval. Contact sam@afrilance.co.za"
+        )
+    
+    # Update last login
+    db.users.update_one(
+        {"email": user_data.email.lower()},
+        {"$set": {"last_login": datetime.utcnow()}}
+    )
+    
+    # Create JWT token
+    token_data = {
+        "user_id": user["id"],
+        "email": user["email"],
+        "role": user["role"],
+        "exp": datetime.utcnow() + timedelta(hours=24)
+    }
+    token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    # Remove sensitive data
+    user_response = {
+        "id": user["id"],
+        "email": user["email"],
+        "full_name": user["full_name"],
+        "role": user["role"],
+        "admin_approved": user.get("admin_approved", False),
+        "department": user.get("department", ""),
+        "last_login": user.get("last_login")
+    }
+    
+    return {"token": token, "user": user_response}
+
+@app.post("/api/admin/register-request")
+async def admin_register_request(request_data: dict):
+    """Handle admin access requests - requires approval"""
+    
+    email = request_data.get("email", "").lower()
+    password = request_data.get("password", "")
+    full_name = request_data.get("full_name", "")
+    phone = request_data.get("phone", "")
+    department = request_data.get("department", "")
+    reason = request_data.get("reason", "")
+    
+    # Validate required fields
+    if not all([email, password, full_name, phone, department, reason]):
+        raise HTTPException(status_code=400, detail="All fields are required")
+    
+    # Validate Afrilance domain
+    if not email.endswith('@afrilance.co.za'):
+        raise HTTPException(
+            status_code=400, 
+            detail="Admin requests are only accepted from @afrilance.co.za email addresses"
+        )
+    
+    # Check if user already exists
+    existing_user = db.users.find_one({"email": email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Hash password
+    hashed_password = hash_password(password)
+    
+    # Create pending admin user
+    user_id = str(uuid.uuid4())
+    user_data = {
+        "id": user_id,
+        "email": email,
+        "password": hashed_password,
+        "full_name": full_name,
+        "phone": phone,
+        "role": "admin",
+        "department": department,
+        "admin_approved": False,  # Requires approval
+        "admin_request_reason": reason,
+        "admin_request_date": datetime.utcnow(),
+        "created_at": datetime.utcnow(),
+        "verification_status": "pending_admin_approval"
+    }
+    
+    # Save to database
+    db.users.insert_one(user_data)
+    
+    # Send approval request email to sam@afrilance.co.za
+    try:
+        approval_subject = f"🔐 New Admin Access Request - {full_name}"
+        approval_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #e74c3c; margin-bottom: 10px;">🔐 Admin Access Request</h1>
+                    <h2 style="color: #2c3e50;">Requires Your Approval</h2>
+                </div>
+                
+                <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #856404; margin-top: 0;">⚠️ Security Alert</h3>
+                    <p>A new admin access request has been submitted and requires your immediate review.</p>
+                </div>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #2c3e50; margin-top: 0;">Applicant Details:</h3>
+                    <p><strong>Name:</strong> {full_name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Phone:</strong> {phone}</p>
+                    <p><strong>Department/Role:</strong> {department}</p>
+                    <p><strong>User ID:</strong> {user_id}</p>
+                    <p><strong>Request Date:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                </div>
+                
+                <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #2c3e50; margin-top: 0;">Reason for Admin Access:</h3>
+                    <p style="font-style: italic; color: #555; background: white; padding: 15px; border-radius: 5px; border-left: 3px solid #3498db;">
+                        "{reason}"
+                    </p>
+                </div>
+                
+                <div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #721c24; margin-top: 0;">🔒 Security Verification Required</h3>
+                    <p>Please verify this person's identity and authority before approving admin access.</p>
+                    <ul style="color: #721c24;">
+                        <li>Confirm they are an authorized Afrilance employee</li>
+                        <li>Verify their role requires admin privileges</li>
+                        <li>Check with HR/Management if unsure</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <p style="font-size: 16px; margin-bottom: 20px;">Choose your action:</p>
+                    <div style="display: inline-block; margin: 0 10px;">
+                        <a href="http://localhost:3000/admin-dashboard" 
+                           style="background-color: #27ae60; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin: 5px;">
+                            ✅ Review & Approve
+                        </a>
+                    </div>
+                    <div style="display: inline-block; margin: 0 10px;">
+                        <a href="mailto:{email}?subject=Admin Access Request Update" 
+                           style="background-color: #3498db; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin: 5px;">
+                            💬 Contact Applicant
+                        </a>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
+                    <p><strong>Security Notice:</strong> This is a critical security request. Only approve admin access for verified Afrilance employees who require these privileges for their role.</p>
+                    <p>This is an automated security notification from Afrilance Admin Portal.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send email
+        email_sent = send_email("sam@afrilance.co.za", approval_subject, approval_body)
+        
+        if email_sent:
+            print(f"✅ Admin approval request sent to sam@afrilance.co.za for {full_name}")
+        else:
+            print(f"❌ Failed to send admin approval request for {full_name}")
+    
+    except Exception as e:
+        print(f"❌ Error sending admin approval email: {str(e)}")
+    
+    return {
+        "message": "Admin access request submitted successfully. You will be notified once reviewed.",
+        "user_id": user_id,
+        "status": "pending_approval"
+    }
+
+@app.post("/api/admin/approve-admin/{user_id}")
+async def approve_admin_request(
+    user_id: str,
+    approval_data: dict,
+    current_user = Depends(verify_token)
+):
+    """Approve or reject admin access requests - only existing admins can do this"""
+    
+    # Check if current user is admin
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can approve admin requests")
+    
+    status = approval_data.get("status")  # "approved" or "rejected"
+    admin_notes = approval_data.get("admin_notes", "")
+    
+    if status not in ["approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Status must be 'approved' or 'rejected'")
+    
+    # Find the pending admin user
+    user = db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=400, detail="User is not an admin request")
+    
+    # Update admin approval status
+    update_data = {
+        "admin_approved": status == "approved",
+        "admin_approval_date": datetime.utcnow(),
+        "approved_by": current_user["user_id"],
+        "admin_approval_notes": admin_notes,
+        "verification_status": "approved" if status == "approved" else "rejected"
+    }
+    
+    db.users.update_one(
+        {"id": user_id},
+        {"$set": update_data}
+    )
+    
+    # Send notification emails
+    try:
+        if status == "approved":
+            # Email to new admin - Approval
+            user_subject = "🎉 Your Afrilance Admin Access Has Been Approved!"
+            user_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #27ae60; margin-bottom: 10px;">🎉 Admin Access Approved!</h1>
+                        <h2 style="color: #2c3e50;">Welcome to Afrilance Admin Portal</h2>
+                    </div>
+                    
+                    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p>Dear {user['full_name']},</p>
+                        <p>Congratulations! Your admin access request has been approved by sam@afrilance.co.za. You now have full administrative privileges on the Afrilance platform.</p>
+                    </div>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Your Admin Privileges Include:</h3>
+                        <ul style="color: #555;">
+                            <li>✅ User verification management</li>
+                            <li>✅ System analytics and reporting</li>
+                            <li>✅ Support ticket management</li>
+                            <li>✅ Admin user management</li>
+                            <li>✅ Platform oversight and monitoring</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 20px 0;">
+                        <h3 style="color: #856404; margin-top: 0;">🔒 Security Responsibilities</h3>
+                        <p>As an admin, you have access to sensitive user data and platform controls:</p>
+                        <ul style="color: #856404;">
+                            <li>Keep your credentials secure</li>
+                            <li>Follow data protection protocols</li>
+                            <li>Report security concerns immediately</li>
+                            <li>Use admin privileges responsibly</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="http://localhost:3000/admin" 
+                           style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                            Access Admin Portal
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Need help? Contact sam@afrilance.co.za</p>
+                        <p style="font-size: 12px;">This account has elevated privileges. Use responsibly.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        else:  # rejected
+            # Email to applicant - Rejection
+            user_subject = "Afrilance Admin Access Request Update"
+            user_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #e74c3c;">Admin Access Request Update</h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p>Dear {user['full_name']},</p>
+                        <p>Thank you for your admin access request. After review, we need additional information or authorization before we can grant admin privileges.</p>
+                    </div>
+                    
+                    {f'<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;"><h3 style="margin-top: 0; color: #856404;">Feedback:</h3><p>{admin_notes}</p></div>' if admin_notes else ''}
+                    
+                    <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Next Steps:</h3>
+                        <ol style="color: #555;">
+                            <li>Contact sam@afrilance.co.za for clarification</li>
+                            <li>Provide any additional documentation required</li>
+                            <li>Confirm your role and authorization level</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Contact sam@afrilance.co.za for assistance</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        
+        # Send emails
+        user_email_sent = send_email(user['email'], user_subject, user_body)
+        
+        # Admin notification
+        admin_subject = f"✅ Admin Request {status.title()} - {user['full_name']}"
+        admin_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: {'#27ae60' if status == 'approved' else '#e74c3c'};">✅ Admin Request {status.title()}</h2>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Action Completed:</h3>
+                    <p><strong>User:</strong> {user['full_name']} ({user['email']})</p>
+                    <p><strong>Department:</strong> {user.get('department', 'Unknown')}</p>
+                    <p><strong>Decision:</strong> {status.title()}</p>
+                    <p><strong>Decided by:</strong> {current_user.get('full_name', current_user['user_id'])}</p>
+                    <p><strong>Date:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                </div>
+                
+                {f'<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3 style="margin-top: 0;">Admin Notes:</h3><p>{admin_notes}</p></div>' if admin_notes else ''}
+                
+                <p>The user has been notified via email.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        admin_email_sent = send_email("sam@afrilance.co.za", admin_subject, admin_body)
+        
+        print(f"📧 Admin approval emails sent - User: {user_email_sent}, Admin: {admin_email_sent}")
+        
+    except Exception as e:
+        print(f"❌ Error sending admin approval emails: {str(e)}")
+    
+    return {
+        "message": f"Admin request {status} successfully",
+        "user_id": user_id,
+        "status": status,
+        "approval_date": update_data["admin_approval_date"]
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
