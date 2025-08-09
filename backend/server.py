@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import shutil
 from pathlib import Path
+import socket
 
 # Create uploads directory structure
 UPLOAD_DIR = Path("uploads")
