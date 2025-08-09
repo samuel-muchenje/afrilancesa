@@ -549,6 +549,41 @@ function App() {
     );
   }
 
+  // For Freelancers Page
+  if (currentPage === 'for-freelancers') {
+    return (
+      <ForFreelancers onNavigate={setCurrentPage} />
+    );
+  }
+
+  // How to Join Page
+  if (currentPage === 'how-to-join') {
+    return (
+      <HowToJoin onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Create Profile Page
+  if (currentPage === 'create-profile') {
+    return (
+      <CreateProfile onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Get Verified Page
+  if (currentPage === 'get-verified') {
+    return (
+      <GetVerified onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Success Stories Page
+  if (currentPage === 'success-stories') {
+    return (
+      <SuccessStories onNavigate={setCurrentPage} />
+    );
+  }
+
   // Main Dashboard
   return (
     <div className="dashboard-modern">
