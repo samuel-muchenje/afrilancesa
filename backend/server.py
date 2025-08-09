@@ -2419,6 +2419,531 @@ async def get_transaction_history(current_user = Depends(verify_token)):
         "total_transactions": len(transactions)
     }
 
+# Phase 2: Advanced Features Endpoints
+
+@app.post("/api/reviews")
+async def create_review(review_data: ReviewCreate, current_user = Depends(verify_token)):
+    """Create a review for a completed contract"""
+    try:
+        # Verify contract exists and is completed
+        contract = db.contracts.find_one({"id": review_data.contract_id, "status": "Completed"})
+        if not contract:
+            raise HTTPException(status_code=404, detail="Completed contract not found")
+        
+        # Verify user is part of the contract
+        if current_user["user_id"] not in [contract["freelancer_id"], contract["client_id"]]:
+            raise HTTPException(status_code=403, detail="You can only review contracts you're part of")
+        
+        # Determine who is being reviewed
+        if review_data.reviewer_type == "client":
+            if current_user["user_id"] != contract["client_id"]:
+                raise HTTPException(status_code=403, detail="Only the client can submit a client review")
+            reviewed_user_id = contract["freelancer_id"]
+        else:  # freelancer review
+            if current_user["user_id"] != contract["freelancer_id"]:
+                raise HTTPException(status_code=403, detail="Only the freelancer can submit a freelancer review")
+            reviewed_user_id = contract["client_id"]
+        
+        # Check if review already exists
+        existing_review = db.reviews.find_one({
+            "contract_id": review_data.contract_id,
+            "reviewer_id": current_user["user_id"],
+            "reviewer_type": review_data.reviewer_type
+        })
+        if existing_review:
+            raise HTTPException(status_code=400, detail="You have already reviewed this contract")
+        
+        # Validate rating
+        if not (1 <= review_data.rating <= 5):
+            raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+        
+        # Create review
+        review_id = str(uuid.uuid4())
+        review = {
+            "id": review_id,
+            "contract_id": review_data.contract_id,
+            "reviewer_id": current_user["user_id"],
+            "reviewed_user_id": reviewed_user_id,
+            "reviewer_type": review_data.reviewer_type,
+            "rating": review_data.rating,
+            "review_text": review_data.review_text,
+            "created_at": datetime.utcnow(),
+            "is_approved": True,  # Auto-approve for now
+            "is_public": True
+        }
+        
+        db.reviews.insert_one(review)
+        
+        # Update user's average rating
+        user_reviews = list(db.reviews.find({"reviewed_user_id": reviewed_user_id, "is_approved": True}))
+        if user_reviews:
+            avg_rating = sum(r["rating"] for r in user_reviews) / len(user_reviews)
+            total_reviews = len(user_reviews)
+            
+            db.users.update_one(
+                {"id": reviewed_user_id},
+                {
+                    "$set": {
+                        "rating": round(avg_rating, 1),
+                        "total_reviews": total_reviews
+                    }
+                }
+            )
+        
+        return {
+            "message": "Review created successfully",
+            "review_id": review_id,
+            "average_rating": round(avg_rating, 1) if user_reviews else review_data.rating,
+            "total_reviews": len(user_reviews) if user_reviews else 1
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating review: {str(e)}")
+
+@app.get("/api/reviews/{user_id}")
+async def get_user_reviews(user_id: str, skip: int = 0, limit: int = 10):
+    """Get reviews for a specific user"""
+    try:
+        # Get reviews with reviewer information
+        pipeline = [
+            {"$match": {"reviewed_user_id": user_id, "is_approved": True, "is_public": True}},
+            {"$sort": {"created_at": -1}},
+            {"$skip": skip},
+            {"$limit": limit},
+            {"$lookup": {
+                "from": "users",
+                "let": {"reviewer_id": "$reviewer_id"},
+                "pipeline": [
+                    {"$match": {"$expr": {"$eq": ["$id", "$$reviewer_id"]}}},
+                    {"$project": {"full_name": 1, "role": 1}}
+                ],
+                "as": "reviewer"
+            }},
+            {"$lookup": {
+                "from": "contracts",
+                "let": {"contract_id": "$contract_id"},
+                "pipeline": [
+                    {"$match": {"$expr": {"$eq": ["$id", "$$contract_id"]}}},
+                    {"$lookup": {
+                        "from": "jobs",
+                        "let": {"job_id": "$job_id"},
+                        "pipeline": [
+                            {"$match": {"$expr": {"$eq": ["$id", "$$job_id"]}}},
+                            {"$project": {"title": 1}}
+                        ],
+                        "as": "job"
+                    }}
+                ],
+                "as": "contract"
+            }}
+        ]
+        
+        reviews = list(db.reviews.aggregate(pipeline))
+        total_count = db.reviews.count_documents({"reviewed_user_id": user_id, "is_approved": True, "is_public": True})
+        
+        # Process reviews
+        formatted_reviews = []
+        for review in reviews:
+            reviewer = review["reviewer"][0] if review["reviewer"] else {}
+            contract = review["contract"][0] if review["contract"] else {}
+            job = contract.get("job", [{}])[0] if contract.get("job") else {}
+            
+            formatted_reviews.append({
+                "id": review["id"],
+                "rating": review["rating"],
+                "review_text": review["review_text"],
+                "reviewer_type": review["reviewer_type"],
+                "created_at": review["created_at"],
+                "reviewer_name": reviewer.get("full_name", "Anonymous"),
+                "job_title": job.get("title", "Unknown Job")
+            })
+        
+        return {
+            "reviews": formatted_reviews,
+            "total": total_count,
+            "page": skip // limit + 1,
+            "pages": (total_count + limit - 1) // limit if total_count > 0 else 1
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching reviews: {str(e)}")
+
+@app.get("/api/admin/revenue-analytics")
+async def get_revenue_analytics(current_user = Depends(verify_token)):
+    """Get comprehensive revenue analytics for admin dashboard"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        # Platform commission rate (5% of contract value)
+        PLATFORM_COMMISSION_RATE = 0.05
+        
+        # Get all completed contracts
+        completed_contracts = list(db.contracts.find({"status": "Completed"}))
+        
+        # Calculate total revenue metrics
+        total_contract_value = sum(contract.get("amount", 0) for contract in completed_contracts)
+        total_commission = total_contract_value * PLATFORM_COMMISSION_RATE
+        
+        # Get wallet statistics
+        wallet_pipeline = [
+            {"$group": {
+                "_id": None,
+                "total_available": {"$sum": "$available_balance"},
+                "total_escrow": {"$sum": "$escrow_balance"},
+                "total_wallets": {"$sum": 1}
+            }}
+        ]
+        wallet_stats = list(db.wallets.aggregate(wallet_pipeline))
+        wallet_totals = wallet_stats[0] if wallet_stats else {"total_available": 0, "total_escrow": 0, "total_wallets": 0}
+        
+        # Get transaction analytics
+        transaction_pipeline = [
+            {"$unwind": "$transaction_history"},
+            {"$group": {
+                "_id": "$transaction_history.type",
+                "total_amount": {"$sum": "$transaction_history.amount"},
+                "count": {"$sum": 1}
+            }}
+        ]
+        transaction_stats = list(db.wallets.aggregate(transaction_pipeline))
+        
+        # Monthly revenue (last 6 months)
+        six_months_ago = datetime.utcnow() - timedelta(days=180)
+        monthly_revenue = []
+        for i in range(6):
+            month_start = six_months_ago + timedelta(days=30*i)
+            month_end = month_start + timedelta(days=30)
+            
+            month_contracts = [c for c in completed_contracts 
+                             if month_start <= c.get("completed_at", datetime.min) < month_end]
+            month_value = sum(contract.get("amount", 0) for contract in month_contracts)
+            month_commission = month_value * PLATFORM_COMMISSION_RATE
+            
+            monthly_revenue.append({
+                "month": month_start.strftime("%Y-%m"),
+                "contract_value": month_value,
+                "commission": month_commission,
+                "contracts_count": len(month_contracts)
+            })
+        
+        # Top performing freelancers by revenue generated
+        freelancer_revenue = {}
+        for contract in completed_contracts:
+            freelancer_id = contract.get("freelancer_id")
+            if freelancer_id:
+                if freelancer_id not in freelancer_revenue:
+                    freelancer_revenue[freelancer_id] = {"total": 0, "contracts": 0}
+                freelancer_revenue[freelancer_id]["total"] += contract.get("amount", 0)
+                freelancer_revenue[freelancer_id]["contracts"] += 1
+        
+        # Get top 10 freelancers
+        top_freelancers = []
+        for freelancer_id, stats in sorted(freelancer_revenue.items(), 
+                                         key=lambda x: x[1]["total"], reverse=True)[:10]:
+            freelancer = db.users.find_one({"id": freelancer_id}, {"full_name": 1, "email": 1})
+            if freelancer:
+                top_freelancers.append({
+                    "freelancer_id": freelancer_id,
+                    "full_name": freelancer.get("full_name", "Unknown"),
+                    "email": freelancer.get("email", ""),
+                    "total_earned": stats["total"],
+                    "total_contracts": stats["contracts"],
+                    "commission_generated": stats["total"] * PLATFORM_COMMISSION_RATE
+                })
+        
+        return {
+            "summary": {
+                "total_contract_value": total_contract_value,
+                "total_commission_earned": total_commission,
+                "commission_rate": PLATFORM_COMMISSION_RATE,
+                "completed_contracts": len(completed_contracts),
+                "active_wallets": wallet_totals["total_wallets"]
+            },
+            "wallet_statistics": {
+                "total_available_balance": wallet_totals["total_available"],
+                "total_escrow_balance": wallet_totals["total_escrow"],
+                "total_platform_value": wallet_totals["total_available"] + wallet_totals["total_escrow"]
+            },
+            "transaction_analytics": transaction_stats,
+            "monthly_revenue": monthly_revenue,
+            "top_freelancers": top_freelancers
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching revenue analytics: {str(e)}")
+
+@app.post("/api/search/jobs/advanced")
+async def advanced_job_search(search_params: AdvancedJobSearch, skip: int = 0, limit: int = 20):
+    """Advanced job search with multiple filters"""
+    try:
+        # Build query
+        query = {"status": "active"}  # Only show active jobs
+        
+        # Text search
+        if search_params.query:
+            query["$or"] = [
+                {"title": {"$regex": search_params.query, "$options": "i"}},
+                {"description": {"$regex": search_params.query, "$options": "i"}},
+                {"requirements": {"$in": [{"$regex": search_params.query, "$options": "i"}]}}
+            ]
+        
+        # Category filter
+        if search_params.category and search_params.category != "all":
+            query["category"] = search_params.category
+        
+        # Budget filters
+        if search_params.budget_min is not None or search_params.budget_max is not None:
+            budget_query = {}
+            if search_params.budget_min is not None:
+                budget_query["$gte"] = search_params.budget_min
+            if search_params.budget_max is not None:
+                budget_query["$lte"] = search_params.budget_max
+            query["budget"] = budget_query
+        
+        # Budget type filter
+        if search_params.budget_type and search_params.budget_type != "all":
+            query["budget_type"] = search_params.budget_type
+        
+        # Skills filter
+        if search_params.skills and len(search_params.skills) > 0:
+            query["requirements"] = {"$in": search_params.skills}
+        
+        # Posted within days filter
+        if search_params.posted_within_days:
+            since_date = datetime.utcnow() - timedelta(days=search_params.posted_within_days)
+            query["created_at"] = {"$gte": since_date}
+        
+        # Sort configuration
+        sort_field = search_params.sort_by or "created_at"
+        sort_direction = -1 if search_params.sort_order == "desc" else 1
+        
+        # Execute query with pagination
+        jobs_cursor = db.jobs.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        jobs = list(jobs_cursor)
+        
+        total_count = db.jobs.count_documents(query)
+        
+        # Enrich with client information
+        for job in jobs:
+            client = db.users.find_one({"id": job["client_id"]}, {"full_name": 1, "email": 1, "rating": 1})
+            if client:
+                job["client_info"] = {
+                    "name": client.get("full_name", "Anonymous"),
+                    "rating": client.get("rating", 0)
+                }
+            
+            # Remove internal fields
+            job.pop("_id", None)
+        
+        return {
+            "jobs": jobs,
+            "total": total_count,
+            "page": skip // limit + 1,
+            "pages": (total_count + limit - 1) // limit if total_count > 0 else 1,
+            "filters_applied": {
+                "query": search_params.query,
+                "category": search_params.category,
+                "budget_range": f"{search_params.budget_min or 0}-{search_params.budget_max or 'unlimited'}",
+                "skills": search_params.skills,
+                "posted_within_days": search_params.posted_within_days
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in advanced job search: {str(e)}")
+
+@app.post("/api/search/users/advanced")
+async def advanced_user_search(search_params: AdvancedUserSearch, skip: int = 0, limit: int = 20):
+    """Advanced user search with multiple filters"""
+    try:
+        # Build query
+        query = {}
+        
+        # Role filter
+        if search_params.role and search_params.role != "all":
+            query["role"] = search_params.role
+        
+        # Text search
+        if search_params.query:
+            query["$or"] = [
+                {"full_name": {"$regex": search_params.query, "$options": "i"}},
+                {"email": {"$regex": search_params.query, "$options": "i"}},
+                {"profile.bio": {"$regex": search_params.query, "$options": "i"}}
+            ]
+        
+        # Skills filter
+        if search_params.skills and len(search_params.skills) > 0:
+            query["profile.skills"] = {"$in": search_params.skills}
+        
+        # Rating filter
+        if search_params.min_rating is not None:
+            query["rating"] = {"$gte": search_params.min_rating}
+        
+        # Hourly rate filters
+        if search_params.min_hourly_rate is not None or search_params.max_hourly_rate is not None:
+            rate_query = {}
+            if search_params.min_hourly_rate is not None:
+                rate_query["$gte"] = search_params.min_hourly_rate
+            if search_params.max_hourly_rate is not None:
+                rate_query["$lte"] = search_params.max_hourly_rate
+            query["profile.hourly_rate"] = rate_query
+        
+        # Verification status
+        if search_params.is_verified is not None:
+            query["is_verified"] = search_params.is_verified
+        
+        # Availability filter
+        if search_params.availability and search_params.availability != "all":
+            query["profile.availability"] = search_params.availability
+        
+        # Location filter
+        if search_params.location:
+            query["profile.location"] = {"$regex": search_params.location, "$options": "i"}
+        
+        # Sort configuration
+        sort_field = search_params.sort_by or "rating"
+        sort_direction = -1 if search_params.sort_order == "desc" else 1
+        
+        # Execute query with pagination
+        users_cursor = db.users.find(query, {"password": 0}).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        users = list(users_cursor)
+        
+        total_count = db.users.count_documents(query)
+        
+        # Remove internal fields
+        for user in users:
+            user.pop("_id", None)
+        
+        return {
+            "users": users,
+            "total": total_count,
+            "page": skip // limit + 1,
+            "pages": (total_count + limit - 1) // limit if total_count > 0 else 1,
+            "filters_applied": {
+                "query": search_params.query,
+                "role": search_params.role,
+                "skills": search_params.skills,
+                "min_rating": search_params.min_rating,
+                "hourly_rate_range": f"{search_params.min_hourly_rate or 0}-{search_params.max_hourly_rate or 'unlimited'}",
+                "is_verified": search_params.is_verified,
+                "availability": search_params.availability,
+                "location": search_params.location
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in advanced user search: {str(e)}")
+
+@app.post("/api/search/transactions/advanced")
+async def advanced_transaction_search(search_params: TransactionSearch, current_user = Depends(verify_token), skip: int = 0, limit: int = 20):
+    """Advanced transaction search for admin and wallet owners"""
+    try:
+        # Only admins can search all transactions, users can only see their own
+        if current_user["role"] != "admin" and search_params.user_id != current_user["user_id"]:
+            # If not admin, only allow searching own transactions
+            search_params.user_id = current_user["user_id"]
+        
+        # Build aggregation pipeline
+        pipeline = []
+        
+        # Match wallets
+        wallet_match = {}
+        if search_params.user_id:
+            wallet_match["user_id"] = search_params.user_id
+        
+        if wallet_match:
+            pipeline.append({"$match": wallet_match})
+        
+        # Unwind transaction history
+        pipeline.append({"$unwind": "$transaction_history"})
+        
+        # Match transaction criteria
+        transaction_match = {}
+        
+        # Transaction type filter
+        if search_params.transaction_type and search_params.transaction_type != "all":
+            transaction_match["transaction_history.type"] = search_params.transaction_type
+        
+        # Amount filters
+        if search_params.amount_min is not None or search_params.amount_max is not None:
+            amount_query = {}
+            if search_params.amount_min is not None:
+                amount_query["$gte"] = search_params.amount_min
+            if search_params.amount_max is not None:
+                amount_query["$lte"] = search_params.amount_max
+            transaction_match["transaction_history.amount"] = amount_query
+        
+        # Date filters
+        if search_params.date_from or search_params.date_to:
+            date_query = {}
+            if search_params.date_from:
+                date_query["$gte"] = datetime.fromisoformat(search_params.date_from.replace('Z', '+00:00'))
+            if search_params.date_to:
+                date_query["$lte"] = datetime.fromisoformat(search_params.date_to.replace('Z', '+00:00'))
+            transaction_match["transaction_history.date"] = date_query
+        
+        if transaction_match:
+            pipeline.append({"$match": transaction_match})
+        
+        # Add user information
+        pipeline.append({
+            "$lookup": {
+                "from": "users",
+                "let": {"user_id": "$user_id"},
+                "pipeline": [
+                    {"$match": {"$expr": {"$eq": ["$id", "$$user_id"]}}},
+                    {"$project": {"full_name": 1, "email": 1, "role": 1}}
+                ],
+                "as": "user"
+            }
+        })
+        
+        # Project final structure
+        pipeline.append({
+            "$project": {
+                "user_id": 1,
+                "user_info": {"$arrayElemAt": ["$user", 0]},
+                "transaction": "$transaction_history"
+            }
+        })
+        
+        # Sort
+        sort_field = f"transaction.{search_params.sort_by}" if search_params.sort_by else "transaction.date"
+        sort_direction = -1 if search_params.sort_order == "desc" else 1
+        pipeline.append({"$sort": {sort_field: sort_direction}})
+        
+        # Count total before pagination
+        count_pipeline = pipeline.copy()
+        count_pipeline.append({"$count": "total"})
+        count_result = list(db.wallets.aggregate(count_pipeline))
+        total_count = count_result[0]["total"] if count_result else 0
+        
+        # Add pagination
+        pipeline.extend([
+            {"$skip": skip},
+            {"$limit": limit}
+        ])
+        
+        # Execute pipeline
+        transactions = list(db.wallets.aggregate(pipeline))
+        
+        return {
+            "transactions": transactions,
+            "total": total_count,
+            "page": skip // limit + 1,
+            "pages": (total_count + limit - 1) // limit if total_count > 0 else 1,
+            "filters_applied": {
+                "user_id": search_params.user_id,
+                "transaction_type": search_params.transaction_type,
+                "amount_range": f"{search_params.amount_min or 0}-{search_params.amount_max or 'unlimited'}",
+                "date_range": f"{search_params.date_from or 'start'} to {search_params.date_to or 'end'}"
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in advanced transaction search: {str(e)}")
+
 # Admin Dashboard Enhanced Endpoints
 
 @app.get("/api/admin/stats")
