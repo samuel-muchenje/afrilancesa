@@ -1165,6 +1165,57 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     );
   };
 
+  const renderRevenueTab = () => {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white mb-2">Revenue Analytics 💰</h2>
+          <p className="text-gray-400">
+            Comprehensive revenue monitoring, commission tracking, and platform analytics
+          </p>
+        </div>
+        <RevenueMonitoring />
+      </div>
+    );
+  };
+
+  const renderAdvancedSearchTab = () => {
+    const [searchType, setSearchType] = useState('jobs');
+
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white mb-2">Advanced Search 🔍</h2>
+          <p className="text-gray-400 mb-4">
+            Powerful search tools for jobs, users, and transactions with advanced filtering
+          </p>
+          
+          {/* Search Type Selector */}
+          <div className="flex space-x-2 mb-6">
+            <Button
+              variant={searchType === 'jobs' ? 'default' : 'outline'}
+              onClick={() => setSearchType('jobs')}
+              className={searchType === 'jobs' ? 'bg-yellow-600 hover:bg-yellow-700' : 'border-gray-600 text-gray-300'}
+            >
+              <Briefcase className="w-4 h-4 mr-2" />
+              Search Jobs
+            </Button>
+            <Button
+              variant={searchType === 'users' ? 'default' : 'outline'}
+              onClick={() => setSearchType('users')}
+              className={searchType === 'users' ? 'bg-yellow-600 hover:bg-yellow-700' : 'border-gray-600 text-gray-300'}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Search Users
+            </Button>
+          </div>
+        </div>
+        
+        <AdvancedSearch searchType={searchType} />
+      </div>
+    );
+  };
+
   return (
     <div className="dashboard-modern">
       {/* Navigation */}
