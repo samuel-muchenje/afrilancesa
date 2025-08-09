@@ -100,19 +100,15 @@ function App() {
 
   // Update navigation for role-based landing
   const handleLandingNavigation = (page) => {
-    console.log('handleLandingNavigation called with page:', page);
     // Allow all valid page navigations
     const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press', 'landing'];
     
     // Handle browse-freelancers with parameters
     if (page.startsWith('browse-freelancers')) {
-      console.log('Setting page to:', page);
       setCurrentPage(page);
     } else if (validPages.includes(page)) {
-      console.log('Setting page to:', page);
       setCurrentPage(page);
     } else {
-      console.log('Invalid page, setting to landing:', page);
       setCurrentPage('landing');
     }
   };
