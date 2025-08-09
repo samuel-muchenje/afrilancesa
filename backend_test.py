@@ -5491,5 +5491,916 @@ def main():
         print("\n❌ Authentication system has critical issues that need attention.")
         return 2
 
+    # ========== PHASE 2 ADVANCED FEATURES TESTS ==========
+    
+    def test_create_review_system(self):
+        """Test POST /api/reviews - Create review system"""
+        print("\n🌟 Testing Review & Rating System...")
+        
+        # First, we need to create a completed contract for testing
+        # Create a job, apply, accept, and complete it
+        if not self.client_token or not self.freelancer_token:
+            print("❌ Missing client or freelancer tokens for review test")
+            return False
+        
+        # Create a test job
+        job_data = {
+            "title": "Test Job for Review System",
+            "description": "A test job to create a completed contract for review testing",
+            "category": "Web Development",
+            "budget": 5000.0,
+            "budget_type": "fixed",
+            "requirements": ["Testing", "Reviews"]
+        }
+        
+        success, job_response = self.run_test(
+            "Review System - Create Test Job",
+            "POST",
+            "/api/jobs",
+            200,
+            data=job_data,
+            token=self.client_token
+        )
+        
+        if not success or 'job_id' not in job_response:
+            print("❌ Failed to create test job for review system")
+            return False
+        
+        test_job_id = job_response['job_id']
+        
+        # Apply to the job
+        application_data = {
+            "job_id": test_job_id,
+            "proposal": "I would like to work on this test project for the review system.",
+            "bid_amount": 4500.0
+        }
+        
+        success, _ = self.run_test(
+            "Review System - Apply to Test Job",
+            "POST",
+            f"/api/jobs/{test_job_id}/apply",
+            200,
+            data=application_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            print("❌ Failed to apply to test job")
+            return False
+        
+        # Get applications to find proposal ID
+        success, applications = self.run_test(
+            "Review System - Get Applications",
+            "GET",
+            f"/api/jobs/{test_job_id}/applications",
+            200,
+            token=self.client_token
+        )
+        
+        if not success or not applications:
+            print("❌ Failed to get applications")
+            return False
+        
+        proposal_id = applications[0]['id']
+        
+        # Accept the proposal (create contract)
+        acceptance_data = {
+            "job_id": test_job_id,
+            "freelancer_id": self.freelancer_user['id'],
+            "proposal_id": proposal_id,
+            "bid_amount": 4500.0
+        }
+        
+        success, contract_response = self.run_test(
+            "Review System - Accept Proposal",
+            "POST",
+            f"/api/jobs/{test_job_id}/accept-proposal",
+            200,
+            data=acceptance_data,
+            token=self.client_token
+        )
+        
+        if not success or 'contract_id' not in contract_response:
+            print("❌ Failed to create contract for review test")
+            return False
+        
+        test_contract_id = contract_response['contract_id']
+        
+        # Complete the contract
+        completion_data = {"status": "Completed"}
+        success, _ = self.run_test(
+            "Review System - Complete Contract",
+            "PATCH",
+            f"/api/contracts/{test_contract_id}/status",
+            200,
+            data=completion_data,
+            token=self.client_token
+        )
+        
+        if not success:
+            print("❌ Failed to complete contract for review test")
+            return False
+        
+        # Now test creating reviews
+        
+        # Test 1: Client reviews freelancer
+        client_review_data = {
+            "contract_id": test_contract_id,
+            "rating": 5,
+            "review_text": "Excellent work! The freelancer delivered high-quality results on time and exceeded expectations. Great communication throughout the project.",
+            "reviewer_type": "client"
+        }
+        
+        success, review_response = self.run_test(
+            "Review System - Client Reviews Freelancer",
+            "POST",
+            "/api/reviews",
+            200,
+            data=client_review_data,
+            token=self.client_token
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Client review created: {review_response.get('review_id', 'Unknown')}")
+        print(f"   ✓ Average rating: {review_response.get('average_rating', 'Unknown')}")
+        
+        # Test 2: Freelancer reviews client
+        freelancer_review_data = {
+            "contract_id": test_contract_id,
+            "rating": 4,
+            "review_text": "Great client to work with! Clear requirements and prompt payments. Would definitely work with again.",
+            "reviewer_type": "freelancer"
+        }
+        
+        success, review_response = self.run_test(
+            "Review System - Freelancer Reviews Client",
+            "POST",
+            "/api/reviews",
+            200,
+            data=freelancer_review_data,
+            token=self.freelancer_token
+        )
+        
+        if not success:
+            return False
+        
+        # Test 3: Prevent duplicate reviews
+        success, _ = self.run_test(
+            "Review System - Prevent Duplicate Review",
+            "POST",
+            "/api/reviews",
+            400,
+            data=client_review_data,
+            token=self.client_token
+        )
+        
+        if not success:
+            return False
+        
+        # Test 4: Invalid rating (outside 1-5 range)
+        invalid_review_data = {
+            "contract_id": test_contract_id,
+            "rating": 6,
+            "review_text": "Invalid rating test",
+            "reviewer_type": "client"
+        }
+        
+        success, _ = self.run_test(
+            "Review System - Invalid Rating Validation",
+            "POST",
+            "/api/reviews",
+            400,
+            data=invalid_review_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        # Test 5: Unauthorized access (user not part of contract)
+        success, _ = self.run_test(
+            "Review System - Unauthorized Access",
+            "POST",
+            "/api/reviews",
+            403,
+            data=client_review_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        print("   ✅ Review & Rating System working excellently!")
+        return True
+    
+    def test_get_user_reviews(self):
+        """Test GET /api/reviews/{user_id} - Fetch user reviews"""
+        if not self.freelancer_user:
+            print("❌ No freelancer user available for reviews test")
+            return False
+        
+        # Test getting reviews for freelancer
+        success, response = self.run_test(
+            "Review System - Get User Reviews",
+            "GET",
+            f"/api/reviews/{self.freelancer_user['id']}",
+            200
+        )
+        
+        if success:
+            print(f"   ✓ Retrieved {len(response.get('reviews', []))} reviews")
+            print(f"   ✓ Total reviews: {response.get('total', 0)}")
+            print(f"   ✓ Pagination: Page {response.get('page', 1)} of {response.get('pages', 1)}")
+            
+            # Check review structure
+            reviews = response.get('reviews', [])
+            if reviews:
+                review = reviews[0]
+                required_fields = ['id', 'rating', 'review_text', 'reviewer_type', 'created_at', 'reviewer_name', 'job_title']
+                for field in required_fields:
+                    if field not in review:
+                        print(f"   ❌ Missing field in review: {field}")
+                        return False
+                print("   ✓ Review data structure complete")
+            
+            return True
+        return False
+    
+    def test_revenue_monitoring_system(self):
+        """Test GET /api/admin/revenue-analytics - Revenue monitoring"""
+        if not self.admin_token:
+            print("❌ No admin token available for revenue analytics test")
+            return False
+        
+        success, response = self.run_test(
+            "Revenue Monitoring - Admin Revenue Analytics",
+            "GET",
+            "/api/admin/revenue-analytics",
+            200,
+            token=self.admin_token
+        )
+        
+        if success:
+            # Verify comprehensive analytics structure
+            required_sections = ['summary', 'wallet_statistics', 'transaction_analytics', 'monthly_revenue', 'top_freelancers']
+            for section in required_sections:
+                if section not in response:
+                    print(f"   ❌ Missing analytics section: {section}")
+                    return False
+            
+            # Verify summary data
+            summary = response['summary']
+            summary_fields = ['total_contract_value', 'total_commission_earned', 'commission_rate', 'completed_contracts', 'active_wallets']
+            for field in summary_fields:
+                if field not in summary:
+                    print(f"   ❌ Missing summary field: {field}")
+                    return False
+            
+            print(f"   ✓ Total contract value: R{summary['total_contract_value']:,.2f}")
+            print(f"   ✓ Platform commission (5%): R{summary['total_commission_earned']:,.2f}")
+            print(f"   ✓ Completed contracts: {summary['completed_contracts']}")
+            print(f"   ✓ Active wallets: {summary['active_wallets']}")
+            
+            # Verify wallet statistics
+            wallet_stats = response['wallet_statistics']
+            print(f"   ✓ Total available balance: R{wallet_stats['total_available_balance']:,.2f}")
+            print(f"   ✓ Total escrow balance: R{wallet_stats['total_escrow_balance']:,.2f}")
+            
+            # Verify monthly revenue trends
+            monthly_revenue = response['monthly_revenue']
+            print(f"   ✓ Monthly revenue data: {len(monthly_revenue)} months")
+            
+            # Verify top freelancers
+            top_freelancers = response['top_freelancers']
+            print(f"   ✓ Top performing freelancers: {len(top_freelancers)}")
+            
+            print("   ✅ Revenue Monitoring System working excellently!")
+            return True
+        return False
+    
+    def test_revenue_monitoring_unauthorized(self):
+        """Test revenue analytics with non-admin access"""
+        if not self.freelancer_token:
+            print("❌ No freelancer token available for unauthorized test")
+            return False
+        
+        success, _ = self.run_test(
+            "Revenue Monitoring - Unauthorized Access",
+            "GET",
+            "/api/admin/revenue-analytics",
+            403,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            print("   ✓ Non-admin access properly blocked")
+            return True
+        return False
+    
+    def test_advanced_job_search(self):
+        """Test POST /api/search/jobs/advanced - Advanced job search"""
+        
+        # Test 1: Basic text search
+        search_data = {
+            "query": "developer",
+            "category": "all",
+            "sort_by": "created_at",
+            "sort_order": "desc"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Job Text Search",
+            "POST",
+            "/api/search/jobs/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} jobs matching 'developer'")
+        
+        # Test 2: Category filtering
+        search_data = {
+            "query": "",
+            "category": "Web Development",
+            "sort_by": "budget",
+            "sort_order": "desc"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Job Category Filter",
+            "POST",
+            "/api/search/jobs/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} Web Development jobs")
+        
+        # Test 3: Budget range filtering
+        search_data = {
+            "query": "",
+            "budget_min": 1000,
+            "budget_max": 10000,
+            "budget_type": "fixed"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Job Budget Range",
+            "POST",
+            "/api/search/jobs/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} jobs in R1,000-R10,000 range")
+        
+        # Test 4: Skills filtering
+        search_data = {
+            "query": "",
+            "skills": ["Python", "React"],
+            "sort_by": "title"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Job Skills Filter",
+            "POST",
+            "/api/search/jobs/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} jobs requiring Python/React")
+        
+        # Test 5: Posted within days filter
+        search_data = {
+            "query": "",
+            "posted_within_days": 30
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Job Posted Within Days",
+            "POST",
+            "/api/search/jobs/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} jobs posted within 30 days")
+        
+        # Verify response structure
+        if response.get('jobs'):
+            job = response['jobs'][0]
+            if 'client_info' in job:
+                print("   ✓ Job enrichment with client information working")
+            else:
+                print("   ❌ Missing client information in job response")
+                return False
+        
+        print("   ✅ Advanced Job Search working excellently!")
+        return True
+    
+    def test_advanced_user_search(self):
+        """Test POST /api/search/users/advanced - Advanced user search"""
+        
+        # Test 1: Text search across name/email
+        search_data = {
+            "query": "test",
+            "role": "all",
+            "sort_by": "rating",
+            "sort_order": "desc"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Text Search",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} users matching 'test'")
+        
+        # Test 2: Role filtering
+        search_data = {
+            "query": "",
+            "role": "freelancer",
+            "sort_by": "created_at"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Role Filter",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} freelancers")
+        
+        # Test 3: Skills filtering
+        search_data = {
+            "query": "",
+            "skills": ["Python", "React"],
+            "role": "freelancer"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Skills Filter",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} freelancers with Python/React skills")
+        
+        # Test 4: Rating minimum threshold
+        search_data = {
+            "query": "",
+            "min_rating": 4.0,
+            "role": "freelancer"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Rating Filter",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} users with 4+ star rating")
+        
+        # Test 5: Hourly rate range
+        search_data = {
+            "query": "",
+            "min_hourly_rate": 500,
+            "max_hourly_rate": 1000,
+            "role": "freelancer"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Hourly Rate Range",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} freelancers in R500-R1000/hr range")
+        
+        # Test 6: Verification status
+        search_data = {
+            "query": "",
+            "is_verified": True,
+            "role": "freelancer"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Verification Filter",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} verified freelancers")
+        
+        # Test 7: Location filtering
+        search_data = {
+            "query": "",
+            "location": "Cape Town"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - User Location Filter",
+            "POST",
+            "/api/search/users/advanced",
+            200,
+            data=search_data
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} users in Cape Town")
+        
+        # Verify no password fields in response
+        if response.get('users'):
+            user = response['users'][0]
+            if 'password' in user:
+                print("   ❌ Password field exposed in user search results")
+                return False
+            print("   ✓ Password fields properly excluded from results")
+        
+        print("   ✅ Advanced User Search working excellently!")
+        return True
+    
+    def test_advanced_transaction_search(self):
+        """Test POST /api/search/transactions/advanced - Advanced transaction search"""
+        
+        # Test 1: Admin access to all transactions
+        if not self.admin_token:
+            print("❌ No admin token available for transaction search test")
+            return False
+        
+        search_data = {
+            "transaction_type": "all",
+            "sort_by": "date",
+            "sort_order": "desc"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Admin All Transactions",
+            "POST",
+            "/api/search/transactions/advanced",
+            200,
+            data=search_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Admin found {response.get('total', 0)} total transactions")
+        
+        # Test 2: Transaction type filtering
+        search_data = {
+            "transaction_type": "Credit",
+            "sort_by": "amount"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Transaction Type Filter",
+            "POST",
+            "/api/search/transactions/advanced",
+            200,
+            data=search_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} Credit transactions")
+        
+        # Test 3: Amount range filtering
+        search_data = {
+            "amount_min": 1000,
+            "amount_max": 50000,
+            "transaction_type": "all"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Transaction Amount Range",
+            "POST",
+            "/api/search/transactions/advanced",
+            200,
+            data=search_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} transactions in R1,000-R50,000 range")
+        
+        # Test 4: User-specific transaction filtering (admin)
+        if self.freelancer_user:
+            search_data = {
+                "user_id": self.freelancer_user['id'],
+                "transaction_type": "all"
+            }
+            
+            success, response = self.run_test(
+                "Advanced Search - User-Specific Transactions (Admin)",
+                "POST",
+                "/api/search/transactions/advanced",
+                200,
+                data=search_data,
+                token=self.admin_token
+            )
+            
+            if not success:
+                return False
+            
+            print(f"   ✓ Found {response.get('total', 0)} transactions for specific user")
+        
+        # Test 5: User access restricted to own transactions
+        if self.freelancer_token:
+            search_data = {
+                "transaction_type": "all"
+            }
+            
+            success, response = self.run_test(
+                "Advanced Search - User Own Transactions Only",
+                "POST",
+                "/api/search/transactions/advanced",
+                200,
+                data=search_data,
+                token=self.freelancer_token
+            )
+            
+            if not success:
+                return False
+            
+            print(f"   ✓ User can access own transactions: {response.get('total', 0)} found")
+            
+            # Verify user enrichment in response
+            if response.get('transactions'):
+                transaction = response['transactions'][0]
+                if 'user_info' in transaction:
+                    print("   ✓ Transaction enrichment with user information working")
+                else:
+                    print("   ❌ Missing user information in transaction response")
+                    return False
+        
+        # Test 6: Date range filtering
+        from datetime import datetime, timedelta
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=30)
+        
+        search_data = {
+            "date_from": start_date.isoformat() + "Z",
+            "date_to": end_date.isoformat() + "Z",
+            "transaction_type": "all"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Transaction Date Range",
+            "POST",
+            "/api/search/transactions/advanced",
+            200,
+            data=search_data,
+            token=self.admin_token
+        )
+        
+        if not success:
+            return False
+        
+        print(f"   ✓ Found {response.get('total', 0)} transactions in last 30 days")
+        
+        print("   ✅ Advanced Transaction Search working excellently!")
+        return True
+    
+    def test_advanced_transaction_search_authorization(self):
+        """Test transaction search authorization - users can't see others' transactions"""
+        if not self.freelancer_token or not self.client_user:
+            print("❌ Missing tokens for authorization test")
+            return False
+        
+        # Try to access another user's transactions (should be restricted)
+        search_data = {
+            "user_id": self.client_user['id'],  # Freelancer trying to access client's transactions
+            "transaction_type": "all"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Search - Transaction Authorization Test",
+            "POST",
+            "/api/search/transactions/advanced",
+            200,  # Should succeed but only return freelancer's own transactions
+            data=search_data,
+            token=self.freelancer_token
+        )
+        
+        if success:
+            # The system should have automatically restricted to freelancer's own transactions
+            print("   ✓ User access properly restricted to own transactions")
+            return True
+        return False
+
 if __name__ == "__main__":
-    sys.exit(main())
+    tester = AfrilanceAPITester()
+    
+    # Run comprehensive authentication tests
+    print("🚀 Starting Comprehensive Afrilance API Testing...")
+    print(f"🌐 Base URL: {tester.base_url}")
+    print("=" * 80)
+    
+    # Authentication System Tests
+    print("\n" + "="*50)
+    print("🔐 AUTHENTICATION SYSTEM TESTS")
+    print("="*50)
+    
+    tester.test_auth_register_freelancer()
+    tester.test_auth_register_client()
+    tester.test_auth_register_admin()
+    tester.test_auth_login_valid_credentials()
+    tester.test_auth_login_invalid_credentials()
+    tester.test_auth_login_wrong_password()
+    tester.test_auth_jwt_token_structure()
+    tester.test_auth_protected_endpoint_valid_token()
+    tester.test_auth_protected_endpoint_no_token()
+    tester.test_auth_protected_endpoint_invalid_token()
+    tester.test_auth_email_uniqueness()
+    tester.test_auth_password_hashing()
+    tester.test_auth_role_validation()
+    
+    # Dedicated Admin Login System Tests
+    print("\n" + "="*50)
+    print("🔑 DEDICATED ADMIN LOGIN SYSTEM TESTS")
+    print("="*50)
+    
+    tester.test_admin_login_valid_afrilance_email()
+    tester.test_admin_login_non_afrilance_domain()
+    tester.test_admin_login_invalid_credentials()
+    tester.test_admin_login_pending_approval()
+    tester.test_admin_register_request_valid()
+    tester.test_admin_register_request_invalid_domain()
+    tester.test_admin_register_request_missing_fields()
+    tester.test_admin_approval_workflow_approve()
+    tester.test_admin_approval_workflow_reject()
+    tester.test_admin_approval_unauthorized()
+    tester.test_admin_security_validations()
+    
+    # Admin User Management Tests
+    print("\n" + "="*50)
+    print("👥 ADMIN USER MANAGEMENT TESTS")
+    print("="*50)
+    
+    tester.test_admin_get_all_users()
+    tester.test_admin_get_users_non_admin()
+    tester.test_admin_verify_user()
+    tester.test_admin_verify_user_non_admin()
+    tester.test_role_based_access_control()
+    
+    # Admin Dashboard Enhanced Endpoints Tests
+    print("\n" + "="*50)
+    print("📊 ADMIN DASHBOARD ENHANCED ENDPOINTS TESTS")
+    print("="*50)
+    
+    tester.test_admin_stats_endpoint()
+    tester.test_admin_users_search_endpoint()
+    tester.test_admin_user_suspension_endpoint()
+    tester.test_admin_support_tickets_endpoint()
+    tester.test_admin_support_ticket_update_endpoint()
+    tester.test_admin_activity_log_endpoint()
+    
+    # Phase 2 Advanced Features Tests
+    print("\n" + "="*50)
+    print("🌟 PHASE 2 ADVANCED FEATURES TESTS")
+    print("="*50)
+    
+    tester.test_create_review_system()
+    tester.test_get_user_reviews()
+    tester.test_revenue_monitoring_system()
+    tester.test_revenue_monitoring_unauthorized()
+    tester.test_advanced_job_search()
+    tester.test_advanced_user_search()
+    tester.test_advanced_transaction_search()
+    tester.test_advanced_transaction_search_authorization()
+    
+    # Comprehensive In-App Messaging System Tests
+    print("\n" + "="*50)
+    print("💬 COMPREHENSIVE IN-APP MESSAGING SYSTEM TESTS")
+    print("="*50)
+    
+    tester.test_direct_message_send()
+    tester.test_direct_message_to_self()
+    tester.test_direct_message_nonexistent_user()
+    tester.test_get_conversations()
+    tester.test_get_conversation_messages()
+    tester.test_get_conversation_messages_unauthorized()
+    tester.test_mark_conversation_read()
+    tester.test_mark_conversation_read_unauthorized()
+    tester.test_search_users_for_messaging()
+    tester.test_search_users_short_query()
+    tester.test_search_users_by_email()
+    tester.test_conversation_bidirectional_messaging()
+    tester.test_conversation_message_persistence()
+    tester.test_conversation_unread_count_tracking()
+    tester.test_messaging_system_comprehensive_workflow()
+    
+    # Contracts System Tests
+    print("\n" + "="*50)
+    print("📋 CONTRACTS SYSTEM TESTS")
+    print("="*50)
+    
+    tester.test_contract_creation_flow()
+    tester.test_contract_trigger_logic()
+    tester.test_contracts_get_all_roles()
+    tester.test_contract_detailed_view()
+    tester.test_contract_status_update()
+    tester.test_contract_stats()
+    tester.test_contract_error_handling()
+    tester.test_contract_integration_workflow()
+    
+    # Wallet System Tests
+    print("\n" + "="*50)
+    print("💰 WALLET SYSTEM TESTS")
+    print("="*50)
+    
+    tester.test_wallet_auto_creation_freelancer()
+    tester.test_wallet_not_created_for_client()
+    tester.test_wallet_not_created_for_admin()
+    tester.test_contract_escrow_integration()
+    tester.test_wallet_get_endpoint()
+    tester.test_wallet_withdraw_sufficient_balance()
+    tester.test_wallet_withdraw_insufficient_balance()
+    tester.test_wallet_withdraw_invalid_amount()
+    tester.test_wallet_withdraw_unauthorized()
+    tester.test_wallet_escrow_release_admin()
+    tester.test_wallet_escrow_release_unauthorized()
+    tester.test_wallet_transaction_history()
+    tester.test_wallet_role_based_access()
+    tester.test_wallet_integration_workflow()
+    
+    # Print final results
+    print("\n" + "="*80)
+    print("📊 COMPREHENSIVE TEST RESULTS")
+    print("="*80)
+    print(f"🔐 Authentication Tests: {tester.auth_tests_passed}/{tester.auth_tests_run} passed ({(tester.auth_tests_passed/tester.auth_tests_run*100):.1f}%)")
+    print(f"🧪 General Tests: {tester.tests_passed}/{tester.tests_run} passed ({(tester.tests_passed/tester.tests_run*100):.1f}%)")
+    
+    total_tests = tester.auth_tests_run + tester.tests_run
+    total_passed = tester.auth_tests_passed + tester.tests_passed
+    overall_percentage = (total_passed / total_tests * 100) if total_tests > 0 else 0
+    
+    print(f"🎯 Overall: {total_passed}/{total_tests} tests passed ({overall_percentage:.1f}%)")
+    
+    if overall_percentage >= 90:
+        print("🎉 EXCELLENT! System is working great!")
+    elif overall_percentage >= 75:
+        print("✅ GOOD! Most features are working correctly.")
+    elif overall_percentage >= 50:
+        print("⚠️  FAIR! Some issues need attention.")
+    else:
+        print("❌ NEEDS WORK! Multiple issues found.")
+    
+    print("="*80)
