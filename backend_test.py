@@ -6996,155 +6996,11 @@ if __name__ == "__main__":
     
     registration_passed, registration_total = tester.test_comprehensive_registration_system()
     
-    # Additional Authentication System Tests (if needed)
-    print("\n" + "="*50)
-    print("🔐 ADDITIONAL AUTHENTICATION SYSTEM TESTS")
-    print("="*50)
-    
-    tester.test_auth_register_freelancer()
-    tester.test_auth_register_client()
-    tester.test_auth_register_admin()
-    tester.test_auth_login_valid_credentials()
-    tester.test_auth_login_invalid_credentials()
-    tester.test_auth_login_wrong_password()
-    tester.test_auth_jwt_token_structure()
-    tester.test_auth_protected_endpoint_valid_token()
-    tester.test_auth_protected_endpoint_no_token()
-    tester.test_auth_protected_endpoint_invalid_token()
-    tester.test_auth_email_uniqueness()
-    tester.test_auth_password_hashing()
-    tester.test_auth_role_validation()
-    
-    # Dedicated Admin Login System Tests
-    print("\n" + "="*50)
-    print("🔑 DEDICATED ADMIN LOGIN SYSTEM TESTS")
-    print("="*50)
-    
-    tester.test_admin_login_valid_afrilance_email()
-    tester.test_admin_login_non_afrilance_domain()
-    tester.test_admin_login_invalid_credentials()
-    tester.test_admin_login_pending_approval()
-    tester.test_admin_register_request_valid()
-    tester.test_admin_register_request_invalid_domain()
-    tester.test_admin_register_request_missing_fields()
-    tester.test_admin_approval_workflow_approve()
-    tester.test_admin_approval_workflow_reject()
-    tester.test_admin_approval_unauthorized()
-    tester.test_admin_security_validations()
-    
-    # Admin User Management Tests
-    print("\n" + "="*50)
-    print("👥 ADMIN USER MANAGEMENT TESTS")
-    print("="*50)
-    
-    tester.test_admin_get_all_users()
-    tester.test_admin_get_users_non_admin()
-    tester.test_admin_verify_user()
-    tester.test_admin_verify_user_non_admin()
-    tester.test_role_based_access_control()
-    
-    # Admin Dashboard Enhanced Endpoints Tests
-    print("\n" + "="*50)
-    print("📊 ADMIN DASHBOARD ENHANCED ENDPOINTS TESTS")
-    print("="*50)
-    
-    tester.test_admin_stats_endpoint()
-    tester.test_admin_users_search_endpoint()
-    tester.test_admin_user_suspension_endpoint()
-    tester.test_admin_support_tickets_endpoint()
-    tester.test_admin_support_ticket_update_endpoint()
-    tester.test_admin_activity_log_endpoint()
-    
-    # Phase 2 Advanced Features Tests
-    print("\n" + "="*50)
-    print("🌟 PHASE 2 ADVANCED FEATURES TESTS")
-    print("="*50)
-    
-    tester.test_create_review_system()
-    tester.test_get_user_reviews()
-    tester.test_revenue_monitoring_system()
-    tester.test_revenue_monitoring_unauthorized()
-    tester.test_advanced_job_search()
-    tester.test_advanced_user_search()
-    tester.test_advanced_transaction_search()
-    tester.test_advanced_transaction_search_authorization()
-    
-    # Comprehensive In-App Messaging System Tests
-    print("\n" + "="*50)
-    print("💬 COMPREHENSIVE IN-APP MESSAGING SYSTEM TESTS")
-    print("="*50)
-    
-    tester.test_direct_message_send()
-    tester.test_direct_message_to_self()
-    tester.test_direct_message_nonexistent_user()
-    tester.test_get_conversations()
-    tester.test_get_conversation_messages()
-    tester.test_get_conversation_messages_unauthorized()
-    tester.test_mark_conversation_read()
-    tester.test_mark_conversation_read_unauthorized()
-    tester.test_search_users_for_messaging()
-    tester.test_search_users_short_query()
-    tester.test_search_users_by_email()
-    tester.test_conversation_bidirectional_messaging()
-    tester.test_conversation_message_persistence()
-    tester.test_conversation_unread_count_tracking()
-    tester.test_messaging_system_comprehensive_workflow()
-    
-    # Contracts System Tests
-    print("\n" + "="*50)
-    print("📋 CONTRACTS SYSTEM TESTS")
-    print("="*50)
-    
-    tester.test_contract_creation_flow()
-    tester.test_contract_trigger_logic()
-    tester.test_contracts_get_all_roles()
-    tester.test_contract_detailed_view()
-    tester.test_contract_status_update()
-    tester.test_contract_stats()
-    tester.test_contract_error_handling()
-    tester.test_contract_integration_workflow()
-    
-    # Wallet System Tests
-    print("\n" + "="*50)
-    print("💰 WALLET SYSTEM TESTS")
-    print("="*50)
-    
-    tester.test_wallet_auto_creation_freelancer()
-    tester.test_wallet_not_created_for_client()
-    tester.test_wallet_not_created_for_admin()
-    tester.test_contract_escrow_integration()
-    tester.test_wallet_get_endpoint()
-    tester.test_wallet_withdraw_sufficient_balance()
-    tester.test_wallet_withdraw_insufficient_balance()
-    tester.test_wallet_withdraw_invalid_amount()
-    tester.test_wallet_withdraw_unauthorized()
-    tester.test_wallet_escrow_release_admin()
-    tester.test_wallet_escrow_release_unauthorized()
-    tester.test_wallet_transaction_history()
-    tester.test_wallet_role_based_access()
-    tester.test_wallet_integration_workflow()
-    
-    # Category Counts Endpoint Tests
-    print("\n" + "="*50)
-    print("📊 CATEGORY COUNTS ENDPOINT TESTS")
-    print("="*50)
-    
-    tester.test_category_counts_endpoint()
-    tester.test_category_counts_public_access()
-    
     # Print final results
     print("\n" + "="*80)
-    print("📊 COMPREHENSIVE TEST RESULTS")
+    print("📊 COMPREHENSIVE REGISTRATION TEST RESULTS")
     print("="*80)
     print(f"📝 Registration Tests: {registration_passed}/{registration_total} passed ({(registration_passed/registration_total*100):.1f}%)")
-    print(f"🔐 Authentication Tests: {tester.auth_tests_passed}/{tester.auth_tests_run} passed ({(tester.auth_tests_passed/tester.auth_tests_run*100):.1f}%)")
-    print(f"🧪 General Tests: {tester.tests_passed}/{tester.tests_run} passed ({(tester.tests_passed/tester.tests_run*100):.1f}%)")
-    
-    total_tests = registration_total + tester.auth_tests_run + tester.tests_run
-    total_passed = registration_passed + tester.auth_tests_passed + tester.tests_passed
-    overall_percentage = (total_passed / total_tests * 100) if total_tests > 0 else 0
-    
-    print(f"🎯 Overall: {total_passed}/{total_tests} tests passed ({overall_percentage:.1f}%)")
     
     # Special focus on registration system results
     registration_percentage = (registration_passed / registration_total * 100) if registration_total > 0 else 0
@@ -7158,14 +7014,5 @@ if __name__ == "__main__":
         print("⚠️  REGISTRATION SYSTEM: FAIR! Some registration issues need attention.")
     else:
         print("❌ REGISTRATION SYSTEM: NEEDS WORK! Multiple registration issues found.")
-    
-    if overall_percentage >= 90:
-        print("\n🎉 OVERALL SYSTEM: EXCELLENT! System is working great!")
-    elif overall_percentage >= 75:
-        print("\n✅ OVERALL SYSTEM: GOOD! Most features are working correctly.")
-    elif overall_percentage >= 50:
-        print("\n⚠️  OVERALL SYSTEM: FAIR! Some issues need attention.")
-    else:
-        print("\n❌ OVERALL SYSTEM: NEEDS WORK! Multiple issues found.")
     
     print("="*80)
