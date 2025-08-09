@@ -587,6 +587,20 @@ function App() {
     );
   }
 
+  // Careers Page
+  if (currentPage === 'careers') {
+    return (
+      <Careers onNavigate={setCurrentPage} />
+    );
+  }
+
+  // Press Page
+  if (currentPage === 'press') {
+    return (
+      <Press onNavigate={setCurrentPage} />
+    );
+  }
+
   // Admin Login Page
   if (currentPage === 'admin' || currentPage === 'admin-login') {
     return (
