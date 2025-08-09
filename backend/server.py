@@ -100,9 +100,17 @@ class JobApplication(BaseModel):
     bid_amount: float
 
 class Message(BaseModel):
-    job_id: str
+    job_id: Optional[str] = None  # Optional for direct messages
     receiver_id: str
     content: str
+
+class DirectMessage(BaseModel):
+    receiver_id: str
+    content: str
+
+class ConversationParticipant(BaseModel):
+    user_id: str
+    last_read_at: Optional[datetime] = None
 
 class SupportTicket(BaseModel):
     name: str
