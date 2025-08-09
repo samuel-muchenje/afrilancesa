@@ -7,6 +7,7 @@ import { Input } from './components/ui/input';
 import { Textarea } from './components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 import MessagingSystem from './components/MessagingSystem';
+import ReviewSystem from './components/ReviewSystem';
 import { 
   Plus, Briefcase, Users, DollarSign, Clock, TrendingUp, Search, Filter,
   MessageCircle, Settings, LogOut, CheckCircle, Star, Eye, Edit, X,
