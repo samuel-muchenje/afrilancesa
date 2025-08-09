@@ -147,6 +147,16 @@ const ModernLanding = ({
   };
   return (
     <div className="modern-landing">
+      {/* Animated Background Effects */}
+      <div className="floating-shapes">
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+        <div className="floating-shape shape-3"></div>
+        <div className="floating-shape shape-4"></div>
+        <div className="floating-shape shape-5"></div>
+        <div className="floating-shape shape-6"></div>
+      </div>
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-black/90 backdrop-blur-sm border-b border-gray-800 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
