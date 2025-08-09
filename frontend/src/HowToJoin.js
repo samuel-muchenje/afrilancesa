@@ -71,12 +71,12 @@ const HowToJoin = ({ onNavigate }) => {
       title: "Wait for Verification",
       duration: "24-48 hours",
       icon: Shield,
-      description: "Our team reviews your documents and profile. You'll receive an email once verification is complete.",
+      description: "Our verification team at sam@afrilance.co.za reviews your documents and profile. You'll receive an email once verification is complete.",
       requirements: [
         "Valid ID document submitted",
         "Complete profile information",
         "Patience during review process",
-        "Check email for updates"
+        "Check email for updates from verification team"
       ],
       action: "Verification Status",
       actionOnClick: () => onNavigate('login')
