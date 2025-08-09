@@ -1119,6 +1119,20 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
 
+        {/* Reviews Tab */}
+        {currentTab === 'reviews' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Reviews & Ratings</h2>
+              <div className="flex items-center space-x-2">
+                <Star className="w-5 h-5 text-yellow-400" />
+                <span className="text-gray-400">Your Reviews</span>
+              </div>
+            </div>
+            <ReviewSystem user={user} />
+          </div>
+        )}
+
         {/* Contracts Tab */}
         {currentTab === 'contracts' && (
           <div className="space-y-6">
