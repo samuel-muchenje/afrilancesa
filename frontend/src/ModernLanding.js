@@ -5,7 +5,7 @@ import { Input } from './components/ui/input';
 import { Textarea } from './components/ui/textarea';
 import { 
   Shield, Smartphone, Globe, CreditCard, Play, Star, Quote,
-  CheckCircle, Users, Briefcase, ArrowRight, X
+  CheckCircle, Users, Briefcase, ArrowRight, X, Search
 } from 'lucide-react';
 
 // Categories with real images
