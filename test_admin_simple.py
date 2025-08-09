@@ -9,11 +9,12 @@ def test_admin_registration_workflow():
     
     print("🔐 Testing Admin Registration Approval Workflow...")
     
-    # Test data from review request
+    # Test data from review request (with timestamp to avoid duplicates)
+    timestamp = datetime.now().strftime('%H%M%S')
     test_admin_data = {
-        "email": "verification.admin@afrilance.co.za",
+        "email": f"verification.admin{timestamp}@afrilance.co.za",
         "password": "VerificationAdmin123!",
-        "full_name": "Verification Admin Test",
+        "full_name": f"Verification Admin Test {timestamp}",
         "phone": "+27123456789",
         "department": "Verification Department", 
         "reason": "Complete verification test of the fixed admin registration approval workflow"
