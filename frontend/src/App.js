@@ -537,8 +537,35 @@ function App() {
 
   // Browse Freelancers Page
   if (currentPage.startsWith('browse-freelancers')) {
+    // Parse category and search from currentPage string
+    let category = '';
+    let search = '';
+    
+    if (currentPage.startsWith('browse-freelancers-search-')) {
+      search = decodeURIComponent(currentPage.replace('browse-freelancers-search-', ''));
+    } else if (currentPage.includes('browse-freelancers-') && currentPage !== 'browse-freelancers') {
+      const categorySlug = currentPage.replace('browse-freelancers-', '');
+      // Convert slug back to category name
+      const categoryMap = {
+        'ict-&-digital-work': 'ICT & Digital Work',
+        'construction-&-engineering': 'Construction & Engineering', 
+        'creative-&-media': 'Creative & Media',
+        'admin-&-office-support': 'Admin & Office Support',
+        'health-&-wellness': 'Health & Wellness',
+        'beauty-&-fashion': 'Beauty & Fashion',
+        'logistics-&-labour': 'Logistics & Labour',
+        'education-&-training': 'Education & Training',
+        'home-&-domestic-services': 'Home & Domestic Services'
+      };
+      category = categoryMap[categorySlug] || '';
+    }
+    
     return (
-      <BrowseFreelancers onNavigate={setCurrentPage} />
+      <BrowseFreelancers 
+        onNavigate={setCurrentPage} 
+        initialCategory={category}
+        initialSearch={search}
+      />
     );
   }
 
