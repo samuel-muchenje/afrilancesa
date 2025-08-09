@@ -47,9 +47,9 @@ const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSear
   });
 
   const categories = [
-    'Web Development', 'Mobile Development', 'Design & Creative',
-    'Writing & Translation', 'Digital Marketing', 'Data Science',
-    'DevOps & Cloud', 'Consulting'
+    'ICT & Digital Work', 'Construction & Engineering', 'Creative & Media',
+    'Admin & Office Support', 'Health & Wellness', 'Beauty & Fashion',
+    'Logistics & Labour', 'Education & Training', 'Home & Domestic Services'
   ];
 
   const skillOptions = [
