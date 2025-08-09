@@ -12,7 +12,7 @@ import {
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSearch = '' }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
@@ -21,7 +21,7 @@ const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSear
 
   // Job search filters
   const [jobFilters, setJobFilters] = useState({
-    category: 'all',
+    category: initialCategory && searchType === 'jobs' ? initialCategory : 'all',
     budget_min: '',
     budget_max: '',
     budget_type: 'all',
@@ -35,6 +35,7 @@ const AdvancedSearch = ({ searchType = 'jobs', initialCategory = '', initialSear
   // User search filters  
   const [userFilters, setUserFilters] = useState({
     role: 'freelancer',
+    category: initialCategory && searchType === 'users' ? initialCategory : 'all',
     skills: [],
     min_rating: null,
     max_hourly_rate: '',
