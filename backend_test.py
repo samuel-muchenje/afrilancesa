@@ -6502,6 +6502,14 @@ if __name__ == "__main__":
     tester.test_wallet_role_based_access()
     tester.test_wallet_integration_workflow()
     
+    # Category Counts Endpoint Tests
+    print("\n" + "="*50)
+    print("📊 CATEGORY COUNTS ENDPOINT TESTS")
+    print("="*50)
+    
+    tester.test_category_counts_endpoint()
+    tester.test_category_counts_public_access()
+    
     # Print final results
     print("\n" + "="*80)
     print("📊 COMPREHENSIVE TEST RESULTS")
