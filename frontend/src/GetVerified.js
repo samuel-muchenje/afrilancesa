@@ -70,7 +70,7 @@ const GetVerified = ({ onNavigate }) => {
       step: 4,
       title: "Verification Approval",
       icon: CheckCircle,
-      description: "Receive your verification badge and unlock premium platform features.",
+      description: "Our verification team at sam@afrilance.co.za reviews your documents and approves your account.",
       requirements: [
         "Valid ID document verification",
         "Complete profile information",
@@ -83,7 +83,7 @@ const GetVerified = ({ onNavigate }) => {
         "Check your email regularly for updates",
         "Respond promptly to any verification requests",
         "Keep your profile information current",
-        "Maintain professional communication"
+        "Contact sam@afrilance.co.za for verification questions"
       ]
     }
   ];
