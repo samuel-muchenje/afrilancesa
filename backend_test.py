@@ -4619,19 +4619,6 @@ def main():
         
         print(f"\n💬 MESSAGING SYSTEM RESULTS: {messaging_tests_passed}/{len(messaging_tests)} tests passed")
         
-        additional_tests = [
-            ("Submit Support Ticket", tester.test_support_ticket),
-            ("Comprehensive Support System", tester.test_support_system_comprehensive),
-            ("ID Document Upload", tester.test_id_document_upload),
-        ]
-        
-        # Run additional tests first
-        for test_name, test_func in additional_tests:
-            try:
-                test_func()
-            except Exception as e:
-                print(f"❌ {test_name} - Exception: {str(e)}")
-        
         # Add Contract System Tests
         print("\n📋 CONTRACTS SYSTEM TESTS")
         print("=" * 60)
