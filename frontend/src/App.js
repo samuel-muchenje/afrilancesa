@@ -98,7 +98,7 @@ function App() {
   // Update navigation for role-based landing
   const handleLandingNavigation = (page) => {
     // Allow all valid page navigations
-    const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'landing'];
+    const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'landing'];
     if (validPages.includes(page)) {
       setCurrentPage(page);
     } else {
