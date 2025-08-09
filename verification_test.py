@@ -6,7 +6,7 @@ import io
 from datetime import datetime
 
 class VerificationSystemTester:
-    def __init__(self, base_url="https://ff48e49b-fda0-4f45-aeb8-719a72e6b048.preview.emergentagent.com"):
+    def __init__(self, base_url="https://9c38454e-b247-48e2-bfc9-c1c62214b98a.preview.emergentagent.com"):
         self.base_url = base_url
         self.freelancer_token = None
         self.admin_token = None
