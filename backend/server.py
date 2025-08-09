@@ -48,7 +48,7 @@ client = MongoClient(mongo_url)
 db = client.afrilance
 
 # JWT settings
-JWT_SECRET = "afrilance_secret_key_2025"
+JWT_SECRET = os.environ.get('JWT_SECRET', 'afrilance_fallback_secret_key_2025_change_in_production')
 JWT_ALGORITHM = "HS256"
 security = HTTPBearer()
 
