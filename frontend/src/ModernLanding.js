@@ -98,6 +98,7 @@ const ModernLanding = ({
   const [featuredFreelancers, setFeaturedFreelancers] = useState([]);
   const [loadingFreelancers, setLoadingFreelancers] = useState(true);
   const [searchQuery, setSearchQuery] = useState(''); // Add search query state
+  const [categoryCounts, setCategoryCounts] = useState({}); // Add category counts state
   
   const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   
