@@ -1277,6 +1277,199 @@ async def delete_project_gallery_item(
     
     return {"message": "Project gallery item deleted successfully"}
 
+@app.post("/api/admin/verify-user/{user_id}")
+async def verify_user(
+    user_id: str,
+    verification_data: dict,
+    current_user = Depends(verify_token)
+):
+    """Admin endpoint to approve/reject user verification"""
+    
+    # Check if user is admin
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can verify users")
+    
+    status = verification_data.get("status")  # "approved" or "rejected"
+    reason = verification_data.get("reason", "")
+    admin_notes = verification_data.get("admin_notes", "")
+    
+    if status not in ["approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Status must be 'approved' or 'rejected'")
+    
+    # Find the user
+    user = db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update user verification status
+    update_data = {
+        "verification_status": status,
+        "is_verified": status == "approved",
+        "verification_date": datetime.utcnow(),
+        "verified_by": current_user["user_id"],
+        "verification_reason": reason,
+        "admin_notes": admin_notes
+    }
+    
+    db.users.update_one(
+        {"id": user_id},
+        {"$set": update_data}
+    )
+    
+    # Send notification emails
+    try:
+        if status == "approved":
+            # Email to user - Approval
+            user_subject = "🎉 Your Afrilance Account Has Been Verified!"
+            user_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #27ae60; margin-bottom: 10px;">🎉 Congratulations!</h1>
+                        <h2 style="color: #2c3e50;">Your Account Has Been Verified</h2>
+                    </div>
+                    
+                    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p>Dear {user['full_name']},</p>
+                        <p>Great news! Your Afrilance freelancer account has been successfully verified. You now have access to all premium features and can apply for high-value projects.</p>
+                    </div>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">What's Next?</h3>
+                        <ul style="color: #555;">
+                            <li>✅ Complete your profile with skills and portfolio</li>
+                            <li>✅ Browse and apply for premium projects</li>
+                            <li>✅ Set your competitive rates</li>
+                            <li>✅ Start building your reputation</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="http://localhost:3000/freelancer-dashboard" 
+                           style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                            Go to Your Dashboard
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Welcome to the Afrilance community!</p>
+                        <p>Need help? Contact us at support@afrilance.co.za</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Email to admin - Verification Completed
+            admin_subject = f"✅ User Verification Approved - {user['full_name']}"
+            admin_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #27ae60;">✅ User Verification Approved</h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0;">User Details:</h3>
+                        <p><strong>Name:</strong> {user['full_name']}</p>
+                        <p><strong>Email:</strong> {user['email']}</p>
+                        <p><strong>User ID:</strong> {user['id']}</p>
+                        <p><strong>Approved by:</strong> {current_user.get('full_name', current_user['user_id'])}</p>
+                        <p><strong>Approval Date:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    </div>
+                    
+                    {f'<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3 style="margin-top: 0;">Admin Notes:</h3><p>{admin_notes}</p></div>' if admin_notes else ''}
+                    
+                    <p>The user has been notified of their approval and can now access all verified freelancer features.</p>
+                </div>
+            </body>
+            </html>
+            """
+            
+        else:  # rejected
+            # Email to user - Rejection
+            user_subject = "Afrilance Verification Update Required"
+            user_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #e74c3c;">Verification Update Required</h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p>Dear {user['full_name']},</p>
+                        <p>Thank you for submitting your verification documents. We need some additional information or updates before we can complete your verification.</p>
+                    </div>
+                    
+                    {f'<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;"><h3 style="margin-top: 0; color: #856404;">What needs to be updated:</h3><p>{reason}</p></div>' if reason else ''}
+                    
+                    <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">Next Steps:</h3>
+                        <ol style="color: #555;">
+                            <li>Review the feedback above</li>
+                            <li>Update your documents/information as needed</li>
+                            <li>Resubmit for verification</li>
+                            <li>Our team will review within 24-48 hours</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="http://localhost:3000/freelancer-dashboard" 
+                           style="background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                            Update Verification
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+                        <p>Need help? Contact us at sam@afrilance.co.za</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Email to admin - Verification Rejected
+            admin_subject = f"❌ User Verification Rejected - {user['full_name']}"
+            admin_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #e74c3c;">❌ User Verification Rejected</h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0;">User Details:</h3>
+                        <p><strong>Name:</strong> {user['full_name']}</p>
+                        <p><strong>Email:</strong> {user['email']}</p>
+                        <p><strong>User ID:</strong> {user['id']}</p>
+                        <p><strong>Rejected by:</strong> {current_user.get('full_name', current_user['user_id'])}</p>
+                        <p><strong>Rejection Date:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    </div>
+                    
+                    {f'<div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3 style="margin-top: 0; color: #721c24;">Rejection Reason:</h3><p>{reason}</p></div>' if reason else ''}
+                    
+                    {f'<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3 style="margin-top: 0;">Admin Notes:</h3><p>{admin_notes}</p></div>' if admin_notes else ''}
+                    
+                    <p>The user has been notified and can resubmit their verification documents after addressing the issues.</p>
+                </div>
+            </body>
+            </html>
+            """
+        
+        # Send emails
+        user_email_sent = send_email(user['email'], user_subject, user_body)
+        admin_email_sent = send_email("sam@afrilance.co.za", admin_subject, admin_body)
+        
+        print(f"📧 Verification emails sent - User: {user_email_sent}, Admin: {admin_email_sent}")
+        
+    except Exception as e:
+        print(f"❌ Error sending verification emails: {str(e)}")
+    
+    return {
+        "message": f"User verification {status} successfully",
+        "user_id": user_id,
+        "status": status,
+        "verification_date": update_data["verification_date"]
+    }
+
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
     # Save to database
