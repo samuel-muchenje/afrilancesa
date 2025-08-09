@@ -32,6 +32,8 @@ import CreateProfile from './CreateProfile';
 import GetVerified from './GetVerified';
 import SuccessStories from './SuccessStories';
 import AdminLogin from './AdminLogin';
+import Careers from './Careers';
+import Press from './Press';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
