@@ -352,18 +352,124 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
           </Card>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Pending Verifications */}
-          <div className="lg:col-span-2">
-            <Card className="dashboard-card" id="verifications">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Shield className="w-5 h-5 mr-2" />
-                  Pending Freelancer Verifications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+        {/* Navigation Tabs */}
+        <div className="mb-8">
+          <div className="flex space-x-1 bg-gray-800/50 p-1 rounded-lg">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+              { id: 'verifications', label: `Verifications (${stats.pendingVerifications})`, icon: Shield },
+              { id: 'admin-requests', label: `Admin Requests (${stats.pendingAdmins})`, icon: UserPlus },
+              { id: 'users', label: 'User Management', icon: Users },
+              { id: 'activity', label: 'Activity Log', icon: Clock }
+            ].map(tab => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setCurrentTab(tab.id)}
+                  className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentTab === tab.id
+                      ? 'bg-yellow-400 text-black'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4 mr-2" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {currentTab === 'dashboard' && (
+          <div>
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Recent Activity Summary */}
+              <div className="lg:col-span-2">
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <TrendingUp className="w-5 h-5 mr-2" />
+                      Platform Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                        <span className="text-gray-300">Total Active Users</span>
+                        <span className="text-white font-semibold">{stats.totalUsers}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                        <span className="text-gray-300">Verified Freelancers</span>
+                        <span className="text-green-400 font-semibold">{stats.totalFreelancers - stats.pendingVerifications}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                        <span className="text-gray-300">Active Clients</span>
+                        <span className="text-blue-400 font-semibold">{stats.totalClients}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <Card className="dashboard-card">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Zap className="w-5 h-5 mr-2" />
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {stats.pendingVerifications > 0 && (
+                        <Button 
+                          className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                          onClick={() => setCurrentTab('verifications')}
+                        >
+                          Review {stats.pendingVerifications} Verifications
+                        </Button>
+                      )}
+                      {stats.pendingAdmins > 0 && (
+                        <Button 
+                          className="w-full bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => setCurrentTab('admin-requests')}
+                        >
+                          Review {stats.pendingAdmins} Admin Requests
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-gray-600 text-gray-300"
+                        onClick={() => setCurrentTab('users')}
+                      >
+                        Manage Users
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentTab === 'verifications' && (
+          <div>
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Pending Verifications */}
+              <div className="lg:col-span-2">
+                <Card className="dashboard-card" id="verifications">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Shield className="w-5 h-5 mr-2" />
+                      Pending Freelancer Verifications
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
                 {loading ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
