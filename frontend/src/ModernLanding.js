@@ -186,8 +186,7 @@ const ModernLanding = ({
                 onClick={(e) => {
                   const input = e.target.parentElement.querySelector('input');
                   if (input.value.trim()) {
-                    const params = { search: input.value.trim() };
-                    setCurrentPage({ page: 'browse-freelancers', params });
+                    setCurrentPage(`browse-freelancers-search-${encodeURIComponent(input.value.trim())}`);
                   }
                 }}
               >
