@@ -167,6 +167,13 @@ const ModernLanding = ({
             </Button>
             <Button
               variant="ghost"
+              onClick={() => setCurrentPage('admin')}
+              className="text-white hover:text-red-400 hover:bg-white/5"
+            >
+              Admin
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => setCurrentPage('login')}
               className="text-white hover:text-yellow-400 hover:bg-white/5"
             >
