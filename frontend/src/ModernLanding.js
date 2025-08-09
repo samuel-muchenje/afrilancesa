@@ -167,6 +167,34 @@ const ModernLanding = ({
               className="h-10 w-auto afrilance-logo"
             />
           </div>
+          
+          {/* Center - Search Bar */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search freelancers..."
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    setCurrentPage(`browse-freelancers?search=${encodeURIComponent(e.target.value.trim())}`);
+                  }
+                }}
+              />
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-yellow-400"
+                onClick={(e) => {
+                  const input = e.target.parentElement.querySelector('input');
+                  if (input.value.trim()) {
+                    setCurrentPage(`browse-freelancers?search=${encodeURIComponent(input.value.trim())}`);
+                  }
+                }}
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
