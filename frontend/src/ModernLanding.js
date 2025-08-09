@@ -229,7 +229,7 @@ const ModernLanding = ({
                 onClick={() => {
                   setCurrentPage('register');
                 }}
-                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all btn-glow"
+                className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all btn-glow glow"
               >
                 Start Hiring
               </Button>
