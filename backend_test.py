@@ -7136,22 +7136,36 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("📊 COMPREHENSIVE TEST RESULTS")
     print("="*80)
+    print(f"📝 Registration Tests: {registration_passed}/{registration_total} passed ({(registration_passed/registration_total*100):.1f}%)")
     print(f"🔐 Authentication Tests: {tester.auth_tests_passed}/{tester.auth_tests_run} passed ({(tester.auth_tests_passed/tester.auth_tests_run*100):.1f}%)")
     print(f"🧪 General Tests: {tester.tests_passed}/{tester.tests_run} passed ({(tester.tests_passed/tester.tests_run*100):.1f}%)")
     
-    total_tests = tester.auth_tests_run + tester.tests_run
-    total_passed = tester.auth_tests_passed + tester.tests_passed
+    total_tests = registration_total + tester.auth_tests_run + tester.tests_run
+    total_passed = registration_passed + tester.auth_tests_passed + tester.tests_passed
     overall_percentage = (total_passed / total_tests * 100) if total_tests > 0 else 0
     
     print(f"🎯 Overall: {total_passed}/{total_tests} tests passed ({overall_percentage:.1f}%)")
     
-    if overall_percentage >= 90:
-        print("🎉 EXCELLENT! System is working great!")
-    elif overall_percentage >= 75:
-        print("✅ GOOD! Most features are working correctly.")
-    elif overall_percentage >= 50:
-        print("⚠️  FAIR! Some issues need attention.")
+    # Special focus on registration system results
+    registration_percentage = (registration_passed / registration_total * 100) if registration_total > 0 else 0
+    print(f"\n🎯 REGISTRATION SYSTEM FOCUS: {registration_passed}/{registration_total} tests passed ({registration_percentage:.1f}%)")
+    
+    if registration_percentage >= 90:
+        print("🎉 REGISTRATION SYSTEM: EXCELLENT! All registration forms working perfectly!")
+    elif registration_percentage >= 75:
+        print("✅ REGISTRATION SYSTEM: GOOD! Most registration features working correctly.")
+    elif registration_percentage >= 50:
+        print("⚠️  REGISTRATION SYSTEM: FAIR! Some registration issues need attention.")
     else:
-        print("❌ NEEDS WORK! Multiple issues found.")
+        print("❌ REGISTRATION SYSTEM: NEEDS WORK! Multiple registration issues found.")
+    
+    if overall_percentage >= 90:
+        print("\n🎉 OVERALL SYSTEM: EXCELLENT! System is working great!")
+    elif overall_percentage >= 75:
+        print("\n✅ OVERALL SYSTEM: GOOD! Most features are working correctly.")
+    elif overall_percentage >= 50:
+        print("\n⚠️  OVERALL SYSTEM: FAIR! Some issues need attention.")
+    else:
+        print("\n❌ OVERALL SYSTEM: NEEDS WORK! Multiple issues found.")
     
     print("="*80)
