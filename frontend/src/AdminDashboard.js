@@ -248,13 +248,41 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
                   </div>
                 </div>
                 <Button 
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                  onClick={() => {
-                    const verificationsSection = document.getElementById('verifications');
-                    verificationsSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentTab('verifications')}
+                  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
                 >
                   Review Now
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Alert for pending admin requests */}
+        {stats.pendingAdmins > 0 && (
+          <Card className="dashboard-card mb-6 border-red-500/20 bg-red-500/5">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Shield className="w-5 h-5 text-red-400" />
+                  <div>
+                    <h3 className="text-white font-semibold">
+                      {stats.pendingAdmins} Pending Admin Requests
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                      Admin access requests requiring approval from sam@afrilance.co.za
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentTab('admin-requests')}
+                  className="border-red-500 text-red-400 hover:bg-red-500/10"
+                >
+                  Review Requests
                 </Button>
               </div>
             </CardContent>
