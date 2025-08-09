@@ -213,7 +213,7 @@ const ModernLanding = ({
         <div className="container mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10">
           <div className="text-left">
             <div className="mb-6">
-              <span className="text-yellow-400 font-semibold text-lg tracking-wider">INTRODUCING</span>
+              <span className="text-yellow-400 font-semibold text-lg tracking-wider pulse-animation">INTRODUCING</span>
             </div>
             <h1 className="hero-title text-white mb-8">
               SA'S FIRST<br />
