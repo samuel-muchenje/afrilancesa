@@ -421,7 +421,7 @@ const GetVerified = ({ onNavigate }) => {
 
             <div className="mt-8 flex items-center justify-center space-x-4 text-gray-400">
               <AlertTriangle className="w-5 h-5" />
-              <span className="text-sm">Need help with verification? Contact support@afrilance.co.za</span>
+              <span className="text-sm">Need help with verification? Contact sam@afrilance.co.za</span>
             </div>
           </div>
         </div>
