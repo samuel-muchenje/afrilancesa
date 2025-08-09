@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 class MessagingSystemTester:
-    def __init__(self, base_url="https://233386b1-2685-4958-abad-b6a050fc11d2.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.freelancer_token = None
         self.client_token = None
