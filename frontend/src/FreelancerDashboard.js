@@ -378,6 +378,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => setCurrentTab('messages')}
               className="text-gray-300 hover:text-yellow-400 hover:bg-white/5"
             >
               <MessageCircle className="w-5 h-5" />
