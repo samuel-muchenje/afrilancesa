@@ -1101,6 +1101,22 @@ const ClientDashboard = ({ user, onNavigate, onLogout }) => {
           </div>
         )}
 
+        {/* Messages Tab */}
+        {currentTab === 'messages' && (
+          <div className="h-[calc(100vh-200px)]">
+            <MessagingSystem 
+              user={user}
+              onNavigate={(page) => {
+                if (page === 'dashboard') {
+                  setCurrentTab('dashboard');
+                } else {
+                  onNavigate(page);
+                }
+              }}
+            />
+          </div>
+        )}
+
         {/* Contracts Tab */}
         {currentTab === 'contracts' && (
           <div className="space-y-6">
