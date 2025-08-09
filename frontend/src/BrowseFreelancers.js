@@ -8,10 +8,13 @@ const BrowseFreelancers = ({ user, onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Parse URL parameters if any
-    const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category');
-    const search = urlParams.get('search');
+    // Parse URL parameters from the current page URL passed through props or window location
+    const currentUrl = window.location.href;
+    const url = new URL(currentUrl);
+    const params = new URLSearchParams(url.search);
+    
+    const category = params.get('category');
+    const search = params.get('search');
     
     if (category) {
       setSearchCategory(category);
@@ -27,7 +30,11 @@ const BrowseFreelancers = ({ user, onNavigate }) => {
       <div className="container mx-auto px-6 pt-6">
         <Button
           variant="ghost"
-          onClick={() => onNavigate('landing')}
+          onClick={() => {
+            // Clear URL parameters when going back
+            window.history.replaceState({}, document.title, window.location.pathname);
+            onNavigate('landing');
+          }}
           className="text-gray-300 hover:text-yellow-400 hover:bg-white/5 mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
