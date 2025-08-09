@@ -4345,6 +4345,127 @@ Thabo Mthembu""",
         print("   ✅ Wallet role-based access control working correctly")
         return True
 
+    # ========== CATEGORY COUNTS ENDPOINT TESTS ==========
+    
+    def test_category_counts_endpoint(self):
+        """Test GET /api/categories/counts endpoint (public endpoint)"""
+        print("\n📊 Testing Category Counts Endpoint...")
+        
+        success, response = self.run_test(
+            "Category Counts - Get All Category Counts",
+            "GET",
+            "/api/categories/counts",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['category_counts', 'totals']
+            missing_fields = []
+            
+            for field in required_fields:
+                if field not in response:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                print(f"   ❌ Category counts response missing fields: {missing_fields}")
+                return False
+            
+            # Verify category_counts structure
+            category_counts = response.get('category_counts', {})
+            expected_categories = [
+                'ICT & Digital Work', 'Construction & Engineering', 'Creative & Media',
+                'Admin & Office Support', 'Health & Wellness', 'Beauty & Fashion',
+                'Logistics & Labour', 'Education & Training', 'Home & Domestic Services'
+            ]
+            
+            missing_categories = []
+            for category in expected_categories:
+                if category not in category_counts:
+                    missing_categories.append(category)
+            
+            if missing_categories:
+                print(f"   ❌ Missing categories: {missing_categories}")
+                return False
+            
+            print("   ✓ All 9 expected categories present")
+            
+            # Verify all counts are integers and >= 0
+            for category, count in category_counts.items():
+                if not isinstance(count, int) or count < 0:
+                    print(f"   ❌ Invalid count for {category}: {count}")
+                    return False
+            
+            print("   ✓ All category counts are valid integers >= 0")
+            
+            # Verify totals structure
+            totals = response.get('totals', {})
+            required_total_fields = ['freelancers', 'active_jobs']
+            missing_total_fields = []
+            
+            for field in required_total_fields:
+                if field not in totals:
+                    missing_total_fields.append(field)
+            
+            if missing_total_fields:
+                print(f"   ❌ Totals missing fields: {missing_total_fields}")
+                return False
+            
+            # Verify totals are integers and >= 0
+            for field, value in totals.items():
+                if not isinstance(value, int) or value < 0:
+                    print(f"   ❌ Invalid total for {field}: {value}")
+                    return False
+            
+            print("   ✓ Totals structure valid")
+            
+            # Display the results
+            print("   📊 Category Counts:")
+            for category, count in category_counts.items():
+                print(f"     {category}: {count}")
+            
+            print(f"   📊 Totals:")
+            print(f"     Total Freelancers: {totals['freelancers']}")
+            print(f"     Active Jobs: {totals['active_jobs']}")
+            
+            # Since no freelancer profiles have been created yet, all counts should be 0
+            total_category_freelancers = sum(category_counts.values())
+            if total_category_freelancers == 0:
+                print("   ✓ All category counts are 0 (expected since no freelancer profiles created yet)")
+            else:
+                print(f"   ✓ Found {total_category_freelancers} freelancers across categories")
+            
+            if totals['freelancers'] == 0:
+                print("   ✓ Total freelancers is 0 (expected since no verified freelancers with categories yet)")
+            else:
+                print(f"   ✓ Found {totals['freelancers']} total verified freelancers")
+            
+            print("   ✅ Category counts endpoint working correctly")
+            return True
+        else:
+            print("   ❌ Category counts endpoint failed")
+            return False
+
+    def test_category_counts_public_access(self):
+        """Test that category counts endpoint is publicly accessible (no authentication required)"""
+        print("\n🌐 Testing Category Counts Public Access...")
+        
+        # Test without any authentication token
+        success, response = self.run_test(
+            "Category Counts - Public Access (No Token)",
+            "GET",
+            "/api/categories/counts",
+            200
+        )
+        
+        if success:
+            print("   ✅ Category counts endpoint is publicly accessible")
+            print("   ✓ No authentication required")
+            return True
+        else:
+            print("   ❌ Category counts endpoint requires authentication (should be public)")
+            return False
+
     # ========== FREELANCER PROFILE ENDPOINTS TESTS ==========
     
     def test_freelancer_featured_endpoint(self):
