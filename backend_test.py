@@ -15,6 +15,7 @@ class AfrilanceAPITester:
         self.admin_user = None
         self.test_job_id = None
         self.test_contract_id = None
+        self.test_conversation_id = None
         self.tests_run = 0
         self.tests_passed = 0
         self.auth_tests_run = 0
