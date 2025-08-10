@@ -3,6 +3,7 @@ import { Button } from './components/ui/button';
 import { Card, CardContent } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Textarea } from './components/ui/textarea';
+import FeaturedPortfolios from './components/FeaturedPortfolios';
 import { 
   Shield, Smartphone, Globe, CreditCard, Play, Star, Quote,
   CheckCircle, Users, Briefcase, ArrowRight, X, Search
