@@ -8450,16 +8450,31 @@ def main():
         
         return portfolio_tests_passed, portfolio_tests_total
 
-# Update the main execution to run priority bug tests
+# Update the main execution to run user data and file upload tests
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    # Run priority bug tests as requested by user
-    print("🚨 STARTING PRIORITY BUG TESTING FOR USER REPORTED ISSUES")
-    print("=" * 60)
+    print("🚀 Starting Afrilance API Testing - User Data & File Upload Focus...")
+    print("=" * 70)
     
-    total_passed, total_tests = tester.run_priority_bug_tests()
+    # Run the specific tests requested in the review
+    tests_passed, tests_total = tester.run_user_data_and_file_upload_tests()
     
-    print("\n" + "="*60)
-    print("🎯 PRIORITY BUG TESTING COMPLETED")
-    print("="*60)
+    # Final summary
+    print("\n" + "="*70)
+    print("🎯 FINAL TESTING SUMMARY")
+    print("="*70)
+    
+    success_rate = (tests_passed / tests_total) * 100 if tests_total > 0 else 0
+    
+    if success_rate == 100:
+        print("🎉 ALL USER REPORTED ISSUES TESTED - BACKEND WORKING CORRECTLY!")
+        print("✅ Member Since: created_at field properly implemented")
+        print("✅ File Uploads: All endpoints working correctly")
+        sys.exit(0)
+    elif success_rate >= 50:
+        print("⚠️ PARTIAL SUCCESS - SOME ISSUES REMAIN")
+        sys.exit(1)
+    else:
+        print("❌ CRITICAL ISSUES FOUND - USER PROBLEMS CONFIRMED")
+        sys.exit(1)
