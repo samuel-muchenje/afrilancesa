@@ -128,13 +128,6 @@ const ModernLanding = ({
     }
   };
   
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR'
-    }).format(amount);
-  };
-
   // Handle search functionality
   const handleSearch = () => {
     if (searchQuery.trim()) {
