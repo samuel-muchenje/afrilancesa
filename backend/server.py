@@ -1685,6 +1685,10 @@ async def get_featured_portfolios(limit: int = 12):
     
     featured_freelancers = list(db.users.aggregate(pipeline))
     
+    # Convert ObjectId to string for JSON serialization
+    for freelancer in featured_freelancers:
+        freelancer["_id"] = str(freelancer["_id"])
+    
     return {
         "featured_portfolios": featured_freelancers,
         "total_featured": len(featured_freelancers),
