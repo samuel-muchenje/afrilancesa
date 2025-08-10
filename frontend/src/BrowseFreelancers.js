@@ -49,6 +49,5 @@ const BrowseFreelancers = ({ user, onNavigate, initialCategory = '', initialSear
     </div>
   );
 };
-};
 
 export default BrowseFreelancers;
