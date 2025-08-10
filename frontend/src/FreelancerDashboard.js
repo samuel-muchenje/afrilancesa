@@ -72,6 +72,11 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
   // File upload refresh trigger
   const [fileUploadRefresh, setFileUploadRefresh] = useState(0);
 
+  // ID Document upload states
+  const [showIdUploadDialog, setShowIdUploadDialog] = useState(false);
+  const [idDocument, setIdDocument] = useState(null);
+  const [idUploading, setIdUploading] = useState(false);
+
   useEffect(() => {
     fetchDashboardData();
     if (currentTab === 'jobs') {
