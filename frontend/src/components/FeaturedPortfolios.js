@@ -20,12 +20,15 @@ const FeaturedPortfolios = ({ limit = 6, showHeader = true, onNavigate }) => {
 
   const fetchFeaturedPortfolios = async () => {
     try {
+      console.log('FeaturedPortfolios: Fetching from:', `${API_BASE}/api/portfolio/featured?limit=${limit}`);
       const response = await fetch(`${API_BASE}/api/portfolio/featured?limit=${limit}`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('FeaturedPortfolios: Data received:', data);
         setPortfolios(data.featured_portfolios || []);
       } else {
+        console.error('FeaturedPortfolios: API response not ok:', response.status);
         setError('Failed to load featured portfolios');
       }
     } catch (error) {
