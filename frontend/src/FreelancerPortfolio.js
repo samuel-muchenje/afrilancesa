@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { 
@@ -8,24 +7,20 @@ import {
 } from 'lucide-react';
 import PortfolioShowcase from './components/PortfolioShowcase';
 
-const FreelancerPortfolio = ({ onNavigate }) => {
+const FreelancerPortfolio = ({ onNavigate, currentPage }) => {
   const [freelancerId, setFreelancerId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
 
   useEffect(() => {
-    // Extract freelancer ID from URL or location state
-    const pathParts = location.pathname.split('/');
-    const id = pathParts[pathParts.length - 1];
-    
-    if (id && id !== 'freelancer-portfolio') {
+    // Extract freelancer ID from currentPage parameter
+    // Expected format: "freelancer-portfolio/[freelancer-id]"
+    if (currentPage && currentPage.startsWith('freelancer-portfolio/')) {
+      const id = currentPage.split('/')[1];
       setFreelancerId(id);
-    } else if (location.state?.freelancerId) {
-      setFreelancerId(location.state.freelancerId);
     }
     
     setLoading(false);
-  }, [location]);
+  }, [currentPage]);
 
   const handleBack = () => {
     if (onNavigate) {
