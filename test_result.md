@@ -405,12 +405,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 2 Portfolio Showcase Frontend Testing"
-    - "ModernLanding FeaturedPortfolios Integration"
-    - "BrowseFreelancers AdvancedPortfolioSearch"
-    - "FreelancerDashboard Portfolio Features"
-  stuck_tasks:
-    - "FeaturedPortfolios Navigation Issue"
+    - "ID Document Upload"
+    - "User Authentication System"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
