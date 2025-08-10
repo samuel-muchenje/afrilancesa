@@ -421,12 +421,14 @@ function App() {
 
   // Handle profile setup completion
   const handleProfileSetupComplete = () => {
-    setCurrentPage('dashboard');
+    // Redirect freelancers to their comprehensive dashboard
+    setCurrentPage('freelancer-dashboard');
   };
 
   // Handle post job completion
   const handlePostJobComplete = () => {
-    setCurrentPage('dashboard');
+    // Redirect clients to their comprehensive dashboard
+    setCurrentPage('client-dashboard');
   };
 
   // Modern Landing Page - Default when not logged in or explicitly set to 'landing'
