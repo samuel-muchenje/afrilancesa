@@ -570,6 +570,15 @@ function App() {
     );
   }
 
+  // Freelancer Portfolio Page
+  if (currentPage.startsWith('freelancer-portfolio')) {
+    return (
+      <FreelancerPortfolio 
+        onNavigate={setCurrentPage}
+      />
+    );
+  }
+
   // How It Works Page
   if (currentPage === 'how-it-works') {
     return (
