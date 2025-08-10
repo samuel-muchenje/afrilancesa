@@ -825,7 +825,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                             </span>
                             <span className="flex items-center">
                               <Clock className="w-4 h-4 mr-1" />
-                              {new Date(job.created_at).toLocaleDateString()}
+                              {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'Unknown'}
                             </span>
                           </div>
 
