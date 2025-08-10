@@ -404,7 +404,7 @@ test_plan:
     - "BrowseFreelancers AdvancedPortfolioSearch"
     - "FreelancerDashboard Portfolio Features"
   stuck_tasks:
-    - "FreelancerPortfolio React Router Integration"
+    - "FeaturedPortfolios Navigation Issue"
   test_all: false
   test_priority: "high_first"
 
