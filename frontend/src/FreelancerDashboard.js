@@ -1320,12 +1320,12 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                     {!user.is_verified && (
                       <div className="mt-4 p-3 bg-yellow-500/10 rounded-lg">
                         <p className="text-yellow-400 text-sm mb-3">
-                          {user.id_document 
+                          {user.document_submitted || user.id_document
                             ? 'Your ID document is under review.'
                             : 'Upload your ID document to get verified.'
                           }
                         </p>
-                        {!user.id_document && (
+                        {!(user.document_submitted || user.id_document) && (
                           <Button
                             size="sm"
                             className="w-full bg-yellow-400 hover:bg-yellow-500 text-black"
