@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 def test_admin_registration_workflow():
-    base_url = "https://2844e33a-538f-4735-ad9b-b0c2ef87cab2.preview.emergentagent.com"
+    base_url = "https://ad8043db-7a46-482f-ba9e-35502144e1a1.preview.emergentagent.com"
     
     print("🔐 Testing Admin Registration Approval Workflow...")
     

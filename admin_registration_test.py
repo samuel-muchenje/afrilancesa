@@ -10,7 +10,7 @@ from datetime import datetime
 
 class AdminRegistrationTester:
     def __init__(self):
-        self.base_url = "https://2844e33a-538f-4735-ad9b-b0c2ef87cab2.preview.emergentagent.com"
+        self.base_url = "https://ad8043db-7a46-482f-ba9e-35502144e1a1.preview.emergentagent.com"
         self.admin_token = None
         
     def test_admin_registration_workflow(self):
