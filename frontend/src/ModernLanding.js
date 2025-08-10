@@ -330,11 +330,16 @@ const ModernLanding = ({
         </div>
       </section>
 
-      <FeaturedPortfolios 
-        limit={6} 
-        showHeader={true} 
-        onNavigate={setCurrentPage}
-      />
+      {/* Featured Portfolios Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-black to-gray-800">
+        <div className="container mx-auto px-6">
+          <FeaturedPortfolios 
+            limit={6} 
+            showHeader={true} 
+            onNavigate={setCurrentPage}
+          />
+        </div>
+      </section>
 
       {/* How It Works Section */}
       <section className="py-20 bg-black how-it-works-bg">
