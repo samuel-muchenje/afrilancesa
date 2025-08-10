@@ -299,6 +299,79 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
     alert(`${fileType} uploaded successfully!`);
   };
 
+  // ID Document upload handler
+  const handleIdDocumentUpload = async () => {
+    if (!idDocument) {
+      alert('Please select an ID document to upload.');
+      return;
+    }
+
+    setIdUploading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', idDocument);
+
+      const response = await fetch(`${API_BASE}/api/upload-id-document`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = `Upload failed: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      
+      // Update user data to reflect document upload
+      const updatedUser = { ...user, id_document: true, verification_status: 'pending' };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Reset form and close dialog
+      setIdDocument(null);
+      setShowIdUploadDialog(false);
+      
+      alert('ID document uploaded successfully! Your verification request has been sent for admin review.');
+
+    } catch (error) {
+      console.error('ID document upload error:', error);
+      alert(`Upload failed: ${error.message}`);
+    } finally {
+      setIdUploading(false);
+    }
+  };
+
+  const handleIdDocumentSelect = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        alert('Invalid file type. Please upload JPEG, PNG, or PDF files only.');
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        alert('File too large. Maximum size is 5MB.');
+        return;
+      }
+
+      setIdDocument(selectedFile);
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
