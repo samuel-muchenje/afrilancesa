@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 class JWTAuthTester:
-    def __init__(self, base_url="https://9c38454e-b247-48e2-bfc9-c1c62214b98a.preview.emergentagent.com"):
+    def __init__(self, base_url="https://2844e33a-538f-4735-ad9b-b0c2ef87cab2.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

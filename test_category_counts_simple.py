@@ -12,7 +12,7 @@ def test_category_counts_comprehensive():
     # Test both internal and external URLs
     urls = [
         "http://localhost:8001/api/categories/counts",
-        "https://9c38454e-b247-48e2-bfc9-c1c62214b98a.preview.emergentagent.com/api/categories/counts"
+        "https://2844e33a-538f-4735-ad9b-b0c2ef87cab2.preview.emergentagent.com/api/categories/counts"
     ]
     
     for i, url in enumerate(urls):
