@@ -53,7 +53,11 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'afrilance_fallback_secret_key_2025_ch
 JWT_ALGORITHM = "HS256"
 security = HTTPBearer()
 
-# Email settings
+# Email settings - Postmark Configuration
+POSTMARK_SERVER_TOKEN = os.environ.get('POSTMARK_SERVER_TOKEN', '')
+POSTMARK_SENDER_EMAIL = os.environ.get('POSTMARK_SENDER_EMAIL', 'sam@afrilance.co.za')
+
+# Legacy SMTP settings (keep for fallback)
 EMAIL_HOST = "afrilance.co.za"
 EMAIL_PORT = 465
 EMAIL_USER = "sam@afrilance.co.za"
