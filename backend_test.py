@@ -9082,6 +9082,8 @@ def main():
             print("   ❌ Some email workflows may have issues")
             print("   ❌ Further investigation required")
         
+        return email_tests_passed, email_tests_total
+
 # Update the main execution to run verification email tests
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
