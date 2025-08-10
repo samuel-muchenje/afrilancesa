@@ -338,6 +338,8 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
         { id: 'messages', label: 'Messages', icon: MessageCircle },
         { id: 'wallet', label: 'Wallet', icon: Wallet },
         { id: 'files', label: 'Files', icon: FolderOpen },
+        { id: 'portfolio', label: 'Portfolio Analytics', icon: Award },
+        { id: 'categories', label: 'Portfolio Categories', icon: Target },
         { id: 'reviews', label: 'Reviews', icon: Star },
         { id: 'profile', label: 'Profile', icon: Users },
         { id: 'earnings', label: 'Earnings', icon: DollarSign }
