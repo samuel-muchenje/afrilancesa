@@ -942,7 +942,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                               {application.status}
                             </Badge>
                             <span className="text-sm text-gray-400">
-                              Applied {new Date(application.created_at).toLocaleDateString()}
+                              Applied {application.created_at ? new Date(application.created_at).toLocaleDateString() : 'Unknown'}
                             </span>
                           </div>
                           <p className="text-gray-300 mb-4">{application.description}</p>
