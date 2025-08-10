@@ -1559,6 +1559,378 @@ async def delete_project_gallery_item(
     
     return {"message": "Project gallery item deleted successfully"}
 
+# Enhanced Portfolio Showcase System - Phase 2 Implementation
+
+@app.get("/api/portfolio/showcase/{freelancer_id}")
+async def get_portfolio_showcase(freelancer_id: str):
+    """Get enhanced portfolio showcase for a freelancer (public endpoint)"""
+    
+    # Find the freelancer
+    freelancer = db.users.find_one(
+        {"id": freelancer_id, "role": "freelancer"},
+        {"password": 0}  # Exclude password
+    )
+    
+    if not freelancer:
+        raise HTTPException(status_code=404, detail="Freelancer not found")
+    
+    # Calculate portfolio statistics
+    portfolio_files = freelancer.get("portfolio_files", [])
+    project_gallery = freelancer.get("project_gallery", [])
+    
+    # Categorize projects by technology
+    tech_categories = {}
+    total_projects = len(project_gallery)
+    
+    for project in project_gallery:
+        technologies = project.get("technologies", [])
+        for tech in technologies:
+            tech_lower = tech.lower().strip()
+            if tech_lower not in tech_categories:
+                tech_categories[tech_lower] = {
+                    "name": tech,
+                    "count": 0,
+                    "projects": []
+                }
+            tech_categories[tech_lower]["count"] += 1
+            tech_categories[tech_lower]["projects"].append(project["id"])
+    
+    # Get recent activity (latest uploads)
+    recent_files = sorted(
+        portfolio_files + [
+            {
+                **project,
+                "type": "project_gallery",
+                "uploaded_at": project["created_at"]
+            } for project in project_gallery
+        ],
+        key=lambda x: x.get("uploaded_at", ""),
+        reverse=True
+    )[:10]
+    
+    showcase_data = {
+        "freelancer": {
+            "id": freelancer["id"],
+            "full_name": freelancer["full_name"],
+            "email": freelancer.get("email"),
+            "profile": freelancer.get("profile", {}),
+            "is_verified": freelancer.get("is_verified", False),
+            "profile_picture": freelancer.get("profile_picture"),
+            "created_at": freelancer.get("created_at")
+        },
+        "portfolio_stats": {
+            "total_portfolio_files": len(portfolio_files),
+            "total_projects": total_projects,
+            "total_technologies": len(tech_categories),
+            "portfolio_completion": min(100, (len(portfolio_files) * 20 + total_projects * 30)),
+            "last_updated": max(
+                [f.get("uploaded_at", "") for f in portfolio_files] +
+                [p.get("created_at", "") for p in project_gallery],
+                default=""
+            )
+        },
+        "technology_breakdown": list(tech_categories.values())[:10],  # Top 10 technologies
+        "portfolio_files": portfolio_files,
+        "project_gallery": project_gallery,
+        "recent_activity": recent_files
+    }
+    
+    return showcase_data
+
+@app.get("/api/portfolio/featured")
+async def get_featured_portfolios(limit: int = 12):
+    """Get featured portfolios for homepage showcase"""
+    
+    # Get verified freelancers with complete portfolios and good ratings
+    pipeline = [
+        {
+            "$match": {
+                "role": "freelancer",
+                "is_verified": True,
+                "$and": [
+                    {"$or": [
+                        {"portfolio_files": {"$exists": True, "$ne": []}},
+                        {"project_gallery": {"$exists": True, "$ne": []}}
+                    ]}
+                ]
+            }
+        },
+        {
+            "$addFields": {
+                "portfolio_score": {
+                    "$add": [
+                        {"$multiply": [{"$size": {"$ifNull": ["$portfolio_files", []]}}, 2]},
+                        {"$multiply": [{"$size": {"$ifNull": ["$project_gallery", []]}}, 5]},
+                        {"$multiply": [{"$ifNull": ["$profile.rating", 3]}, 10]}
+                    ]
+                }
+            }
+        },
+        {"$sort": {"portfolio_score": -1}},
+        {"$limit": limit},
+        {
+            "$project": {
+                "id": 1,
+                "full_name": 1,
+                "profile": 1,
+                "profile_picture": 1,
+                "is_verified": 1,
+                "portfolio_files": {"$slice": ["$portfolio_files", 3]},  # Preview only
+                "project_gallery": {"$slice": ["$project_gallery", 2]},  # Preview only
+                "portfolio_score": 1,
+                "created_at": 1
+            }
+        }
+    ]
+    
+    featured_freelancers = list(db.users.aggregate(pipeline))
+    
+    return {
+        "featured_portfolios": featured_freelancers,
+        "total_featured": len(featured_freelancers),
+        "selection_criteria": "verified_freelancers_with_complete_portfolios"
+    }
+
+@app.post("/api/portfolio/category/update")
+async def update_portfolio_categories(
+    categories_data: dict,
+    current_user = Depends(verify_token)
+):
+    """Update portfolio categories and tags for better organization"""
+    
+    if current_user["role"] != "freelancer":
+        raise HTTPException(status_code=403, detail="Only freelancers can update portfolio categories")
+    
+    # Validate categories data
+    primary_category = categories_data.get("primary_category")
+    secondary_categories = categories_data.get("secondary_categories", [])
+    portfolio_tags = categories_data.get("portfolio_tags", [])
+    specializations = categories_data.get("specializations", [])
+    
+    # Update user's portfolio categorization
+    db.users.update_one(
+        {"id": current_user["user_id"]},
+        {
+            "$set": {
+                "portfolio_categories": {
+                    "primary": primary_category,
+                    "secondary": secondary_categories,
+                    "tags": portfolio_tags,
+                    "specializations": specializations,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        }
+    )
+    
+    return {
+        "message": "Portfolio categories updated successfully",
+        "categories": {
+            "primary_category": primary_category,
+            "secondary_categories": secondary_categories,
+            "portfolio_tags": portfolio_tags,
+            "specializations": specializations
+        }
+    }
+
+@app.post("/api/portfolio/search/advanced")
+async def search_portfolios_advanced(search_data: dict):
+    """Advanced portfolio search with filtering capabilities"""
+    
+    # Extract search parameters
+    query = search_data.get("query", "")
+    categories = search_data.get("categories", [])
+    technologies = search_data.get("technologies", [])
+    min_projects = search_data.get("min_projects", 0)
+    min_rating = search_data.get("min_rating", 0)
+    location = search_data.get("location", "")
+    verified_only = search_data.get("verified_only", False)
+    page = max(1, search_data.get("page", 1))
+    limit = min(50, max(1, search_data.get("limit", 20)))
+    skip = (page - 1) * limit
+    
+    # Build aggregation pipeline
+    match_conditions = {"role": "freelancer"}
+    
+    # Text search
+    if query:
+        match_conditions["$or"] = [
+            {"full_name": {"$regex": query, "$options": "i"}},
+            {"profile.bio": {"$regex": query, "$options": "i"}},
+            {"profile.skills": {"$elemMatch": {"$regex": query, "$options": "i"}}},
+            {"project_gallery.title": {"$regex": query, "$options": "i"}},
+            {"project_gallery.description": {"$regex": query, "$options": "i"}}
+        ]
+    
+    # Verification filter
+    if verified_only:
+        match_conditions["is_verified"] = True
+    
+    # Location filter
+    if location:
+        match_conditions["profile.location"] = {"$regex": location, "$options": "i"}
+    
+    # Rating filter
+    if min_rating > 0:
+        match_conditions["profile.rating"] = {"$gte": min_rating}
+    
+    # Categories filter
+    if categories:
+        match_conditions["$or"] = match_conditions.get("$or", []) + [
+            {"profile.category": {"$in": categories}},
+            {"portfolio_categories.primary": {"$in": categories}},
+            {"portfolio_categories.secondary": {"$elemMatch": {"$in": categories}}}
+        ]
+    
+    # Technologies filter
+    if technologies:
+        tech_conditions = []
+        for tech in technologies:
+            tech_conditions.extend([
+                {"profile.skills": {"$elemMatch": {"$regex": tech, "$options": "i"}}},
+                {"project_gallery.technologies": {"$elemMatch": {"$regex": tech, "$options": "i"}}}
+            ])
+        if tech_conditions:
+            match_conditions["$or"] = match_conditions.get("$or", []) + tech_conditions
+    
+    pipeline = [
+        {"$match": match_conditions},
+        {
+            "$addFields": {
+                "project_count": {"$size": {"$ifNull": ["$project_gallery", []]}},
+                "portfolio_score": {
+                    "$add": [
+                        {"$multiply": [{"$size": {"$ifNull": ["$portfolio_files", []]}}, 2]},
+                        {"$multiply": [{"$size": {"$ifNull": ["$project_gallery", []]}}, 3]},
+                        {"$multiply": [{"$ifNull": ["$profile.rating", 0]}, 10]}
+                    ]
+                }
+            }
+        }
+    ]
+    
+    # Min projects filter
+    if min_projects > 0:
+        pipeline.append({"$match": {"project_count": {"$gte": min_projects}}})
+    
+    # Get total count for pagination
+    count_pipeline = pipeline + [{"$count": "total"}]
+    count_result = list(db.users.aggregate(count_pipeline))
+    total = count_result[0]["total"] if count_result else 0
+    
+    # Add sorting, pagination, and projection
+    pipeline.extend([
+        {"$sort": {"portfolio_score": -1, "project_count": -1}},
+        {"$skip": skip},
+        {"$limit": limit},
+        {
+            "$project": {
+                "id": 1,
+                "full_name": 1,
+                "profile": 1,
+                "profile_picture": 1,
+                "is_verified": 1,
+                "portfolio_files": {"$slice": ["$portfolio_files", 3]},
+                "project_gallery": {"$slice": ["$project_gallery", 3]},
+                "project_count": 1,
+                "portfolio_score": 1,
+                "created_at": 1,
+                "portfolio_categories": 1
+            }
+        }
+    ])
+    
+    results = list(db.users.aggregate(pipeline))
+    
+    return {
+        "portfolios": results,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        },
+        "search_params": search_data,
+        "results_count": len(results)
+    }
+
+@app.get("/api/portfolio/analytics/{freelancer_id}")
+async def get_portfolio_analytics(
+    freelancer_id: str,
+    current_user = Depends(verify_token)
+):
+    """Get portfolio analytics for freelancer dashboard"""
+    
+    # Only allow freelancers to view their own analytics or admins to view any
+    if current_user["role"] == "freelancer" and current_user["user_id"] != freelancer_id:
+        raise HTTPException(status_code=403, detail="You can only view your own portfolio analytics")
+    elif current_user["role"] not in ["freelancer", "admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Get freelancer data
+    freelancer = db.users.find_one({"id": freelancer_id, "role": "freelancer"})
+    if not freelancer:
+        raise HTTPException(status_code=404, detail="Freelancer not found")
+    
+    portfolio_files = freelancer.get("portfolio_files", [])
+    project_gallery = freelancer.get("project_gallery", [])
+    
+    # Calculate analytics
+    analytics = {
+        "overview": {
+            "total_files": len(portfolio_files),
+            "total_projects": len(project_gallery),
+            "verification_status": freelancer.get("is_verified", False),
+            "profile_completion": freelancer.get("profile_completed", False),
+            "account_created": freelancer.get("created_at")
+        },
+        "file_breakdown": {
+            "images": len([f for f in portfolio_files if f.get("content_type", "").startswith("image/")]),
+            "videos": len([f for f in portfolio_files if f.get("content_type", "").startswith("video/")]),
+            "documents": len([f for f in portfolio_files if f.get("content_type", "") in ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]]),
+            "other": len([f for f in portfolio_files if not any([
+                f.get("content_type", "").startswith("image/"),
+                f.get("content_type", "").startswith("video/"),
+                f.get("content_type", "") in ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+            ])])
+        },
+        "project_analytics": {
+            "projects_with_urls": len([p for p in project_gallery if p.get("project_url")]),
+            "avg_technologies_per_project": sum(len(p.get("technologies", [])) for p in project_gallery) / max(1, len(project_gallery)),
+            "most_used_technologies": {}
+        },
+        "storage_usage": {
+            "total_storage_mb": sum(f.get("file_size", 0) for f in portfolio_files + [p.get("file_info", {}) for p in project_gallery]) / (1024 * 1024),
+            "storage_by_type": {}
+        },
+        "recommendations": []
+    }
+    
+    # Technology frequency analysis
+    tech_count = {}
+    for project in project_gallery:
+        for tech in project.get("technologies", []):
+            tech_count[tech] = tech_count.get(tech, 0) + 1
+    
+    analytics["project_analytics"]["most_used_technologies"] = dict(
+        sorted(tech_count.items(), key=lambda x: x[1], reverse=True)[:10]
+    )
+    
+    # Generate recommendations
+    recommendations = []
+    if len(portfolio_files) < 3:
+        recommendations.append("Upload more portfolio files to showcase your work better")
+    if len(project_gallery) < 2:
+        recommendations.append("Add project gallery items with detailed descriptions")
+    if not freelancer.get("is_verified"):
+        recommendations.append("Complete verification to increase client trust")
+    if not freelancer.get("profile_completed"):
+        recommendations.append("Complete your profile to improve visibility")
+    
+    analytics["recommendations"] = recommendations
+    
+    return analytics
+
 @app.post("/api/admin/verify-user/{user_id}")
 async def verify_user(
     user_id: str,
