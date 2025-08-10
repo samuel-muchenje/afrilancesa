@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdvancedSearch from './components/AdvancedSearch';
+import AdvancedPortfolioSearch from './components/AdvancedPortfolioSearch';
 import { Button } from './components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -22,10 +22,10 @@ const BrowseFreelancers = ({ user, onNavigate, initialCategory = '', initialSear
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Browse Freelancers 👥
+            Browse Freelancer Portfolios 🎨
           </h1>
           <p className="text-gray-400">
-            Discover talented South African freelancers with advanced search and filtering
+            Discover talented South African freelancers with enhanced portfolio search
           </p>
           {initialCategory && (
             <p className="text-yellow-400 mt-2">
@@ -39,15 +39,16 @@ const BrowseFreelancers = ({ user, onNavigate, initialCategory = '', initialSear
           )}
         </div>
 
-        {/* Advanced Search Component */}
-        <AdvancedSearch 
-          searchType="users" 
+        {/* Advanced Portfolio Search Component */}
+        <AdvancedPortfolioSearch 
+          onNavigate={onNavigate}
+          initialQuery={initialSearch}
           initialCategory={initialCategory}
-          initialSearch={initialSearch}
         />
       </div>
     </div>
   );
+};
 };
 
 export default BrowseFreelancers;
