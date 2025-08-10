@@ -2119,6 +2119,67 @@ class AfrilanceAPITester:
         
         return error_tests_passed >= (error_tests_total * 0.5)  # At least 50% should pass
 
+    def run_user_data_and_file_upload_tests(self):
+        """Run specific tests for user data structure and file upload endpoints as requested"""
+        print("\n🎯 RUNNING USER DATA STRUCTURE AND FILE UPLOAD TESTS")
+        print("=" * 70)
+        print("Testing based on user reported issues:")
+        print("1. 'Member Since: Invalid Date' - checking created_at field")
+        print("2. File uploads not working in Files tab - testing all upload endpoints")
+        print("=" * 70)
+        
+        tests_passed = 0
+        tests_total = 0
+        
+        # Test 1: User Data Structure - created_at field
+        tests_total += 1
+        print("\n" + "="*50)
+        print("TEST 1: USER DATA STRUCTURE - CREATED_AT FIELD")
+        print("="*50)
+        
+        success = self.test_user_data_structure_created_at_field()
+        if success:
+            tests_passed += 1
+            print("✅ USER DATA STRUCTURE TEST PASSED")
+        else:
+            print("❌ USER DATA STRUCTURE TEST FAILED")
+        
+        # Test 2: File Upload Endpoints
+        tests_total += 1
+        print("\n" + "="*50)
+        print("TEST 2: FILE UPLOAD ENDPOINTS")
+        print("="*50)
+        
+        success = self.test_file_upload_endpoints()
+        if success:
+            tests_passed += 1
+            print("✅ FILE UPLOAD ENDPOINTS TEST PASSED")
+        else:
+            print("❌ FILE UPLOAD ENDPOINTS TEST FAILED")
+        
+        # Final Summary
+        success_rate = (tests_passed / tests_total) * 100 if tests_total > 0 else 0
+        
+        print("\n" + "="*70)
+        print("🏆 USER DATA & FILE UPLOAD TESTING SUMMARY")
+        print("="*70)
+        print(f"✅ TESTS PASSED: {tests_passed}/{tests_total} ({success_rate:.1f}%)")
+        
+        if success_rate == 100:
+            print("🎉 ALL TESTS PASSED - USER ISSUES SHOULD BE RESOLVED!")
+        elif success_rate >= 50:
+            print("⚠️ SOME TESTS FAILED - PARTIAL ISSUES REMAIN")
+        else:
+            print("❌ MAJOR ISSUES FOUND - USER PROBLEMS CONFIRMED")
+        
+        print("\n📋 SPECIFIC FINDINGS:")
+        if tests_passed >= 1:
+            print("✅ User created_at field testing completed")
+        if tests_passed >= 2:
+            print("✅ File upload endpoints testing completed")
+        
+        return tests_passed, tests_total
+
     # ========== ADMIN USER MANAGEMENT TESTS ==========
     
     def test_admin_get_all_users(self):
