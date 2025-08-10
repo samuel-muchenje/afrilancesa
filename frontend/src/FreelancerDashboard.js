@@ -333,9 +333,10 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
 
       const result = await response.json();
       
-      // Update user data to reflect document upload
-      const updatedUser = { ...user, id_document: true, verification_status: 'pending' };
-      setUser(updatedUser);
+      // Update local storage to reflect document upload
+      // Note: This will be reflected when user refreshes or logs in again
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...currentUser, id_document: true, verification_status: 'pending' };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
       // Reset form and close dialog
