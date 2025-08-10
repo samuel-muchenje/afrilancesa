@@ -15,6 +15,7 @@ const FeaturedPortfolios = ({ limit = 6, showHeader = true, onNavigate }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('FeaturedPortfolios: Component mounted with limit:', limit);
     fetchFeaturedPortfolios();
   }, [limit]);
 
