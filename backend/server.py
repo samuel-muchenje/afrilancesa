@@ -17,6 +17,9 @@ from email.mime.multipart import MIMEMultipart
 import shutil
 from pathlib import Path
 import socket
+from postmarker.core import PostmarkClient
+from postmarker.exceptions import PostmarkException
+import logging
 
 # Create uploads directory structure
 UPLOAD_DIR = Path("uploads")
