@@ -106,40 +106,6 @@ const ModernLanding = ({
     fetchCategoryCounts();
   }, []);
   
-  const fetchFeaturedFreelancers = async () => {
-    try {
-      setLoadingFreelancers(true);
-      const response = await fetch(`${API_BASE}/api/freelancers/featured`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch featured freelancers');
-      }
-      
-      const data = await response.json();
-      setFeaturedFreelancers(data);
-      
-    } catch (error) {
-      console.error('Error fetching featured freelancers:', error);
-      // Fallback to static data if API fails
-      setFeaturedFreelancers([
-        {
-          id: "fallback-1",
-          full_name: "Thabo Mthembu", 
-          profile: {
-            profession: "Full-Stack Developer",
-            hourly_rate: 850,
-            bio: "Building scalable web applications for South African startups and enterprises",
-            rating: 4.9,
-            total_reviews: 127,
-            profile_image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-          }
-        }
-      ]);
-    } finally {
-      setLoadingFreelancers(false);
-    }
-  };
-
   const fetchCategoryCounts = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/categories/counts`);
