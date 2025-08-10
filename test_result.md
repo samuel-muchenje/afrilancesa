@@ -461,6 +461,12 @@ agent_communication:
   - agent: "testing"
     message: "PHASE 2 PORTFOLIO SHOWCASE SYSTEM COMPREHENSIVE TESTING COMPLETED - EXCELLENT RESULTS! All major components working perfectly: ✅ FeaturedPortfolios on homepage with proper API integration and data display ✅ AdvancedPortfolioSearch with full search and filtering capabilities ✅ Individual portfolio showcase with comprehensive freelancer data ✅ Complete user journey navigation flows ✅ All API endpoints responding correctly (100% success rate) ✅ Proper error handling and loading states. System is production-ready and fully functional. Minor improvement needed: Better error messaging for invalid portfolio URLs, but core functionality is excellent."
 
+  - agent: "user"
+    message: "USER REPORTED BUGS: 1) User profile seems to be having errors uploading ID documents, 2) On Sign Users are not re-directed to their freelancer portal"
+
+  - agent: "main"
+    message: "Starting investigation of user-reported bugs: 1) ID document upload errors - need to check frontend/backend integration, 2) Login redirection not working for freelancer portal - need to check App.js routing logic. Will test both issues comprehensively."
+
   - task: "Contracts Management System"
     implemented: true
     working: true
