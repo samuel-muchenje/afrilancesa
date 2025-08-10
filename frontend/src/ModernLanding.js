@@ -96,16 +96,13 @@ const ModernLanding = ({
   loading 
 }) => {
   const [ctaBarVisible, setCtaBarVisible] = useState(false); // Start hidden by default
-  const [featuredFreelancers, setFeaturedFreelancers] = useState([]);
-  const [loadingFreelancers, setLoadingFreelancers] = useState(true);
   const [searchQuery, setSearchQuery] = useState(''); // Add search query state
   const [categoryCounts, setCategoryCounts] = useState({}); // Add category counts state
   
   const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   
-  // Fetch featured freelancers on component mount
+  // Fetch category counts on component mount
   useEffect(() => {
-    fetchFeaturedFreelancers();
     fetchCategoryCounts();
   }, []);
   
