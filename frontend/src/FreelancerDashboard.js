@@ -1881,6 +1881,88 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* ID Document Upload Dialog */}
+      <Dialog open={showIdUploadDialog} onOpenChange={setShowIdUploadDialog}>
+        <DialogContent className="max-w-md bg-gray-900 border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Upload ID Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-gray-300">
+              <p className="mb-2">Please upload a clear photo of your South African ID, passport, or driver's license:</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-400">
+                <li>Accepted formats: JPEG, PNG, PDF</li>
+                <li>Maximum file size: 5MB</li>
+                <li>Ensure document is clearly readable</li>
+              </ul>
+            </div>
+            
+            <div>
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                onChange={handleIdDocumentSelect}
+                className="w-full p-2 bg-gray-800 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-500"
+              />
+              {idDocument && (
+                <div className="mt-2 p-2 bg-gray-800 rounded flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-white">{idDocument.name}</span>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {(idDocument.size / 1024 / 1024).toFixed(2)} MB
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+              <div className="flex items-start space-x-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-yellow-400">
+                  <p className="font-medium">Verification Process</p>
+                  <p className="text-yellow-300 mt-1">
+                    Your document will be reviewed by our admin team. You'll receive an email notification once verification is complete.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowIdUploadDialog(false);
+                  setIdDocument(null);
+                }}
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+                disabled={idUploading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleIdDocumentUpload}
+                disabled={!idDocument || idUploading}
+                className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+              >
+                {idUploading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
+                    Uploading...
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Document
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
