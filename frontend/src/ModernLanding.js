@@ -374,66 +374,11 @@ const ModernLanding = ({
         </div>
       </section>
 
-      {/* Featured Freelancers */}
-      <section className="py-20 bg-gray-900">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16 section-animate">
-            <h2 className="text-4xl font-bold text-white mb-6">Featured Freelancers</h2>
-            <p className="text-xl text-gray-300">Talent you can trust</p>
-          </div>
-          <div className="relative">
-            {loadingFreelancers ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
-                <p className="text-gray-400 mt-4">Loading featured freelancers...</p>
-              </div>
-            ) : (
-              <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
-                {featuredFreelancers.map((freelancer, index) => (
-                  <div key={freelancer.id || index} className="flex-shrink-0 w-80">
-                    <Card className="bg-black/50 border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 card-hover-effect">
-                      <CardContent className="p-6">
-                        <div className="flex items-center mb-4">
-                          <img
-                            src={freelancer.profile?.profile_image || freelancer.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"}
-                            alt={freelancer.full_name || freelancer.name}
-                            className="w-16 h-16 rounded-full object-cover mr-4"
-                            onError={(e) => {
-                              e.target.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face";
-                            }}
-                          />
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">{freelancer.full_name || freelancer.name}</h3>
-                            <p className="text-gray-400">{freelancer.profile?.profession || freelancer.profession}</p>
-                            <div className="flex items-center mt-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-yellow-400 ml-1">{freelancer.profile?.rating || freelancer.rating}</span>
-                              <span className="text-gray-500 ml-2">({freelancer.profile?.total_reviews || freelancer.reviews} reviews)</span>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-gray-300 mb-4 italic">"{freelancer.profile?.bio || freelancer.tagline}"</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-green-400 font-semibold">
-                            From {formatCurrency(freelancer.profile?.hourly_rate || parseInt(freelancer.price?.replace('R', '')) || 500)}/hr
-                          </span>
-                          <Button
-                            size="sm"
-                            className="bg-gradient-to-r from-yellow-400 to-green-500 hover:from-yellow-500 hover:to-green-600 text-black font-semibold btn-glow"
-                            onClick={() => setCurrentPage('register')}
-                          >
-                            View Profile
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      <FeaturedPortfolios 
+        limit={6} 
+        showHeader={true} 
+        onNavigate={setCurrentPage}
+      />
 
       {/* How It Works Section */}
       <section className="py-20 bg-black how-it-works-bg">
