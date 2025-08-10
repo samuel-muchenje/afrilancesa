@@ -54,7 +54,7 @@ JWT_ALGORITHM = "HS256"
 security = HTTPBearer()
 
 # Email settings
-EMAIL_HOST = "mail.afrilance.co.za"
+EMAIL_HOST = "afrilance.co.za"
 EMAIL_PORT = 465
 EMAIL_USER = "sam@afrilance.co.za"
 EMAIL_PASS = os.environ.get('EMAIL_PASSWORD', '')
