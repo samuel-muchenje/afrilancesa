@@ -11,6 +11,8 @@ import FileUpload from './components/FileUpload';
 import FileGallery from './components/FileGallery';
 import MessagingSystem from './components/MessagingSystem';
 import ReviewSystem from './components/ReviewSystem';
+import PortfolioAnalytics from './components/PortfolioAnalytics';
+import PortfolioCategoryManager from './components/PortfolioCategoryManager';
 import { 
   Briefcase, DollarSign, Star, Clock, Users, TrendingUp, 
   MessageCircle, Settings, LogOut, CheckCircle, AlertTriangle,
