@@ -1645,6 +1645,480 @@ class AfrilanceAPITester:
         
         return True
 
+    # ========== USER DATA STRUCTURE TESTS ==========
+    
+    def test_user_data_structure_created_at_field(self):
+        """Test user registration and login to verify created_at field is properly returned"""
+        print("\n📅 TESTING USER DATA STRUCTURE - CREATED_AT FIELD")
+        print("=" * 60)
+        
+        # Test 1: Create a new freelancer user and verify created_at field
+        timestamp = datetime.now().strftime('%H%M%S')
+        freelancer_data = {
+            "email": f"created.at.test{timestamp}@gmail.com",
+            "password": "CreatedAtTest123!",
+            "role": "freelancer",
+            "full_name": "Created At Test User",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "User Data Structure - Registration with created_at Field",
+            "POST",
+            "/api/register",
+            200,
+            data=freelancer_data
+        )
+        
+        if not success or 'user' not in response:
+            print("❌ CRITICAL: User registration failed")
+            return False
+        
+        user_data = response['user']
+        token = response['token']
+        
+        # Check if created_at field is present in registration response
+        if 'created_at' in user_data:
+            print(f"✅ created_at field present in registration response: {user_data['created_at']}")
+        else:
+            print("⚠️ created_at field not present in registration response")
+        
+        # Test 2: Login with the same user and verify created_at field
+        login_data = {
+            "email": freelancer_data["email"],
+            "password": freelancer_data["password"]
+        }
+        
+        success, login_response = self.run_test(
+            "User Data Structure - Login with created_at Field",
+            "POST",
+            "/api/login",
+            200,
+            data=login_data
+        )
+        
+        if not success or 'user' not in login_response:
+            print("❌ CRITICAL: User login failed")
+            return False
+        
+        login_user_data = login_response['user']
+        
+        # Check if created_at field is present in login response
+        if 'created_at' in login_user_data:
+            print(f"✅ created_at field present in login response: {login_user_data['created_at']}")
+        else:
+            print("⚠️ created_at field not present in login response")
+        
+        # Test 3: Get user profile and verify created_at field
+        success, profile_response = self.run_test(
+            "User Data Structure - Profile with created_at Field",
+            "GET",
+            "/api/profile",
+            200,
+            token=token
+        )
+        
+        if not success:
+            print("❌ CRITICAL: Profile retrieval failed")
+            return False
+        
+        # Check if created_at field is present in profile response
+        if 'created_at' in profile_response:
+            created_at_value = profile_response['created_at']
+            print(f"✅ created_at field present in profile response: {created_at_value}")
+            
+            # Verify the created_at field is properly formatted
+            try:
+                if created_at_value:
+                    # Try to parse the datetime to verify it's valid
+                    if isinstance(created_at_value, str):
+                        from dateutil import parser
+                        parsed_date = parser.parse(created_at_value)
+                        print(f"✅ created_at field is properly formatted datetime: {parsed_date}")
+                    else:
+                        print(f"✅ created_at field is datetime object: {created_at_value}")
+                    
+                    # Check if it's not "Invalid Date"
+                    if "Invalid" not in str(created_at_value):
+                        print("✅ created_at field does not contain 'Invalid Date'")
+                        return True
+                    else:
+                        print("❌ CRITICAL: created_at field contains 'Invalid Date'")
+                        return False
+                else:
+                    print("❌ CRITICAL: created_at field is null/empty")
+                    return False
+            except Exception as e:
+                print(f"❌ CRITICAL: created_at field parsing error: {str(e)}")
+                return False
+        else:
+            print("❌ CRITICAL: created_at field not present in profile response")
+            return False
+
+    # ========== FILE UPLOAD ENDPOINTS TESTS ==========
+    
+    def test_file_upload_endpoints(self):
+        """Test all file upload endpoints that the Files tab uses"""
+        print("\n📁 TESTING FILE UPLOAD ENDPOINTS")
+        print("=" * 60)
+        
+        # First, create a freelancer user for file upload tests
+        timestamp = datetime.now().strftime('%H%M%S')
+        freelancer_data = {
+            "email": f"file.upload.test{timestamp}@gmail.com",
+            "password": "FileUploadTest123!",
+            "role": "freelancer",
+            "full_name": "File Upload Test User",
+            "phone": "+27823456789"
+        }
+        
+        success, response = self.run_test(
+            "File Upload - Create Freelancer User",
+            "POST",
+            "/api/register",
+            200,
+            data=freelancer_data
+        )
+        
+        if not success or 'token' not in response:
+            print("❌ CRITICAL: Failed to create freelancer user for file upload tests")
+            return False
+        
+        freelancer_token = response['token']
+        print(f"✅ Freelancer user created for file upload tests")
+        
+        # Test results tracking
+        upload_tests_passed = 0
+        upload_tests_total = 0
+        
+        # Test 1: POST /api/upload-profile-picture
+        upload_tests_total += 1
+        success = self.test_upload_profile_picture(freelancer_token)
+        if success:
+            upload_tests_passed += 1
+        
+        # Test 2: POST /api/upload-resume
+        upload_tests_total += 1
+        success = self.test_upload_resume(freelancer_token)
+        if success:
+            upload_tests_passed += 1
+        
+        # Test 3: POST /api/upload-portfolio-file
+        upload_tests_total += 1
+        success = self.test_upload_portfolio_file(freelancer_token)
+        if success:
+            upload_tests_passed += 1
+        
+        # Test 4: POST /api/upload-project-gallery
+        upload_tests_total += 1
+        success = self.test_upload_project_gallery(freelancer_token)
+        if success:
+            upload_tests_passed += 1
+        
+        # Test 5: Authentication requirements
+        upload_tests_total += 1
+        success = self.test_file_upload_authentication()
+        if success:
+            upload_tests_passed += 1
+        
+        # Test 6: Error handling for invalid files
+        upload_tests_total += 1
+        success = self.test_file_upload_error_handling(freelancer_token)
+        if success:
+            upload_tests_passed += 1
+        
+        # Summary
+        success_rate = (upload_tests_passed / upload_tests_total) * 100 if upload_tests_total > 0 else 0
+        print(f"\n📊 FILE UPLOAD TESTS SUMMARY")
+        print("=" * 40)
+        print(f"✅ TESTS PASSED: {upload_tests_passed}/{upload_tests_total} ({success_rate:.1f}%)")
+        
+        if success_rate >= 90:
+            print("🎉 FILE UPLOAD SYSTEM WORKING EXCELLENTLY!")
+            return True
+        elif success_rate >= 75:
+            print("✅ FILE UPLOAD SYSTEM WORKING WELL!")
+            return True
+        else:
+            print("⚠️ FILE UPLOAD SYSTEM NEEDS ATTENTION!")
+            return False
+
+    def test_upload_profile_picture(self, token):
+        """Test POST /api/upload-profile-picture endpoint"""
+        print("\n🖼️ Testing Profile Picture Upload...")
+        
+        # Create a simple test image file content (minimal JPEG header)
+        import io
+        
+        # Create a minimal valid JPEG file content
+        jpeg_content = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9'
+        
+        try:
+            # Use requests to upload file
+            url = f"{self.base_url}/api/upload-profile-picture"
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            files = {
+                'file': ('test_profile.jpg', io.BytesIO(jpeg_content), 'image/jpeg')
+            }
+            
+            response = requests.post(url, headers=headers, files=files, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                print(f"✅ Profile picture upload successful")
+                print(f"   ✓ Message: {response_data.get('message', 'Unknown')}")
+                print(f"   ✓ Filename: {response_data.get('filename', 'Unknown')}")
+                print(f"   ✓ File URL: {response_data.get('file_url', 'Unknown')}")
+                return True
+            else:
+                print(f"❌ Profile picture upload failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Profile picture upload error: {str(e)}")
+            return False
+
+    def test_upload_resume(self, token):
+        """Test POST /api/upload-resume endpoint"""
+        print("\n📄 Testing Resume Upload...")
+        
+        # Create a simple PDF content
+        pdf_content = b'%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF'
+        
+        try:
+            import io
+            url = f"{self.base_url}/api/upload-resume"
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            files = {
+                'file': ('test_resume.pdf', io.BytesIO(pdf_content), 'application/pdf')
+            }
+            
+            response = requests.post(url, headers=headers, files=files, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                print(f"✅ Resume upload successful")
+                print(f"   ✓ Message: {response_data.get('message', 'Unknown')}")
+                print(f"   ✓ Filename: {response_data.get('filename', 'Unknown')}")
+                print(f"   ✓ File URL: {response_data.get('file_url', 'Unknown')}")
+                return True
+            else:
+                print(f"❌ Resume upload failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Resume upload error: {str(e)}")
+            return False
+
+    def test_upload_portfolio_file(self, token):
+        """Test POST /api/upload-portfolio-file endpoint"""
+        print("\n🎨 Testing Portfolio File Upload...")
+        
+        # Create a simple PNG content
+        png_content = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x0cIDATx\x9cc```\x00\x00\x00\x04\x00\x01\xdd\x8d\xb4\x1c\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        try:
+            import io
+            url = f"{self.base_url}/api/upload-portfolio-file"
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            files = {
+                'file': ('test_portfolio.png', io.BytesIO(png_content), 'image/png')
+            }
+            
+            response = requests.post(url, headers=headers, files=files, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                print(f"✅ Portfolio file upload successful")
+                print(f"   ✓ Message: {response_data.get('message', 'Unknown')}")
+                print(f"   ✓ Filename: {response_data.get('filename', 'Unknown')}")
+                print(f"   ✓ File URL: {response_data.get('file_url', 'Unknown')}")
+                return True
+            else:
+                print(f"❌ Portfolio file upload failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Portfolio file upload error: {str(e)}")
+            return False
+
+    def test_upload_project_gallery(self, token):
+        """Test POST /api/upload-project-gallery endpoint"""
+        print("\n🖼️ Testing Project Gallery Upload...")
+        
+        # Create a simple JPEG content
+        jpeg_content = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9'
+        
+        try:
+            import io
+            url = f"{self.base_url}/api/upload-project-gallery"
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            files = {
+                'file': ('test_project.jpg', io.BytesIO(jpeg_content), 'image/jpeg')
+            }
+            
+            data = {
+                'title': 'Test Project Gallery Item',
+                'description': 'This is a test project gallery upload to verify the endpoint functionality',
+                'technologies': 'React, Node.js, MongoDB',
+                'project_url': 'https://example.com/test-project'
+            }
+            
+            response = requests.post(url, headers=headers, files=files, data=data, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                print(f"✅ Project gallery upload successful")
+                print(f"   ✓ Message: {response_data.get('message', 'Unknown')}")
+                print(f"   ✓ Project ID: {response_data.get('project_id', 'Unknown')}")
+                print(f"   ✓ Filename: {response_data.get('filename', 'Unknown')}")
+                print(f"   ✓ File URL: {response_data.get('file_url', 'Unknown')}")
+                return True
+            else:
+                print(f"❌ Project gallery upload failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Project gallery upload error: {str(e)}")
+            return False
+
+    def test_file_upload_authentication(self):
+        """Test authentication requirements for file upload endpoints"""
+        print("\n🔐 Testing File Upload Authentication Requirements...")
+        
+        # Create a simple test file
+        import io
+        test_content = b'test file content'
+        
+        endpoints_to_test = [
+            '/api/upload-profile-picture',
+            '/api/upload-resume',
+            '/api/upload-portfolio-file',
+            '/api/upload-project-gallery'
+        ]
+        
+        auth_tests_passed = 0
+        auth_tests_total = len(endpoints_to_test)
+        
+        for endpoint in endpoints_to_test:
+            try:
+                url = f"{self.base_url}{endpoint}"
+                files = {
+                    'file': ('test.txt', io.BytesIO(test_content), 'text/plain')
+                }
+                
+                # Test without authentication token
+                response = requests.post(url, files=files, timeout=10)
+                
+                # Should return 401 or 403 (unauthorized)
+                if response.status_code in [401, 403]:
+                    print(f"✅ {endpoint} properly requires authentication")
+                    auth_tests_passed += 1
+                else:
+                    print(f"❌ {endpoint} does not require authentication (Status: {response.status_code})")
+                    
+            except Exception as e:
+                print(f"❌ Authentication test error for {endpoint}: {str(e)}")
+        
+        success_rate = (auth_tests_passed / auth_tests_total) * 100 if auth_tests_total > 0 else 0
+        print(f"   Authentication Tests: {auth_tests_passed}/{auth_tests_total} ({success_rate:.1f}%)")
+        
+        return auth_tests_passed == auth_tests_total
+
+    def test_file_upload_error_handling(self, token):
+        """Test error handling for invalid files"""
+        print("\n⚠️ Testing File Upload Error Handling...")
+        
+        error_tests_passed = 0
+        error_tests_total = 0
+        
+        # Test 1: Invalid file type for profile picture
+        error_tests_total += 1
+        try:
+            import io
+            url = f"{self.base_url}/api/upload-profile-picture"
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            # Upload a text file to profile picture endpoint (should fail)
+            files = {
+                'file': ('test.txt', io.BytesIO(b'invalid file content'), 'text/plain')
+            }
+            
+            response = requests.post(url, headers=headers, files=files, timeout=10)
+            
+            if response.status_code == 400:
+                print(f"✅ Invalid file type properly rejected for profile picture")
+                error_tests_passed += 1
+            else:
+                print(f"❌ Invalid file type not properly rejected (Status: {response.status_code})")
+                
+        except Exception as e:
+            print(f"❌ Error handling test failed: {str(e)}")
+        
+        # Test 2: File too large (simulate by creating large content)
+        error_tests_total += 1
+        try:
+            # Create content larger than 2MB (profile picture limit)
+            large_content = b'x' * (3 * 1024 * 1024)  # 3MB
+            
+            files = {
+                'file': ('large.jpg', io.BytesIO(large_content), 'image/jpeg')
+            }
+            
+            response = requests.post(url, headers=headers, files=files, timeout=10)
+            
+            if response.status_code == 400:
+                print(f"✅ Large file properly rejected")
+                error_tests_passed += 1
+            else:
+                print(f"❌ Large file not properly rejected (Status: {response.status_code})")
+                
+        except Exception as e:
+            print(f"❌ Large file test failed: {str(e)}")
+        
+        # Test 3: Missing file
+        error_tests_total += 1
+        try:
+            response = requests.post(url, headers=headers, timeout=10)
+            
+            if response.status_code in [400, 422]:
+                print(f"✅ Missing file properly rejected")
+                error_tests_passed += 1
+            else:
+                print(f"❌ Missing file not properly rejected (Status: {response.status_code})")
+                
+        except Exception as e:
+            print(f"❌ Missing file test failed: {str(e)}")
+        
+        success_rate = (error_tests_passed / error_tests_total) * 100 if error_tests_total > 0 else 0
+        print(f"   Error Handling Tests: {error_tests_passed}/{error_tests_total} ({success_rate:.1f}%)")
+        
+        return error_tests_passed >= (error_tests_total * 0.5)  # At least 50% should pass
+
     # ========== ADMIN USER MANAGEMENT TESTS ==========
     
     def test_admin_get_all_users(self):
