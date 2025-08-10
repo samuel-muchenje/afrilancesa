@@ -7268,35 +7268,55 @@ def main():
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    # Run comprehensive registration tests as requested
-    print("🚀 COMPREHENSIVE REGISTRATION FORMS AND ENDPOINTS TESTING")
+    # Run Phase 2 Portfolio Showcase System tests as requested
+    print("🚀 PHASE 2 PORTFOLIO SHOWCASE SYSTEM TESTING")
     print(f"🌐 Base URL: {tester.base_url}")
     print("=" * 80)
     
-    # COMPREHENSIVE REGISTRATION SYSTEM TESTING
+    # First, set up test users for portfolio testing
+    print("\n🔧 SETTING UP TEST USERS FOR PORTFOLIO TESTING")
+    print("-" * 50)
+    
+    # Register test users
+    if tester.test_auth_register_freelancer():
+        print("✅ Freelancer test user created successfully")
+    else:
+        print("❌ Failed to create freelancer test user")
+    
+    if tester.test_auth_register_client():
+        print("✅ Client test user created successfully")
+    else:
+        print("❌ Failed to create client test user")
+    
+    if tester.test_auth_register_admin():
+        print("✅ Admin test user created successfully")
+    else:
+        print("❌ Failed to create admin test user")
+    
+    # PHASE 2 PORTFOLIO SHOWCASE SYSTEM TESTING
     print("\n" + "="*60)
-    print("📝 COMPREHENSIVE REGISTRATION SYSTEM TESTING")
+    print("🎨 PHASE 2 PORTFOLIO SHOWCASE SYSTEM TESTING")
     print("="*60)
     
-    registration_passed, registration_total = tester.test_comprehensive_registration_system()
+    portfolio_passed, portfolio_total = tester.test_portfolio_showcase_system()
     
     # Print final results
     print("\n" + "="*80)
-    print("📊 COMPREHENSIVE REGISTRATION TEST RESULTS")
+    print("📊 PHASE 2 PORTFOLIO SHOWCASE TEST RESULTS")
     print("="*80)
-    print(f"📝 Registration Tests: {registration_passed}/{registration_total} passed ({(registration_passed/registration_total*100):.1f}%)")
+    print(f"🎨 Portfolio Tests: {portfolio_passed}/{portfolio_total} passed ({(portfolio_passed/portfolio_total*100):.1f}%)")
     
-    # Special focus on registration system results
-    registration_percentage = (registration_passed / registration_total * 100) if registration_total > 0 else 0
-    print(f"\n🎯 REGISTRATION SYSTEM FOCUS: {registration_passed}/{registration_total} tests passed ({registration_percentage:.1f}%)")
+    # Special focus on portfolio system results
+    portfolio_percentage = (portfolio_passed / portfolio_total * 100) if portfolio_total > 0 else 0
+    print(f"\n🎯 PORTFOLIO SHOWCASE SYSTEM: {portfolio_passed}/{portfolio_total} tests passed ({portfolio_percentage:.1f}%)")
     
-    if registration_percentage >= 90:
-        print("🎉 REGISTRATION SYSTEM: EXCELLENT! All registration forms working perfectly!")
-    elif registration_percentage >= 75:
-        print("✅ REGISTRATION SYSTEM: GOOD! Most registration features working correctly.")
-    elif registration_percentage >= 50:
-        print("⚠️  REGISTRATION SYSTEM: FAIR! Some registration issues need attention.")
+    if portfolio_percentage >= 90:
+        print("🎉 PORTFOLIO SHOWCASE SYSTEM: EXCELLENT! All portfolio features working perfectly!")
+    elif portfolio_percentage >= 75:
+        print("✅ PORTFOLIO SHOWCASE SYSTEM: GOOD! Most portfolio features working correctly.")
+    elif portfolio_percentage >= 50:
+        print("⚠️  PORTFOLIO SHOWCASE SYSTEM: FAIR! Some portfolio issues need attention.")
     else:
-        print("❌ REGISTRATION SYSTEM: NEEDS WORK! Multiple registration issues found.")
+        print("❌ PORTFOLIO SHOWCASE SYSTEM: NEEDS WORK! Multiple portfolio issues found.")
     
     print("="*80)
