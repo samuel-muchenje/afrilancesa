@@ -236,12 +236,73 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def send_email(to_email: str, subject: str, body: str) -> bool:
-    """Send email using SMTP"""
+    """Send email using Postmark API with SMTP fallback"""
+    logger = logging.getLogger(__name__)
+    
+    # Try Postmark API first
+    if POSTMARK_SERVER_TOKEN:
+        try:
+            client = PostmarkClient(server_token=POSTMARK_SERVER_TOKEN)
+            
+            response = client.emails.send(
+                From=POSTMARK_SENDER_EMAIL,
+                To=to_email,
+                Subject=subject,
+                HtmlBody=body,
+                TrackOpens=True,
+                TrackLinks=True,
+                Metadata={
+                    "email_type": "transactional",
+                    "sent_at": datetime.utcnow().isoformat(),
+                    "system": "afrilance"
+                }
+            )
+            
+            message_id = response.get('MessageID', 'unknown')
+            submitted_at = response.get('SubmittedAt', 'unknown')
+            
+            print(f"✅ Email sent successfully via Postmark API")
+            print(f"   To: {to_email}")
+            print(f"   Subject: {subject}")
+            print(f"   Message ID: {message_id}")
+            print(f"   Submitted At: {submitted_at}")
+            
+            logger.info(f"Postmark email sent successfully: {message_id} to {to_email}")
+            return True
+            
+        except PostmarkException as e:
+            print(f"❌ Postmark API error: {e}")
+            logger.error(f"Postmark API error: {e}")
+            
+            # Extract error details if available
+            error_code = getattr(e, 'error_code', 'unknown')
+            error_message = getattr(e, 'message', str(e))
+            
+            print(f"   Error Code: {error_code}")
+            print(f"   Error Message: {error_message}")
+            
+            # Fallback to SMTP for certain error types
+            if error_code not in ['401', '403']:  # Don't fallback for auth errors
+                print("🔄 Falling back to SMTP delivery...")
+                return send_email_smtp_fallback(to_email, subject, body)
+            else:
+                print("❌ Authentication error - not attempting SMTP fallback")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Unexpected Postmark error: {e}")
+            logger.error(f"Unexpected Postmark error: {e}")
+            print("🔄 Falling back to SMTP delivery...")
+            return send_email_smtp_fallback(to_email, subject, body)
+    
+    else:
+        print("⚠️ POSTMARK_SERVER_TOKEN not configured, using SMTP fallback")
+        return send_email_smtp_fallback(to_email, subject, body)
+
+def send_email_smtp_fallback(to_email: str, subject: str, body: str) -> bool:
+    """Fallback SMTP email sending (original implementation)"""
     try:
         # Check if we're in a test environment where SMTP may be blocked
-        import socket
-        
-        # Test connection first with a shorter timeout
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)  # 5 second timeout for connection test
         result = sock.connect_ex((EMAIL_HOST, EMAIL_PORT))
@@ -273,11 +334,11 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
         text = msg.as_string()
         server.sendmail(EMAIL_USER, to_email, text)
         server.quit()
-        print(f"✅ Real email sent successfully to {to_email}")
+        print(f"✅ Real SMTP email sent successfully to {to_email}")
         return True
         
     except Exception as e:
-        print(f"Email sending failed: {e}")
+        print(f"SMTP sending failed: {e}")
         # Fallback to mock mode
         print(f"FALLBACK: MOCK EMAIL SENT TO: {to_email}")
         print(f"SUBJECT: {subject}")
