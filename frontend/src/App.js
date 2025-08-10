@@ -105,7 +105,7 @@ function App() {
     const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press', 'landing'];
     
     // Handle browse-freelancers with parameters
-    if (page.startsWith('browse-freelancers')) {
+    if (page.startsWith('browse-freelancers') || page.startsWith('freelancer-portfolio')) {
       setCurrentPage(page);
     } else if (validPages.includes(page)) {
       setCurrentPage(page);
