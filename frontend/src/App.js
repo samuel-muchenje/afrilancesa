@@ -575,6 +575,7 @@ function App() {
     return (
       <FreelancerPortfolio 
         onNavigate={setCurrentPage}
+        currentPage={currentPage}
       />
     );
   }
