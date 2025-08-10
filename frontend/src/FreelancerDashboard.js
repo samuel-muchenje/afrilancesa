@@ -1270,7 +1270,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Member Since:</span>
                         <span className="text-white">
-                          {new Date(user.created_at).toLocaleDateString()}
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
