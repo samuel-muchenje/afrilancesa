@@ -414,8 +414,11 @@ function App() {
       setCurrentPage('freelancer-profile-setup');
     } else if (role === 'client') {
       setCurrentPage('post-job');
+    } else if (role === 'admin') {
+      setCurrentPage('admin-dashboard');
     } else {
-      setCurrentPage('dashboard');
+      // Default to freelancer dashboard for unknown roles
+      setCurrentPage('freelancer-dashboard');
     }
   };
 
