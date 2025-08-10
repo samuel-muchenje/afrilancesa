@@ -1329,6 +1329,7 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
                           <Button
                             size="sm"
                             className="w-full bg-yellow-400 hover:bg-yellow-500 text-black"
+                            onClick={() => setShowIdUploadDialog(true)}
                           >
                             <Upload className="w-4 h-4 mr-2" />
                             Upload ID Document
