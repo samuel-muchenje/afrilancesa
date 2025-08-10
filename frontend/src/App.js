@@ -118,8 +118,19 @@ function App() {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     if (token && userData) {
-      setUser(JSON.parse(userData));
-      setCurrentPage('dashboard');
+      const user = JSON.parse(userData);
+      setUser(user);
+      
+      // Redirect to appropriate dashboard based on user role
+      if (user.role === 'freelancer') {
+        setCurrentPage('freelancer-dashboard');
+      } else if (user.role === 'client') {
+        setCurrentPage('client-dashboard');
+      } else if (user.role === 'admin') {
+        setCurrentPage('admin-dashboard');
+      } else {
+        setCurrentPage('dashboard');
+      }
     }
   }, []);
 
