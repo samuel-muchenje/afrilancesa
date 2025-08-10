@@ -1674,6 +1674,44 @@ const FreelancerDashboard = ({ user, onNavigate, onLogout }) => {
             </Card>
           </div>
         )}
+
+        {/* Portfolio Analytics Tab */}
+        {currentTab === 'portfolio' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Portfolio Analytics</h2>
+              <div className="flex items-center space-x-2">
+                <Award className="w-5 h-5 text-yellow-400" />
+                <span className="text-gray-400">Insights & Performance</span>
+              </div>
+            </div>
+            <PortfolioAnalytics 
+              freelancerId={user?.id} 
+              token={localStorage.getItem('token')}
+            />
+          </div>
+        )}
+
+        {/* Portfolio Categories Tab */}
+        {currentTab === 'categories' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Portfolio Categories</h2>
+              <div className="flex items-center space-x-2">
+                <Target className="w-5 h-5 text-yellow-400" />
+                <span className="text-gray-400">Organize your work</span>
+              </div>
+            </div>
+            <PortfolioCategoryManager 
+              user={user}
+              token={localStorage.getItem('token')}
+              onUpdate={() => {
+                // Refresh user data if needed
+                console.log('Portfolio categories updated');
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Job Application Modal */}
