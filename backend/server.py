@@ -18,7 +18,7 @@ import shutil
 from pathlib import Path
 import socket
 from postmarker.core import PostmarkClient
-from postmarker.exceptions import PostmarkException
+from postmarker.exceptions import PostmarkerException
 import logging
 
 # Create uploads directory structure
@@ -270,7 +270,7 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
             logger.info(f"Postmark email sent successfully: {message_id} to {to_email}")
             return True
             
-        except PostmarkException as e:
+        except PostmarkerException as e:
             print(f"❌ Postmark API error: {e}")
             logger.error(f"Postmark API error: {e}")
             
