@@ -1846,6 +1846,10 @@ async def search_portfolios_advanced(search_data: dict):
     
     results = list(db.users.aggregate(pipeline))
     
+    # Convert ObjectId to string for JSON serialization
+    for result in results:
+        result["_id"] = str(result["_id"])
+    
     return {
         "portfolios": results,
         "pagination": {
