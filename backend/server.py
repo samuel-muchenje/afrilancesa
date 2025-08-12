@@ -244,13 +244,14 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
         try:
             client = PostmarkClient(server_token=POSTMARK_SERVER_TOKEN)
             
+            # Fixed: Remove TrackLinks field which is not supported with Server tokens
             response = client.emails.send(
                 From=POSTMARK_SENDER_EMAIL,
                 To=to_email,
                 Subject=subject,
                 HtmlBody=body,
                 TrackOpens=True,
-                TrackLinks=True,
+                # TrackLinks=True,  # REMOVED - not supported with Server tokens
                 Metadata={
                     "email_type": "transactional",
                     "sent_at": datetime.utcnow().isoformat(),
@@ -281,23 +282,19 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
             print(f"   Error Code: {error_code}")
             print(f"   Error Message: {error_message}")
             
-            # Fallback to SMTP for certain error types
-            if error_code not in ['401', '403']:  # Don't fallback for auth errors
-                print("🔄 Falling back to SMTP delivery...")
-                return send_email_smtp_fallback(to_email, subject, body)
-            else:
-                print("❌ Authentication error - not attempting SMTP fallback")
-                return False
+            # Don't fallback for certain error types to force Postmark usage
+            print("❌ Postmark API failed - check configuration")
+            return False
                 
         except Exception as e:
             print(f"❌ Unexpected Postmark error: {e}")
             logger.error(f"Unexpected Postmark error: {e}")
-            print("🔄 Falling back to SMTP delivery...")
-            return send_email_smtp_fallback(to_email, subject, body)
+            print("❌ Postmark integration failed - check configuration") 
+            return False
     
     else:
-        print("⚠️ POSTMARK_SERVER_TOKEN not configured, using SMTP fallback")
-        return send_email_smtp_fallback(to_email, subject, body)
+        print("❌ CRITICAL: POSTMARK_SERVER_TOKEN not configured!")
+        return False
 
 def send_email_smtp_fallback(to_email: str, subject: str, body: str) -> bool:
     """Fallback SMTP email sending (original implementation)"""
