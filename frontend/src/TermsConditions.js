@@ -92,10 +92,10 @@ const TermsConditions = ({ setCurrentPage }) => {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">5. Platform Fees and Commission</h2>
               <p className="text-gray-700 mb-4">
-                <strong>5.1 Service Fee:</strong> Afrilance charges a 17% commission on all completed transactions. Freelancers receive 83% of the total project value.
+                <strong>5.1 Service Fee:</strong> Afrilance charges a 17% commission on all completed transactions. Freelancers receive 83% of the total project value after successful completion and client approval.
               </p>
               <p className="text-gray-700 mb-4">
-                <strong>5.2 Fee Calculation:</strong> Fees are calculated based on the total contract value including any additional services or modifications agreed upon between client and freelancer.
+                <strong>5.2 Fee Calculation:</strong> The 17% commission is calculated on the gross project value including any additional services, modifications, or bonuses agreed upon between client and freelancer. This fee covers platform maintenance, payment processing, dispute resolution, and customer support services.
               </p>
               <p className="text-gray-700 mb-4">
                 <strong>5.3 Payment Processing:</strong> All payments are processed through our secure payment system. Fees are automatically deducted from freelancer earnings.
