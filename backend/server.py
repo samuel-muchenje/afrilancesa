@@ -2076,7 +2076,7 @@ async def verify_user(
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/freelancer-dashboard" 
+                        <a href="https://afrilance-email-fix.preview.emergentagent.com/freelancer-dashboard" 
                            style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                             Go to Your Dashboard
                         </a>
