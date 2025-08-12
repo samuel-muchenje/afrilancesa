@@ -115,7 +115,7 @@ const TermsConditions = ({ setCurrentPage }) => {
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
                 <li>Client approval of completed work</li>
-                <li>Automatic release after 14 days if no disputes are raised</li>
+                <li>Automatic release after 48 hours if no disputes are raised</li>
                 <li>Dispute resolution in favor of the freelancer</li>
               </ul>
               <p className="text-gray-700 mb-4">
