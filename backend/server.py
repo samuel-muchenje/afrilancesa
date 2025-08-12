@@ -2601,14 +2601,19 @@ async def approve_admin_request(
 
 @app.post("/api/support")
 async def submit_support_ticket(ticket: SupportTicket):
+    # Generate sequential ticket number
+    ticket_number = get_next_ticket_number()
+    
     # Save to database
     ticket_data = {
         "id": str(uuid.uuid4()),
+        "ticket_number": ticket_number,
         "name": ticket.name,
         "email": ticket.email,
         "message": ticket.message,
         "status": "open",
-        "created_at": datetime.utcnow()
+        "created_at": datetime.utcnow(),
+        "admin_replies": []
     }
     
     db.support_tickets.insert_one(ticket_data)
@@ -2616,11 +2621,12 @@ async def submit_support_ticket(ticket: SupportTicket):
     # Try to send email but don't block if it fails
     email_sent = False
     try:
-        subject = f"New Support Request from {ticket.name}"
+        subject = f"Support Ticket #{ticket_number} - {ticket.name}"
         body = f"""
-        <h2>New Support Request</h2>
+        <h2>New Support Request - Ticket #{ticket_number}</h2>
         <p><strong>From:</strong> {ticket.name}</p>
         <p><strong>Email:</strong> {ticket.email}</p>
+        <p><strong>Ticket Number:</strong> #{ticket_number}</p>
         <p><strong>Message:</strong></p>
         <p>{ticket.message}</p>
         <p><strong>Submitted:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
@@ -2638,6 +2644,7 @@ async def submit_support_ticket(ticket: SupportTicket):
     return {
         "message": "Support ticket submitted successfully",
         "ticket_id": ticket_data["id"],
+        "ticket_number": ticket_number,
         "email_sent": email_sent
     }
 
