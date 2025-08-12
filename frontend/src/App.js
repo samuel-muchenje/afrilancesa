@@ -106,7 +106,7 @@ function App() {
   // Update navigation for role-based landing
   const handleLandingNavigation = (page) => {
     // Allow all valid page navigations
-    const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press', 'landing'];
+    const validPages = ['login', 'register', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press', 'landing', 'terms-conditions', 'privacy-policy', 'security-policy', 'delivery-policy'];
     
     // Handle browse-freelancers with parameters
     if (page.startsWith('browse-freelancers') || page.startsWith('freelancer-portfolio')) {
