@@ -701,10 +701,10 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('about')} className="footer-link text-left hover:text-yellow-400 transition-colors">About</button></li>
-                <li><button onClick={() => setCurrentPage('careers')} className="footer-link text-left hover:text-yellow-400 transition-colors">Careers</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left hover:text-yellow-400 transition-colors">Contact</button></li>
-                <li><button onClick={() => setCurrentPage('press')} className="footer-link text-left hover:text-yellow-400 transition-colors">Press</button></li>
+                <li><button onClick={() => setCurrentPage('about')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">About</button></li>
+                <li><button onClick={() => setCurrentPage('careers')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Careers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Contact</button></li>
+                <li><button onClick={() => setCurrentPage('press')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Press</button></li>
               </ul>
             </div>
             
