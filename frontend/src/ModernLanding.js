@@ -731,10 +731,10 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">For Clients</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left hover:text-yellow-400 transition-colors">How It Works</button></li>
-                <li><button onClick={() => setCurrentPage('browse-freelancers')} className="footer-link text-left hover:text-yellow-400 transition-colors">Browse Freelancers</button></li>
-                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left hover:text-yellow-400 transition-colors">Support</button></li>
-                <li><button onClick={() => setCurrentPage('enterprise')} className="footer-link text-left hover:text-yellow-400 transition-colors">Enterprise</button></li>
+                <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">How It Works</button></li>
+                <li><button onClick={() => setCurrentPage('browse-freelancers')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Browse Freelancers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Support</button></li>
+                <li><button onClick={() => setCurrentPage('enterprise')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Enterprise</button></li>
               </ul>
             </div>
           </div>
