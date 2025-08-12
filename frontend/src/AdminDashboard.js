@@ -946,14 +946,14 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     );
   };
 
-  const renderSupportTab = () => {
-    // Load support tickets when tab is first opened
-    useEffect(() => {
-      if (currentTab === 'support' && supportTickets.length === 0) {
-        fetchSupportTickets();
-      }
-    }, [currentTab]);
+  // Load support tickets when tab is first opened
+  useEffect(() => {
+    if (currentTab === 'support' && supportTickets.length === 0) {
+      fetchSupportTickets();
+    }
+  }, [currentTab]);
 
+  const renderSupportTab = () => {
     return (
       <div className="space-y-6">
         {/* Support Filters */}
