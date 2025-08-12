@@ -240,9 +240,10 @@ const TermsConditions = ({ setCurrentPage }) => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700"><strong>Afrilance (Pty) Ltd</strong></p>
+                <p className="text-gray-700">Address: 152 Dallas Ave, Waterkloof Glen, Pretoria, 0010</p>
                 <p className="text-gray-700">Email: legal@afrilance.co.za</p>
                 <p className="text-gray-700">Support: support@afrilance.co.za</p>
-                <p className="text-gray-700">Phone: +27 (0) 11 123 4567</p>
+                <p className="text-gray-700">Phone: 012 943 6048</p>
               </div>
             </section>
           </div>
