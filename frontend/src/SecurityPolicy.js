@@ -257,9 +257,10 @@ const SecurityPolicy = ({ setCurrentPage }) => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700"><strong>Security Team</strong></p>
                 <p className="text-gray-700"><strong>Afrilance (Pty) Ltd</strong></p>
+                <p className="text-gray-700">Address: 152 Dallas Ave, Waterkloof Glen, Pretoria, 0010</p>
                 <p className="text-gray-700">Email: security@afrilance.co.za</p>
                 <p className="text-gray-700">Emergency: security-emergency@afrilance.co.za</p>
-                <p className="text-gray-700">Phone: +27 (0) 11 123 4567 (24/7 Security Hotline)</p>
+                <p className="text-gray-700">Phone: 012 943 6048 (24/7 Security Hotline)</p>
                 <p className="text-gray-700 mt-2">
                   <strong>Responsible Disclosure:</strong><br/>
                   We welcome responsible disclosure of security vulnerabilities. Please contact our security team for our vulnerability disclosure policy.
