@@ -785,14 +785,14 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     </div>
   );
 
-  const renderUsersTab = () => {
-    // Load users when tab is first opened
-    useEffect(() => {
-      if (currentTab === 'users' && usersList.length === 0) {
-        fetchUsers();
-      }
-    }, [currentTab]);
+  // Load users when tab is first opened
+  useEffect(() => {
+    if (currentTab === 'users' && usersList.length === 0) {
+      fetchUsers();
+    }
+  }, [currentTab]);
 
+  const renderUsersTab = () => {
     return (
       <div className="space-y-6">
         {/* Search and Filters */}
