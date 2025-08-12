@@ -743,9 +743,9 @@ const ModernLanding = ({
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-400 text-sm">© 2025 Afrilance. All rights reserved.</p>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <button onClick={() => setCurrentPage('privacy-policy')} className="footer-link text-sm">Privacy Policy</button>
-                <button onClick={() => setCurrentPage('terms-conditions')} className="footer-link text-sm">Terms of Service</button>
-                <button onClick={() => setCurrentPage('security-policy')} className="footer-link text-sm">Security Policy</button>
+                <button onClick={() => setCurrentPage('privacy-policy')} className="footer-link text-sm text-gray-400 bg-transparent border-none cursor-pointer hover:text-yellow-400">Privacy Policy</button>
+                <button onClick={() => setCurrentPage('terms-conditions')} className="footer-link text-sm text-gray-400 bg-transparent border-none cursor-pointer hover:text-yellow-400">Terms of Service</button>
+                <button onClick={() => setCurrentPage('security-policy')} className="footer-link text-sm text-gray-400 bg-transparent border-none cursor-pointer hover:text-yellow-400">Security Policy</button>
               </div>
             </div>
           </div>
