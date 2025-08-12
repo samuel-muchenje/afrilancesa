@@ -257,7 +257,7 @@ const Register = ({ onNavigate, onRegisterSuccess }) => {
                   type="tel"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="+27 123 456 789"
+                  placeholder="012 345 6789"
                   className="auth-input mt-1"
                   required
                 />
