@@ -2377,7 +2377,7 @@ async def admin_register_request(request_data: dict):
                 <div style="text-align: center; margin: 30px 0;">
                     <p style="font-size: 16px; margin-bottom: 20px;">Choose your action:</p>
                     <div style="display: inline-block; margin: 0 10px;">
-                        <a href="http://localhost:3000/admin-dashboard" 
+                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard" 
                            style="background-color: #27ae60; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin: 5px;">
                             ✅ Review & Approve
                         </a>
