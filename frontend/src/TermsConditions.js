@@ -161,10 +161,10 @@ const TermsConditions = ({ setCurrentPage }) => {
                 <strong>8.2 Refund Process:</strong>
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Refund requests must be submitted within 30 days of project completion</li>
+                <li>Refund requests must be submitted within 48 hours of project delivery</li>
                 <li>All refund requests are subject to investigation</li>
                 <li>Partial refunds may be issued for partially completed work</li>
-                <li>Refunds are processed within 7-14 business days</li>
+                <li>Refunds are processed within 24-48 hours for urgent cases</li>
               </ul>
               <p className="text-gray-700 mb-4">
                 <strong>8.3 Non-Refundable Services:</strong>
