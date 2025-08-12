@@ -1101,14 +1101,14 @@ const AdminDashboard = ({ user, onNavigate, onLogout }) => {
     );
   };
 
-  const renderActivityTab = () => {
-    // Load activity log when tab is first opened
-    useEffect(() => {
-      if (currentTab === 'activity' && activityLog.length === 0) {
-        fetchActivityLog();
-      }
-    }, [currentTab]);
+  // Load activity log when tab is first opened
+  useEffect(() => {
+    if (currentTab === 'activity' && activityLog.length === 0) {
+      fetchActivityLog();
+    }
+  }, [currentTab]);
 
+  const renderActivityTab = () => {
     return (
       <div>
         <Card className="dashboard-card">
