@@ -663,6 +663,31 @@ function App() {
     );
   }
 
+  // Policy Pages
+  if (currentPage === 'terms-conditions') {
+    return (
+      <TermsConditions setCurrentPage={setCurrentPage} />
+    );
+  }
+
+  if (currentPage === 'privacy-policy') {
+    return (
+      <PrivacyPolicy setCurrentPage={setCurrentPage} />
+    );
+  }
+
+  if (currentPage === 'security-policy') {
+    return (
+      <SecurityPolicy setCurrentPage={setCurrentPage} />
+    );
+  }
+
+  if (currentPage === 'delivery-policy') {
+    return (
+      <DeliveryPolicy setCurrentPage={setCurrentPage} />
+    );
+  }
+
   // Admin Login Page
   if (currentPage === 'admin' || currentPage === 'admin-login') {
     return (
