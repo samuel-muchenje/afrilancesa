@@ -157,10 +157,10 @@ const DeliveryPolicy = ({ setCurrentPage }) => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">5.3 Final Delivery</h3>
               <ol className="list-decimal list-inside text-gray-700 space-y-2">
                 <li><strong>Delivery Submission:</strong> Freelancer submits completed work</li>
-                <li><strong>Client Review:</strong> 7-day review period for client evaluation</li>
+                <li><strong>Client Review:</strong> 48-hour review period for client evaluation</li>
                 <li><strong>Revision Requests:</strong> Client can request reasonable revisions</li>
                 <li><strong>Final Approval:</strong> Client approves completed work</li>
-                <li><strong>Payment Release:</strong> Automatic payment release to freelancer</li>
+                <li><strong>Payment Release:</strong> Automatic payment release to freelancer after 48 hours if no action taken</li>
               </ol>
             </section>
 
