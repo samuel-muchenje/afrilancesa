@@ -364,7 +364,7 @@ const AdminLogin = ({ onNavigate, onLoginSuccess }) => {
                         id="reg-phone"
                         name="phone"
                         type="tel"
-                        placeholder="+27 XX XXX XXXX"
+                        placeholder="012 XXX XXXX"
                         value={registerData.phone}
                         onChange={handleRegisterChange}
                         className="bg-gray-800 border-gray-600 text-white"
