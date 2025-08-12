@@ -1310,7 +1310,7 @@ async def upload_id_document(
                     </div>
                     
                     <div style="margin: 30px 0; text-align: center;">
-                        <a href="http://localhost:3000/admin-dashboard" 
+                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard" 
                            style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
                             Review in Admin Dashboard
                         </a>
