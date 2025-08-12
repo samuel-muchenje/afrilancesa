@@ -3820,7 +3820,32 @@ async def update_support_ticket(
     
     return {
         "message": "Support ticket updated successfully",
-        "ticket_id": ticket_id
+        "ticket_id": ticket_id,
+        "direct_message_sent": True
+    }
+
+@app.get("/api/my-support-tickets")
+async def get_my_support_tickets(current_user = Depends(verify_token)):
+    """Get support tickets for the current user"""
+    user_info = db.users.find_one({"id": current_user["user_id"]})
+    if not user_info:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Find tickets by user email
+    tickets = list(db.support_tickets.find({"email": user_info["email"]})
+                  .sort("created_at", -1))
+    
+    # Convert ObjectId to string and format response
+    for ticket in tickets:
+        ticket["_id"] = str(ticket["_id"])
+        # Add formatted date
+        ticket["created_at_formatted"] = ticket["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+        if ticket.get("last_reply_at"):
+            ticket["last_reply_at_formatted"] = ticket["last_reply_at"].strftime("%Y-%m-%d %H:%M:%S")
+    
+    return {
+        "tickets": tickets,
+        "total": len(tickets)
     }
 
 @app.get("/api/admin/activity-log")
