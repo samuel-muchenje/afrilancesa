@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 class FileUploadPortfolioTester:
-    def __init__(self, base_url="https://afrilance-email-fix.preview.emergentagent.com"):
+    def __init__(self, base_url="https://sa-freelance-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.freelancer_token = None
         self.client_token = None

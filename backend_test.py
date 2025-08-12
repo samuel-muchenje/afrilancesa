@@ -5,7 +5,7 @@ import jwt
 from datetime import datetime
 
 class AfrilanceAPITester:
-    def __init__(self, base_url="https://afrilance-email-fix.preview.emergentagent.com"):
+    def __init__(self, base_url="https://sa-freelance-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.freelancer_token = None
         self.client_token = None
@@ -10500,7 +10500,7 @@ startxref
         print("\n📧 CRITICAL EMAIL APPROVAL LINKS FIX VERIFICATION")
         print("=" * 70)
         print("🎯 TESTING: Email approval links now use production URLs instead of localhost")
-        print("🔗 PRODUCTION URL: https://afrilance-email-fix.preview.emergentagent.com")
+        print("🔗 PRODUCTION URL: https://sa-freelance-hub.preview.emergentagent.com")
         print("❌ ISSUE FIXED: localhost URLs causing 'localhost refused to connect' errors")
         
         email_tests_passed = 0
@@ -10537,7 +10537,7 @@ startxref
             print(f"   ✓ Status: {response.get('status', 'Unknown')}")
             print("   ✓ Email contains production URLs (not localhost)")
             print("   ✓ 'Review & Approve' button links to correct admin dashboard")
-            print("   ✓ URL: https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard")
+            print("   ✓ URL: https://sa-freelance-hub.preview.emergentagent.com/admin-dashboard")
         else:
             print("❌ Admin registration request failed")
         
@@ -10592,7 +10592,7 @@ startxref
                     print(f"   ✓ Response: {response.json().get('message', 'Success')}")
                     print("   ✓ Email contains production URLs (not localhost)")
                     print("   ✓ 'Review in Admin Dashboard' link uses correct production URL")
-                    print("   ✓ URL: https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard")
+                    print("   ✓ URL: https://sa-freelance-hub.preview.emergentagent.com/admin-dashboard")
                 else:
                     print(f"❌ ID document upload failed - Status: {response.status_code}")
                     try:
@@ -10620,7 +10620,7 @@ startxref
         print("     - Clickable action buttons")
         print("     - Complete user and request details")
         print("     - Security warnings and instructions")
-        print("   ✓ All links use production URL: https://afrilance-email-fix.preview.emergentagent.com")
+        print("   ✓ All links use production URL: https://sa-freelance-hub.preview.emergentagent.com")
         
         email_tests_passed += 1
         
@@ -10633,13 +10633,13 @@ startxref
         print("✅ URL Fix Verification - All URLs Updated:")
         print("   ✓ Admin dashboard links:")
         print("     OLD: http://localhost:3000/admin-dashboard")
-        print("     NEW: https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard")
+        print("     NEW: https://sa-freelance-hub.preview.emergentagent.com/admin-dashboard")
         print("   ✓ Freelancer dashboard links:")
         print("     OLD: http://localhost:3000/freelancer-dashboard")
-        print("     NEW: https://afrilance-email-fix.preview.emergentagent.com/freelancer-dashboard")
+        print("     NEW: https://sa-freelance-hub.preview.emergentagent.com/freelancer-dashboard")
         print("   ✓ Admin page links:")
         print("     OLD: http://localhost:3000/admin")
-        print("     NEW: https://afrilance-email-fix.preview.emergentagent.com/admin")
+        print("     NEW: https://sa-freelance-hub.preview.emergentagent.com/admin")
         print("   ✓ All email templates updated with production URLs")
         print("   ✓ Links are accessible from external email clients")
         print("   ✓ No 'localhost refused to connect' errors")
@@ -10662,7 +10662,7 @@ startxref
         print("   ✅ All Links Accessible - No localhost errors")
         
         print("\n🔗 PRODUCTION URL CONFIRMED:")
-        print("   ✅ https://afrilance-email-fix.preview.emergentagent.com")
+        print("   ✅ https://sa-freelance-hub.preview.emergentagent.com")
         print("   ✅ All email templates updated")
         print("   ✅ Links work from external email clients")
         print("   ✅ User approval workflows functional")

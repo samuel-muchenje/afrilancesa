@@ -1310,7 +1310,7 @@ async def upload_id_document(
                     </div>
                     
                     <div style="margin: 30px 0; text-align: center;">
-                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard" 
+                        <a href="https://sa-freelance-hub.preview.emergentagent.com/admin-dashboard" 
                            style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
                             Review in Admin Dashboard
                         </a>
@@ -2076,7 +2076,7 @@ async def verify_user(
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://afrilance-email-fix.preview.emergentagent.com/freelancer-dashboard" 
+                        <a href="https://sa-freelance-hub.preview.emergentagent.com/freelancer-dashboard" 
                            style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                             Go to Your Dashboard
                         </a>
@@ -2143,7 +2143,7 @@ async def verify_user(
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://afrilance-email-fix.preview.emergentagent.com/freelancer-dashboard" 
+                        <a href="https://sa-freelance-hub.preview.emergentagent.com/freelancer-dashboard" 
                            style="background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                             Update Verification
                         </a>
@@ -2377,7 +2377,7 @@ async def admin_register_request(request_data: dict):
                 <div style="text-align: center; margin: 30px 0;">
                     <p style="font-size: 16px; margin-bottom: 20px;">Choose your action:</p>
                     <div style="display: inline-block; margin: 0 10px;">
-                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin-dashboard" 
+                        <a href="https://sa-freelance-hub.preview.emergentagent.com/admin-dashboard" 
                            style="background-color: #27ae60; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin: 5px;">
                             ✅ Review & Approve
                         </a>
@@ -2498,7 +2498,7 @@ async def approve_admin_request(
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin" 
+                        <a href="https://sa-freelance-hub.preview.emergentagent.com/admin" 
                            style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                             Access Admin Portal
                         </a>

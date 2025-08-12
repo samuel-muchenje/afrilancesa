@@ -4,7 +4,7 @@ import io
 from datetime import datetime
 
 class FocusedVerificationTester:
-    def __init__(self, base_url="https://afrilance-email-fix.preview.emergentagent.com"):
+    def __init__(self, base_url="https://sa-freelance-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.freelancer_token = None
         self.admin_token = None

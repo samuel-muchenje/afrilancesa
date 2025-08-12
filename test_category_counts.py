@@ -5,7 +5,7 @@ import json
 
 def test_category_counts_endpoint():
     """Test the category counts endpoint"""
-    base_url = "https://afrilance-email-fix.preview.emergentagent.com"
+    base_url = "https://sa-freelance-hub.preview.emergentagent.com"
     url = f"{base_url}/api/categories/counts"
     
     print("🚀 Testing Category Counts Endpoint...")
