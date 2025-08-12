@@ -81,7 +81,7 @@ class EnhancedSupportTester:
             success, response = self.run_test(
                 f"Sequential Numbering - Create Support Ticket #{i+1}",
                 "POST",
-                "/api/support-tickets",
+                "/api/support",
                 200,
                 data=ticket_data
             )
