@@ -9427,8 +9427,6 @@ def main():
         
         return postmark_tests_passed, postmark_tests_total
 
-    # ========== EMAIL DELIVERY DIAGNOSIS TESTS ==========
-    
     def test_postmark_email_delivery_diagnosis(self):
         """CRITICAL EMAIL DELIVERY INVESTIGATION - Comprehensive Postmark testing"""
         print("\n🚨 CRITICAL EMAIL DELIVERY INVESTIGATION")
@@ -9758,83 +9756,94 @@ def main():
             freelancer_token = response['token']
             print(f"   ✓ Test freelancer registered: {response['user']['full_name']}")
             
-            # Create a test PDF file for upload
-            try:
-                import io
-                from reportlab.pdfgen import canvas
-                from reportlab.lib.pagesizes import letter
+            # Create a simple test file for upload (since reportlab may not be available)
+            test_pdf_content = b"""%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+72 720 Td
+(EMAIL DELIVERY TEST ID DOCUMENT) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000206 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+300
+%%EOF"""
+            
+            # Upload ID document to trigger email
+            files = {'file': ('test_id_document.pdf', test_pdf_content, 'application/pdf')}
+            headers = {'Authorization': f'Bearer {freelancer_token}'}
+            
+            upload_response = requests.post(
+                f"{self.base_url}/api/upload-id-document",
+                files=files,
+                headers=headers,
+                timeout=30
+            )
+            
+            print(f"   📡 ID Document Upload Response: {upload_response.status_code}")
+            
+            if upload_response.status_code == 200:
+                upload_result = upload_response.json()
+                print("✅ ID DOCUMENT UPLOAD SUCCESSFUL!")
+                print(f"   ✓ Message: {upload_result.get('message', 'Unknown')}")
+                print(f"   ✓ Filename: {upload_result.get('filename', 'Unknown')}")
+                print(f"   ✓ Status: {upload_result.get('status', 'Unknown')}")
+                print("   ✓ Email notification should have been sent to sam@afrilance.co.za")
+                email_tests_passed += 1
                 
-                # Create a simple PDF in memory
-                buffer = io.BytesIO()
-                p = canvas.Canvas(buffer, pagesize=letter)
-                p.drawString(100, 750, f"EMAIL DELIVERY TEST ID DOCUMENT")
-                p.drawString(100, 730, f"Test User: {test_freelancer_data['full_name']}")
-                p.drawString(100, 710, f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                p.drawString(100, 690, f"Purpose: Testing email delivery to sam@afrilance.co.za")
-                p.showPage()
-                p.save()
+                print("\n🎯 BACKEND EMAIL FUNCTION ANALYSIS:")
+                print("   ✅ Backend email function executed successfully")
+                print("   ✅ ID document upload triggered email notification")
+                print("   🔍 Check backend logs for email sending details")
+                print("   🔍 If no email received, issue is in backend email logic")
                 
-                # Get PDF content
-                pdf_content = buffer.getvalue()
-                buffer.close()
-                
-                # Upload ID document to trigger email
-                files = {'file': ('test_id_document.pdf', pdf_content, 'application/pdf')}
-                headers = {'Authorization': f'Bearer {freelancer_token}'}
-                
-                upload_response = requests.post(
-                    f"{self.base_url}/api/upload-id-document",
-                    files=files,
-                    headers=headers,
-                    timeout=30
-                )
-                
-                print(f"   📡 ID Document Upload Response: {upload_response.status_code}")
-                
-                if upload_response.status_code == 200:
-                    upload_result = upload_response.json()
-                    print("✅ ID DOCUMENT UPLOAD SUCCESSFUL!")
-                    print(f"   ✓ Message: {upload_result.get('message', 'Unknown')}")
-                    print(f"   ✓ Filename: {upload_result.get('filename', 'Unknown')}")
-                    print(f"   ✓ Status: {upload_result.get('status', 'Unknown')}")
-                    print("   ✓ Email notification should have been sent to sam@afrilance.co.za")
-                    email_tests_passed += 1
-                    
-                    print("\n🎯 BACKEND EMAIL FUNCTION ANALYSIS:")
-                    print("   ✅ Backend email function executed successfully")
-                    print("   ✅ ID document upload triggered email notification")
-                    print("   🔍 Check backend logs for email sending details")
-                    print("   🔍 If no email received, issue is in backend email logic")
-                    
-                else:
-                    upload_result = upload_response.json() if upload_response.content else {}
-                    print("❌ ID DOCUMENT UPLOAD FAILED!")
-                    print(f"   📝 Status: {upload_response.status_code}")
-                    print(f"   📝 Response: {upload_response.text}")
-                    
-            except ImportError:
-                print("⚠️ reportlab not available, skipping PDF creation test")
-                print("   🔍 Testing with simple file upload instead...")
-                
-                # Test with a simple text file
-                files = {'file': ('test_id.txt', b'Test ID Document Content', 'text/plain')}
-                headers = {'Authorization': f'Bearer {freelancer_token}'}
-                
-                upload_response = requests.post(
-                    f"{self.base_url}/api/upload-id-document",
-                    files=files,
-                    headers=headers,
-                    timeout=30
-                )
-                
-                print(f"   📡 Text File Upload Response: {upload_response.status_code}")
-                if upload_response.status_code == 400:
-                    print("   ✅ File type validation working (text file rejected)")
-                    print("   🔍 Backend email function validation working")
-                    email_tests_passed += 0.5  # Partial credit
-                    
-            except Exception as e:
-                print(f"❌ BACKEND EMAIL TEST FAILED: {str(e)}")
+            else:
+                upload_result = upload_response.json() if upload_response.content else {}
+                print("❌ ID DOCUMENT UPLOAD FAILED!")
+                print(f"   📝 Status: {upload_response.status_code}")
+                print(f"   📝 Response: {upload_response.text}")
         else:
             print("❌ Failed to register test freelancer for email test")
         
