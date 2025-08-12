@@ -129,6 +129,18 @@ class SupportTicket(BaseModel):
     email: EmailStr
     message: str
 
+def get_next_ticket_number():
+    """Generate sequential ticket number starting from 0000001"""
+    # Find the highest ticket number
+    latest_ticket = db.support_tickets.find().sort("ticket_number", -1).limit(1)
+    latest_ticket = list(latest_ticket)
+    
+    if latest_ticket and "ticket_number" in latest_ticket[0]:
+        latest_number = int(latest_ticket[0]["ticket_number"])
+        return f"{latest_number + 1:07d}"
+    else:
+        return "0000001"
+
 class FileUploadResponse(BaseModel):
     message: str
     filename: str
