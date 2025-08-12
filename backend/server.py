@@ -2498,7 +2498,7 @@ async def approve_admin_request(
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/admin" 
+                        <a href="https://afrilance-email-fix.preview.emergentagent.com/admin" 
                            style="background-color: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
                             Access Admin Portal
                         </a>
