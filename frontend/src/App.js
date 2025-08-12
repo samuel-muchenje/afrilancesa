@@ -35,6 +35,10 @@ import AdminLogin from './AdminLogin';
 import Careers from './Careers';
 import Press from './Press';
 import FreelancerPortfolio from './FreelancerPortfolio';
+import TermsConditions from './TermsConditions';
+import PrivacyPolicy from './PrivacyPolicy';
+import SecurityPolicy from './SecurityPolicy';
+import DeliveryPolicy from './DeliveryPolicy';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
