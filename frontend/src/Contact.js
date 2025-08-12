@@ -144,7 +144,8 @@ const Contact = ({ onNavigate }) => {
                     <MapPin className="w-8 h-8 text-blue-400" />
                     <div>
                       <h3 className="text-white font-semibold">Office</h3>
-                      <p className="text-gray-400">Cape Town, South Africa</p>
+                      <p className="text-gray-400">152 Dallas Ave, Waterkloof Glen</p>
+                      <p className="text-gray-400">Pretoria, 0010</p>
                     </div>
                   </div>
                 </CardContent>
