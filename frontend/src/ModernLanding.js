@@ -719,6 +719,16 @@ const ModernLanding = ({
             </div>
             
             <div>
+              <h3 className="text-white font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li><button onClick={() => setCurrentPage('terms-conditions')} className="footer-link text-left hover:text-yellow-400 transition-colors">Terms & Conditions</button></li>
+                <li><button onClick={() => setCurrentPage('privacy-policy')} className="footer-link text-left hover:text-yellow-400 transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => setCurrentPage('security-policy')} className="footer-link text-left hover:text-yellow-400 transition-colors">Security Policy</button></li>
+                <li><button onClick={() => setCurrentPage('delivery-policy')} className="footer-link text-left hover:text-yellow-400 transition-colors">Delivery Policy</button></li>
+              </ul>
+            </div>
+            
+            <div>
               <h3 className="text-white font-semibold mb-4">For Clients</h3>
               <ul className="space-y-2">
                 <li><button onClick={() => setCurrentPage('how-it-works')} className="footer-link text-left hover:text-yellow-400 transition-colors">How It Works</button></li>
