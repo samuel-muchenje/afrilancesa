@@ -8265,33 +8265,21 @@ Thabo Mthembu""",
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    print("🚀 STARTING AFRILANCE API COMPREHENSIVE TESTING")
-    print("=" * 60)
+    # Run comprehensive messaging and support ticket systems testing
+    print("🎯 RUNNING COMPREHENSIVE MESSAGING AND SUPPORT TICKET SYSTEMS TESTING")
+    print("=" * 80)
     
-    # Run SMTP Email System Testing (as requested in review)
-    print("\n🎯 RUNNING SMTP EMAIL SYSTEM TESTS (REVIEW REQUEST)")
-    smtp_passed, smtp_total = tester.test_smtp_email_system_comprehensive()
+    passed, total = tester.test_messaging_and_support_systems_comprehensive()
     
-    # Run comprehensive registration system testing
-    registration_passed, registration_total = tester.test_comprehensive_registration_system()
+    print(f"\n📊 FINAL TESTING SUMMARY:")
+    print(f"✅ Tests Passed: {passed}/{total}")
     
-    print(f"\n📊 FINAL TESTING SUMMARY")
-    print("=" * 60)
-    print(f"SMTP Email Tests: {smtp_passed}/{smtp_total}")
-    print(f"Registration Tests: {registration_passed}/{registration_total}")
-    print(f"Overall Tests: {tester.tests_passed}/{tester.tests_run}")
-    
-    overall_success_rate = (tester.tests_passed / tester.tests_run) * 100 if tester.tests_run > 0 else 0
-    print(f"Overall Success Rate: {overall_success_rate:.1f}%")
-    
-    if overall_success_rate >= 90:
-        print("🎉 EXCELLENT - API WORKING PERFECTLY!")
-    elif overall_success_rate >= 75:
-        print("✅ GOOD - API WORKING WELL!")
+    if passed == total:
+        print("🎉 ALL MESSAGING AND SUPPORT SYSTEMS TESTS PASSED!")
+        sys.exit(0)
     else:
-        print("⚠️ NEEDS ATTENTION - SOME ISSUES FOUND!")
-    
-    print("\n🏁 TESTING COMPLETED")
+        print("❌ SOME TESTS FAILED - SEE DETAILS ABOVE!")
+        sys.exit(1)
 
     def test_login_system_comprehensive(self):
         """Comprehensive testing of login system as requested"""
