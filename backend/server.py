@@ -3713,6 +3713,102 @@ async def update_support_ticket(
         }
         update_fields["admin_replies"] = ticket.get("admin_replies", []) + [reply]
         update_fields["last_reply_at"] = datetime.utcnow()
+        
+        # Send admin reply as direct message to ticket creator
+        try:
+            # Find user by email from ticket
+            ticket_creator = db.users.find_one({"email": ticket["email"]})
+            if ticket_creator:
+                # Get admin info
+                admin_user = db.users.find_one({"id": current_user["user_id"]})
+                admin_name = admin_user.get("full_name", "Afrilance Support") if admin_user else "Afrilance Support"
+                
+                # Create conversation ID between admin and user
+                participants = sorted([current_user["user_id"], ticket_creator["id"]])
+                conversation_id = f"support_{ticket.get('ticket_number', ticket_id)}_{participants[0]}_{participants[1]}"
+                
+                # Send direct message
+                message_data = {
+                    "id": str(uuid.uuid4()),
+                    "conversation_id": conversation_id,
+                    "sender_id": current_user["user_id"],
+                    "receiver_id": ticket_creator["id"],
+                    "content": f"Support Ticket #{ticket.get('ticket_number', 'N/A')} - {admin_name}: {update_data['admin_reply']}",
+                    "message_type": "support_reply",
+                    "ticket_id": ticket_id,
+                    "ticket_number": ticket.get('ticket_number'),
+                    "created_at": datetime.utcnow(),
+                    "read": False
+                }
+                
+                db.messages.insert_one(message_data)
+                
+                # Update or create conversation metadata
+                conversation_data = {
+                    "conversation_id": conversation_id,
+                    "participants": participants,
+                    "last_message_id": message_data["id"],
+                    "last_message_at": datetime.utcnow(),
+                    "last_message_content": f"Support Reply: {update_data['admin_reply'][:100]}",
+                    "conversation_type": "support",
+                    "ticket_id": ticket_id,
+                    "ticket_number": ticket.get('ticket_number'),
+                    "updated_at": datetime.utcnow()
+                }
+                
+                # Upsert conversation
+                db.conversations.update_one(
+                    {"conversation_id": conversation_id},
+                    {"$set": conversation_data},
+                    upsert=True
+                )
+                
+                print(f"✅ Admin reply sent as direct message to user {ticket_creator['email']}")
+                
+                # Send email notification to user
+                try:
+                    user_subject = f"Support Ticket #{ticket.get('ticket_number', 'N/A')} - Response from Afrilance Support"
+                    user_body = f"""
+                    <html>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                            <h2 style="color: #2c3e50;">Support Ticket Update</h2>
+                            <p>Dear {ticket['name']},</p>
+                            
+                            <p>We have responded to your support ticket:</p>
+                            
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <p><strong>Ticket Number:</strong> #{ticket.get('ticket_number', 'N/A')}</p>
+                                <p><strong>Your Message:</strong> {ticket['message']}</p>
+                                <hr>
+                                <p><strong>Our Response:</strong></p>
+                                <p style="background-color: #e8f5e8; padding: 15px; border-radius: 5px;">{update_data['admin_reply']}</p>
+                            </div>
+                            
+                            <p>You can also view this response in your messages section on the Afrilance platform.</p>
+                            
+                            <p>If you need further assistance, please reply to this ticket or contact us.</p>
+                            
+                            <p>Best regards,<br>
+                            Afrilance Support Team<br>
+                            sam@afrilance.co.za</p>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    
+                    if EMAIL_PASS:
+                        send_email(ticket["email"], user_subject, user_body)
+                        print(f"✅ Email notification sent to {ticket['email']}")
+                    
+                except Exception as e:
+                    print(f"❌ Failed to send email notification: {e}")
+                    
+            else:
+                print(f"❌ Could not find user with email {ticket['email']} for direct message")
+                
+        except Exception as e:
+            print(f"❌ Failed to send admin reply as direct message: {e}")
     
     update_fields["updated_at"] = datetime.utcnow()
     
