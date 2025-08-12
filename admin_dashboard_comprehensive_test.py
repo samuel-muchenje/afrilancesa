@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 class ComprehensiveAdminTester:
-    def __init__(self, base_url="https://f7c3705b-640c-4da9-b724-01752cdd2b49.preview.emergentagent.com"):
+    def __init__(self, base_url="https://afrilance-email-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.admin_token = None
         self.freelancer_token = None
