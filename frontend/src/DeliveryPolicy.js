@@ -236,7 +236,7 @@ const DeliveryPolicy = ({ setCurrentPage }) => {
                 <li><strong>Included Revisions:</strong> Most projects include 2-3 rounds of revisions</li>
                 <li><strong>Scope Limitations:</strong> Revisions must stay within original project scope</li>
                 <li><strong>Additional Revisions:</strong> Extra revisions may incur additional charges</li>
-                <li><strong>Revision Timeline:</strong> Clients have 7 days to request revisions</li>
+                <li><strong>Revision Timeline:</strong> Clients have 48 hours to request revisions after delivery</li>
               </ul>
             </section>
 
