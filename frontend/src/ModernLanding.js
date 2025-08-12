@@ -711,10 +711,10 @@ const ModernLanding = ({
             <div>
               <h3 className="text-white font-semibold mb-4">For Freelancers</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => setCurrentPage('how-to-join')} className="footer-link text-left hover:text-yellow-400 transition-colors">How to Join</button></li>
-                <li><button onClick={() => setCurrentPage('create-profile')} className="footer-link text-left hover:text-yellow-400 transition-colors">Create a Profile</button></li>
-                <li><button onClick={() => setCurrentPage('get-verified')} className="footer-link text-left hover:text-yellow-400 transition-colors">Get Verified</button></li>
-                <li><button onClick={() => setCurrentPage('success-stories')} className="footer-link text-left hover:text-yellow-400 transition-colors">Success Stories</button></li>
+                <li><button onClick={() => setCurrentPage('how-to-join')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">How to Join</button></li>
+                <li><button onClick={() => setCurrentPage('create-profile')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Create a Profile</button></li>
+                <li><button onClick={() => setCurrentPage('get-verified')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Get Verified</button></li>
+                <li><button onClick={() => setCurrentPage('success-stories')} className="footer-link text-left hover:text-yellow-400 transition-colors text-gray-400 bg-transparent border-none cursor-pointer">Success Stories</button></li>
               </ul>
             </div>
             
