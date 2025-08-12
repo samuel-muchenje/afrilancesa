@@ -240,64 +240,63 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def send_email(to_email: str, subject: str, body: str) -> bool:
-    """Send email using Postmark API with SMTP fallback"""
+    """Send email using direct SMTP"""
     logger = logging.getLogger(__name__)
     
-    # Try Postmark API first
-    if POSTMARK_SERVER_TOKEN:
-        try:
-            client = PostmarkClient(server_token=POSTMARK_SERVER_TOKEN)
-            
-            # Fixed: Remove TrackLinks field which is not supported with Server tokens
-            response = client.emails.send(
-                From=POSTMARK_SENDER_EMAIL,
-                To=to_email,
-                Subject=subject,
-                HtmlBody=body,
-                TrackOpens=True,
-                # TrackLinks=True,  # REMOVED - not supported with Server tokens
-                Metadata={
-                    "email_type": "transactional",
-                    "sent_at": datetime.utcnow().isoformat(),
-                    "system": "afrilance"
-                }
-            )
-            
-            message_id = response.get('MessageID', 'unknown')
-            submitted_at = response.get('SubmittedAt', 'unknown')
-            
-            print(f"✅ Email sent successfully via Postmark API")
-            print(f"   To: {to_email}")
-            print(f"   Subject: {subject}")
-            print(f"   Message ID: {message_id}")
-            print(f"   Submitted At: {submitted_at}")
-            
-            logger.info(f"Postmark email sent successfully: {message_id} to {to_email}")
-            return True
-            
-        except PostmarkerException as e:
-            print(f"❌ Postmark API error: {e}")
-            logger.error(f"Postmark API error: {e}")
-            
-            # Extract error details if available
-            error_code = getattr(e, 'error_code', 'unknown')
-            error_message = getattr(e, 'message', str(e))
-            
-            print(f"   Error Code: {error_code}")
-            print(f"   Error Message: {error_message}")
-            
-            # Don't fallback for certain error types to force Postmark usage
-            print("❌ Postmark API failed - check configuration")
+    try:
+        # Check if we have email configuration
+        if not EMAIL_PASS:
+            print("❌ CRITICAL: EMAIL_PASSWORD not configured!")
+            logger.error("EMAIL_PASSWORD not configured")
             return False
-                
-        except Exception as e:
-            print(f"❌ Unexpected Postmark error: {e}")
-            logger.error(f"Unexpected Postmark error: {e}")
-            print("❌ Postmark integration failed - check configuration") 
-            return False
-    
-    else:
-        print("❌ CRITICAL: POSTMARK_SERVER_TOKEN not configured!")
+        
+        # Create SMTP connection
+        print(f"📧 Attempting to send email via SMTP...")
+        print(f"   Host: {EMAIL_HOST}:{EMAIL_PORT}")
+        print(f"   From: {EMAIL_USER}")
+        print(f"   To: {to_email}")
+        print(f"   Subject: {subject}")
+        
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = EMAIL_USER
+        msg['To'] = to_email
+        
+        # Add HTML body
+        html_part = MIMEText(body, 'html')
+        msg.attach(html_part)
+        
+        # Connect and send
+        server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
+        server.login(EMAIL_USER, EMAIL_PASS)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f"✅ Email sent successfully via SMTP")
+        print(f"   Message delivered to: {to_email}")
+        
+        logger.info(f"SMTP email sent successfully to {to_email}")
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"❌ SMTP Authentication failed: {e}")
+        logger.error(f"SMTP Authentication error: {e}")
+        return False
+        
+    except smtplib.SMTPConnectError as e:
+        print(f"❌ SMTP Connection failed: {e}")
+        logger.error(f"SMTP Connection error: {e}")
+        return False
+        
+    except smtplib.SMTPException as e:
+        print(f"❌ SMTP Error: {e}")
+        logger.error(f"SMTP error: {e}")
+        return False
+        
+    except Exception as e:
+        print(f"❌ Unexpected email error: {e}")
+        logger.error(f"Unexpected email error: {e}")
         return False
 
 def send_email_smtp_fallback(to_email: str, subject: str, body: str) -> bool:
