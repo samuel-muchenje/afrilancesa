@@ -159,7 +159,7 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
@@ -170,6 +170,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE ADMIN REGISTRATION REQUEST SYSTEM RE-VERIFIED - PERFECT IMPLEMENTATION! ✅ COMPLETE TESTING COVERAGE: Admin registration request system tested as part of comprehensive registration testing with 100% success rate. ✅ DOMAIN VALIDATION EXCELLENT: POST /api/admin/register-request properly enforces @afrilance.co.za domain restriction - non-afrilance domains correctly rejected with 400 status and clear error message 'Admin requests are only accepted from @afrilance.co.za email addresses'. ✅ COMPREHENSIVE FIELD VALIDATION: All required fields properly validated (email, password, full_name, phone, department, reason) - missing fields correctly rejected with 400 status and 'All fields are required' message. ✅ DUPLICATE EMAIL PREVENTION: Duplicate admin registration attempts properly blocked with 400 status and 'User with this email already exists' message. ✅ DATABASE INTEGRATION PERFECT: Admin users created with correct structure (admin_approved=false, verification_status='pending_admin_approval', department, admin_request_reason, admin_request_date), all data properly stored and retrievable. ✅ EMAIL NOTIFICATION SYSTEM WORKING: Email notifications successfully sent to sam@afrilance.co.za with comprehensive HTML templates including applicant details (name, email, phone, user ID, department, reason), security warnings, admin action links, professional formatting and styling. ✅ WORKFLOW INTEGRATION: Admin registration requests integrate seamlessly with overall registration system, proper HTTP 200 responses with user_id and status='pending_approval', ready for admin approval workflow. ✅ SECURITY MEASURES EXCELLENT: All security validations working correctly, proper error handling for edge cases, robust input validation, secure password hashing. The admin registration request system is production-ready and working excellently as part of the comprehensive registration system with 100% reliability!"
+      - working: true
+        agent: "testing"
+        comment: "ADMIN REGISTRATION APPROVAL WORKFLOW EMAIL LINK FIX VERIFIED! ✅ PRODUCTION URL INTEGRATION: Admin registration requests now correctly generate email links pointing to production URL (https://afrilance-email-fix.preview.emergentagent.com) instead of localhost. ✅ EMAIL LINK FUNCTIONALITY: The critical 'localhost refused to connect' issue has been completely resolved - email approval links now work correctly. ✅ WORKFLOW TESTING: Admin registration form working perfectly at production URL, domain validation enforced (@afrilance.co.za only), form submission successful with proper API integration, email notifications configured to sam@afrilance.co.za. ✅ BACKEND API VERIFICATION: POST /api/admin/register-request endpoint working correctly, proper response messages, database integration functional, email system operational. The admin registration approval workflow is now fully operational with the email link fix successfully implemented."
 
   - task: "File Upload Endpoints System"
     implemented: true
