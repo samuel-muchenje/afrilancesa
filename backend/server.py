@@ -21,6 +21,10 @@ from postmarker.core import PostmarkClient
 from postmarker.exceptions import PostmarkerException
 import logging
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Create uploads directory structure
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
