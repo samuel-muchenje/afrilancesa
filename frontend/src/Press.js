@@ -236,7 +236,7 @@ const Press = ({ onNavigate }) => {
                 <strong className="text-white">Media Relations:</strong> Sam Thabo, Head of Communications
               </div>
               <div className="text-gray-300">
-                <strong className="text-white">Phone:</strong> +27 11 123 4567
+                <strong className="text-white">Phone:</strong> 012 943 6048
               </div>
             </div>
             <Button 
