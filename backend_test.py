@@ -9918,31 +9918,32 @@ def main():
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    print("🚀 Starting Afrilance API Testing - Verification Email System Focus...")
+    print("🚨 CRITICAL EMAIL DELIVERY INVESTIGATION - Afrilance System")
+    print("=" * 80)
+    print("🎯 OBJECTIVE: Diagnose why emails are not reaching sam@afrilance.co.za")
+    print("🔍 FOCUS: Postmark API integration with token f5d6dc22-b15c-4cf8-8491-d1c1fd422c17")
     print("=" * 80)
     
-    # Run the verification email system tests
-    tests_passed, tests_total = tester.test_verification_email_system_corrected_host()
+    # Run the email delivery diagnosis tests
+    tests_passed, tests_total = tester.test_postmark_email_delivery_diagnosis()
     
     # Final summary
     print("\n" + "="*80)
-    print("🎯 FINAL TESTING SUMMARY")
+    print("🎯 CRITICAL EMAIL DELIVERY INVESTIGATION COMPLETE")
     print("="*80)
     
     success_rate = (tests_passed / tests_total) * 100 if tests_total > 0 else 0
     
-    if success_rate >= 90:
-        print("🎉 VERIFICATION EMAIL SYSTEM WORKING EXCELLENTLY!")
-        print("✅ Email host correction successful (afrilance.co.za)")
-        print("✅ All email workflows functional")
-        print("✅ SMTP configuration working correctly")
+    if success_rate >= 80:
+        print("✅ POSTMARK INTEGRATION WORKING CORRECTLY!")
+        print("📧 Email delivery issue likely NOT related to Postmark configuration")
+        print("🔍 Check application logic, spam folders, or delivery delays")
         sys.exit(0)
-    elif success_rate >= 75:
-        print("✅ VERIFICATION EMAIL SYSTEM WORKING WELL!")
-        print("✅ Most email workflows functional")
-        print("✅ Email host correction applied")
+    elif success_rate >= 50:
+        print("⚠️ PARTIAL POSTMARK FUNCTIONALITY DETECTED!")
+        print("🔧 Some configuration issues found - review recommendations above")
         sys.exit(0)
     else:
-        print("⚠️ VERIFICATION EMAIL SYSTEM NEEDS ATTENTION!")
-        print("❌ Some email workflows may have issues")
+        print("❌ CRITICAL POSTMARK CONFIGURATION ISSUES!")
+        print("🚨 Major problems detected - immediate action required")
         sys.exit(1)
