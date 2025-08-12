@@ -10498,32 +10498,30 @@ startxref
 if __name__ == "__main__":
     tester = AfrilanceAPITester()
     
-    print("🚨 CRITICAL EMAIL DELIVERY INVESTIGATION - Afrilance System")
-    print("=" * 80)
-    print("🎯 OBJECTIVE: Diagnose why emails are not reaching sam@afrilance.co.za")
-    print("🔍 FOCUS: Postmark API integration with token f5d6dc22-b15c-4cf8-8491-d1c1fd422c17")
-    print("=" * 80)
+    print("🚀 STARTING AFRILANCE API COMPREHENSIVE TESTING")
+    print("=" * 60)
     
-    # Run the email delivery diagnosis tests
-    tests_passed, tests_total = tester.test_postmark_email_delivery_diagnosis()
+    # Run SMTP Email System Testing (as requested in review)
+    print("\n🎯 RUNNING SMTP EMAIL SYSTEM TESTS (REVIEW REQUEST)")
+    smtp_passed, smtp_total = tester.test_smtp_email_system_comprehensive()
     
-    # Final summary
-    print("\n" + "="*80)
-    print("🎯 CRITICAL EMAIL DELIVERY INVESTIGATION COMPLETE")
-    print("="*80)
+    # Run comprehensive registration system testing
+    registration_passed, registration_total = tester.test_comprehensive_registration_system()
     
-    success_rate = (tests_passed / tests_total) * 100 if tests_total > 0 else 0
+    print(f"\n📊 FINAL TESTING SUMMARY")
+    print("=" * 60)
+    print(f"SMTP Email Tests: {smtp_passed}/{smtp_total}")
+    print(f"Registration Tests: {registration_passed}/{registration_total}")
+    print(f"Overall Tests: {tester.tests_passed}/{tester.tests_run}")
     
-    if success_rate >= 80:
-        print("✅ POSTMARK INTEGRATION WORKING CORRECTLY!")
-        print("📧 Email delivery issue likely NOT related to Postmark configuration")
-        print("🔍 Check application logic, spam folders, or delivery delays")
-        sys.exit(0)
-    elif success_rate >= 50:
-        print("⚠️ PARTIAL POSTMARK FUNCTIONALITY DETECTED!")
-        print("🔧 Some configuration issues found - review recommendations above")
-        sys.exit(0)
+    overall_success_rate = (tester.tests_passed / tester.tests_run) * 100 if tester.tests_run > 0 else 0
+    print(f"Overall Success Rate: {overall_success_rate:.1f}%")
+    
+    if overall_success_rate >= 90:
+        print("🎉 EXCELLENT - API WORKING PERFECTLY!")
+    elif overall_success_rate >= 75:
+        print("✅ GOOD - API WORKING WELL!")
     else:
-        print("❌ CRITICAL POSTMARK CONFIGURATION ISSUES!")
-        print("🚨 Major problems detected - immediate action required")
-        sys.exit(1)
+        print("⚠️ NEEDS ATTENTION - SOME ISSUES FOUND!")
+    
+    print("\n🏁 TESTING COMPLETED")
