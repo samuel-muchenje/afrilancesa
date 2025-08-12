@@ -450,7 +450,7 @@ function App() {
   };
 
   // Modern Landing Page - Default when not logged in or explicitly set to 'landing'
-  if (currentPage === 'landing' || (!user && !['login', 'register', 'freelancer-profile-setup', 'post-job', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press'].includes(currentPage) && !currentPage.startsWith('browse-freelancers') && !currentPage.startsWith('freelancer-portfolio'))) {
+  if (currentPage === 'landing' || (!user && !['login', 'register', 'freelancer-profile-setup', 'post-job', 'about', 'contact', 'browse-jobs', 'browse-freelancers', 'how-it-works', 'enterprise', 'for-freelancers', 'how-to-join', 'create-profile', 'get-verified', 'success-stories', 'admin', 'admin-login', 'careers', 'press', 'terms-conditions', 'privacy-policy', 'security-policy', 'delivery-policy'].includes(currentPage) && !currentPage.startsWith('browse-freelancers') && !currentPage.startsWith('freelancer-portfolio'))) {
     return (
       <ModernLanding 
         setCurrentPage={handleLandingNavigation}
