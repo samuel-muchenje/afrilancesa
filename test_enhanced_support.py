@@ -210,7 +210,7 @@ class EnhancedSupportTester:
                 success, ticket_response = self.run_test(
                     "Create Support Ticket from Registered User",
                     "POST",
-                    "/api/support-tickets",
+                    "/api/support",
                     200,
                     data=ticket_data
                 )
