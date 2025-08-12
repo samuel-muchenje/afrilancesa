@@ -261,9 +261,10 @@ const PrivacyPolicy = ({ setCurrentPage }) => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700"><strong>Data Protection Officer</strong></p>
                 <p className="text-gray-700"><strong>Afrilance (Pty) Ltd</strong></p>
+                <p className="text-gray-700">Address: 152 Dallas Ave, Waterkloof Glen, Pretoria, 0010</p>
                 <p className="text-gray-700">Email: privacy@afrilance.co.za</p>
                 <p className="text-gray-700">Email: dpo@afrilance.co.za</p>
-                <p className="text-gray-700">Phone: +27 (0) 11 123 4567</p>
+                <p className="text-gray-700">Phone: 012 943 6048</p>
                 <p className="text-gray-700 mt-2">
                   <strong>Information Regulator:</strong><br/>
                   If you are not satisfied with our response, you may lodge a complaint with the Information Regulator of South Africa at inforeg.org.za
